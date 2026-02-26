@@ -83,7 +83,7 @@ interface EstadoReserva {
   created_at: string;
 }
 
-type ShopStep = 'selecting' | 'blocking' | 'checkout' | 'reserving' | 'confirmed' | 'status';
+type ShopStep = 'pick-rifa' | 'selecting' | 'blocking' | 'checkout' | 'reserving' | 'confirmed' | 'status';
 
 /* ═══════════════════════════════════════════════════
    HELPERS
@@ -213,9 +213,11 @@ const api = {
 ═══════════════════════════════════════════════════ */
 export default function BoletasShop() {
   /* ─── Core Data State ─── */
+  const [rifas, setRifas] = useState<RifaPublica[]>([]);
   const [rifa, setRifa] = useState<RifaPublica | null>(null);
   const [boletas, setBoletas] = useState<BoletaDisponible[]>([]);
   const [mediosPago, setMediosPago] = useState<MedioPago[]>([]);
+  const [loadingBoletas, setLoadingBoletas] = useState(false);
 
   /* ─── UI State ─── */
   const [loading, setLoading] = useState(true);
@@ -227,7 +229,7 @@ export default function BoletasShop() {
 
   /* ─── Selection & Flow State ─── */
   const [selectedIds, setSelectedIds] = useState<Map<string, number>>(new Map()); // id -> numero
-  const [step, setStep] = useState<ShopStep>('selecting');
+  const [step, setStep] = useState<ShopStep>('pick-rifa');
   const [reservaToken, setReservaToken] = useState<string | null>(null);
   const [bloqueoHasta, setBloqueoHasta] = useState<string | null>(null);
   const [reservaResult, setReservaResult] = useState<ReservaResult | null>(null);
@@ -273,36 +275,27 @@ export default function BoletasShop() {
   }, [selectedIds]);
 
   /* ═══════════════════════════════════════════════════
-     INITIAL DATA LOAD
+     INITIAL DATA LOAD — Only fetch rifas list
   ═══════════════════════════════════════════════════ */
   useEffect(() => {
     let cancelled = false;
 
-    async function loadData() {
+    async function loadRifas() {
       try {
         setLoading(true);
         setLoadingMsg('Cargando rifas disponibles...');
         const rifasRes = await api.getRifas();
         if (cancelled) return;
 
-        const rifas = rifasRes.data;
-        if (!rifas || rifas.length === 0) {
+        const data = rifasRes.data;
+        if (!data || data.length === 0) {
           setError('No hay rifas activas en este momento.');
           setLoading(false);
           return;
         }
 
-        const activeRifa = rifas[0];
-        setRifa(activeRifa);
-
-        setLoadingMsg('Cargando boletas disponibles...');
-        const boletasRes = await api.getBoletas(activeRifa.id);
-        if (cancelled) return;
-
-        if (boletasRes.data) {
-          setBoletas(boletasRes.data.boletas);
-        }
-
+        setRifas(data);
+        setStep('pick-rifa');
         setLoading(false);
       } catch (err) {
         if (cancelled) return;
@@ -311,10 +304,48 @@ export default function BoletasShop() {
       }
     }
 
-    loadData();
+    loadRifas();
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  /* ═══ Select a rifa and load its boletas ═══ */
+  const handleSelectRifa = useCallback(async (selectedRifa: RifaPublica) => {
+    setRifa(selectedRifa);
+    setLoadingBoletas(true);
+    setActionError(null);
+    setBoletas([]);
+    setSelectedIds(new Map());
+
+    try {
+      const boletasRes = await api.getBoletas(selectedRifa.id);
+      if (boletasRes.data) {
+        setBoletas(boletasRes.data.boletas);
+        // Update rifa data with fresh info from boletas endpoint
+        setRifa(prev => prev ? {
+          ...prev,
+          boletas_vendidas: boletasRes.data!.rifa.boletas_vendidas,
+          total_boletas: boletasRes.data!.rifa.total_boletas,
+        } : prev);
+      }
+      setStep('selecting');
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Error al cargar boletas');
+    } finally {
+      setLoadingBoletas(false);
+    }
+  }, []);
+
+  /* ═══ Go back to rifa selection ═══ */
+  const handleBackToRifas = useCallback(() => {
+    setRifa(null);
+    setBoletas([]);
+    setSelectedIds(new Map());
+    setStep('pick-rifa');
+    setActionError(null);
+    setSearch('');
+    setPage(0);
   }, []);
 
   /* ═══ Handle bloqueo expiration ═══ */
@@ -551,7 +582,9 @@ export default function BoletasShop() {
   /* ═══ Reset to start ═══ */
   const handleReset = useCallback(() => {
     setSelectedIds(new Map());
-    setStep('selecting');
+    setRifa(null);
+    setBoletas([]);
+    setStep('pick-rifa');
     setReservaToken(null);
     setBloqueoHasta(null);
     setReservaResult(null);
@@ -561,16 +594,9 @@ export default function BoletasShop() {
     setSelectedMedioPago('');
     setNotas('');
     setLookupToken('');
-    // Refresh boletas
-    if (rifa) {
-      api
-        .getBoletas(rifa.id)
-        .then((res) => {
-          if (res.data) setBoletas(res.data.boletas);
-        })
-        .catch(() => {});
-    }
-  }, [rifa]);
+    setSearch('');
+    setPage(0);
+  }, []);
 
   /* ═══════════════════════════════════════════════════
      LOADING STATE
@@ -637,6 +663,17 @@ export default function BoletasShop() {
           </Link>
 
           <div className="flex items-center gap-3">
+            {/* Back to rifa selection */}
+            {step !== 'pick-rifa' && rifas.length > 1 && (
+              <button
+                onClick={handleBackToRifas}
+                className="text-[11px] sm:text-[12px] font-bold text-[#888] hover:text-[#E63946] transition-colors flex items-center gap-1.5"
+              >
+                <i className="fas fa-arrow-left text-[9px]" />
+                <span className="hidden sm:inline">Cambiar rifa</span>
+              </button>
+            )}
+
             {/* Bloqueo timer in navbar */}
             {step === 'checkout' && bloqueoHasta && !bloqueoTimer.expired && (
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FFF8E7] border border-[#FFB703]/30">
@@ -679,6 +716,207 @@ export default function BoletasShop() {
         </div>
       </nav>
 
+      {/* ═══════════════════════════════════════════════════
+         STEP: PICK RIFA
+      ═══════════════════════════════════════════════════ */}
+      {step === 'pick-rifa' && (
+        <main className="pt-16 min-h-screen bg-[#111113] relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#E63946_0%,transparent_50%)] opacity-[0.04]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_#FFB703_0%,transparent_50%)] opacity-[0.03]" />
+
+          <div className="relative z-10 max-w-[1100px] mx-auto px-4 sm:px-6 py-12 sm:py-16">
+            {/* Header */}
+            <div className="text-center mb-10 sm:mb-14 shop-fade-in">
+              <div className="inline-flex items-center gap-2 bg-[#E63946]/15 border border-[#E63946]/25 rounded-full px-4 py-2 mb-6">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E63946] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E63946]" />
+                </span>
+                <span className="text-[11px] font-bold tracking-[3px] uppercase text-[#FF8A93]">
+                  {rifas.length} {rifas.length === 1 ? 'rifa disponible' : 'rifas disponibles'}
+                </span>
+              </div>
+
+              <h1
+                className="text-[clamp(36px,7vw,72px)] leading-[0.9] uppercase tracking-wider text-white mb-4"
+                style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+              >
+                ELIGE TU{' '}
+                <span className="bg-gradient-to-r from-[#E63946] to-[#FF6B6B] bg-clip-text text-transparent">
+                  RIFA
+                </span>
+              </h1>
+              <p className="text-white/40 text-sm sm:text-base max-w-lg mx-auto">
+                Selecciona la rifa en la que quieres participar y elige tus boletas de la suerte.
+              </p>
+            </div>
+
+            {/* Rifa cards grid */}
+            {loadingBoletas ? (
+              <div className="flex flex-col items-center justify-center gap-4 py-20">
+                <div className="shop-loader" />
+                <p className="text-white/50 text-sm font-semibold animate-pulse">Cargando boletas…</p>
+              </div>
+            ) : (
+              <div className={`grid gap-6 sm:gap-8 ${rifas.length === 1 ? 'max-w-lg mx-auto' : rifas.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
+                {rifas.map((r, idx) => {
+                  const precioBoleta = parseFloat(r.precio_boleta) || 0;
+                  const vendidas = r.boletas_vendidas;
+                  const total = r.total_boletas;
+                  const disponibles = parseInt(r.boletas_disponibles) || 0;
+                  const porcentaje = total > 0 ? Math.round((vendidas / total) * 100) : 0;
+                  const sorteoDate = new Date(r.fecha_sorteo);
+                  const sorteoStr = sorteoDate.toLocaleDateString('es-CO', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  });
+
+                  return (
+                    <button
+                      key={r.id}
+                      onClick={() => handleSelectRifa(r)}
+                      disabled={loadingBoletas}
+                      className="shop-pop-in group relative bg-gradient-to-br from-[#1A1A1E] to-[#16161A] rounded-2xl border border-white/[0.06] hover:border-[#E63946]/40 transition-all duration-300 text-left overflow-hidden hover:scale-[1.02] hover:shadow-2xl hover:shadow-[#E63946]/10 focus:outline-none focus:ring-2 focus:ring-[#E63946]/30"
+                      style={{ animationDelay: `${idx * 100}ms` }}
+                    >
+                      {/* Image header */}
+                      <div className="relative h-40 sm:h-48 overflow-hidden">
+                        {r.imagen_url ? (
+                          <Image
+                            src={r.imagen_url}
+                            alt={r.nombre}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            sizes="(max-width: 640px) 100vw, 400px"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-[#E63946]/20 to-[#FFB703]/10 flex items-center justify-center">
+                            <i className="fas fa-truck text-5xl text-white/10" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1E] via-transparent to-transparent" />
+
+                        {/* Price badge */}
+                        <div className="absolute top-3 right-3 bg-[#E63946] rounded-full px-3 py-1.5 shadow-lg">
+                          <span className="text-[11px] font-black text-white tracking-wide">
+                            {formatCOP(precioBoleta)}
+                          </span>
+                        </div>
+
+                        {/* Urgency badge */}
+                        {porcentaje >= 70 && (
+                          <div className="absolute top-3 left-3 bg-[#FFB703] rounded-full px-3 py-1 shadow-lg">
+                            <span className="text-[10px] font-black text-black tracking-wider uppercase">
+                              🔥 ¡Se agota!
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Card body */}
+                      <div className="p-5 sm:p-6">
+                        {/* Premio principal */}
+                        {r.premio_principal && (
+                          <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#FFB703]/15 to-[#FFD700]/10 border border-[#FFB703]/20 rounded-full px-3 py-1 mb-3">
+                            <span className="text-sm">🏆</span>
+                            <span className="text-[10px] font-bold tracking-wider uppercase text-[#FFD700]">
+                              {r.premio_principal}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Name */}
+                        <h2
+                          className="text-xl sm:text-2xl uppercase tracking-wider text-white mb-2 leading-tight group-hover:text-[#FF8A93] transition-colors"
+                          style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                        >
+                          {r.nombre}
+                        </h2>
+
+                        {/* Description */}
+                        {r.descripcion && (
+                          <p className="text-white/35 text-[13px] line-clamp-2 mb-4 leading-relaxed">
+                            {r.descripcion}
+                          </p>
+                        )}
+
+                        {/* Stats row */}
+                        <div className="flex items-center gap-3 mb-4 text-[11px]">
+                          <div className="flex items-center gap-1.5 text-white/50">
+                            <i className="fas fa-calendar-alt text-[#E63946] text-[10px]" />
+                            <span className="font-semibold">{sorteoStr}</span>
+                          </div>
+                          <div className="w-px h-3 bg-white/10" />
+                          <div className="flex items-center gap-1.5 text-white/50">
+                            <i className="fas fa-ticket-alt text-[#FFB703] text-[10px]" />
+                            <span className="font-semibold">{disponibles.toLocaleString()} disponibles</span>
+                          </div>
+                        </div>
+
+                        {/* Progress bar */}
+                        <div className="mb-5">
+                          <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-1.5">
+                            <span className="text-white/30">Progreso</span>
+                            <span className="text-[#E63946]">{porcentaje}%</span>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-[#E63946] to-[#FF6B6B] transition-all duration-1000"
+                              style={{ width: `${porcentaje}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* CTA */}
+                        <div className="flex items-center justify-between">
+                          <span
+                            className="text-sm font-bold uppercase tracking-wider text-[#E63946] group-hover:text-white transition-colors"
+                            style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                          >
+                            Elegir Boletas →
+                          </span>
+                          <div className="w-8 h-8 rounded-full bg-[#E63946]/10 flex items-center justify-center group-hover:bg-[#E63946]/20 transition-colors">
+                            <i className="fas fa-chevron-right text-[#E63946] text-[10px] group-hover:translate-x-0.5 transition-transform" />
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Error in rifa selection */}
+            {actionError && step === 'pick-rifa' && (
+              <div className="mt-8 max-w-lg mx-auto bg-[#E63946]/10 border border-[#E63946]/20 rounded-xl px-5 py-4 flex items-center gap-3">
+                <i className="fas fa-exclamation-circle text-[#E63946]" />
+                <p className="text-[#FF8A93] text-sm font-semibold flex-1">{actionError}</p>
+              </div>
+            )}
+
+            {/* Trust footer */}
+            <div className="mt-12 sm:mt-16 flex flex-wrap justify-center gap-6 sm:gap-10 text-center opacity-40">
+              {[
+                { icon: 'fas fa-shield-alt', label: 'Compra segura' },
+                { icon: 'fas fa-lock', label: 'Datos protegidos' },
+                { icon: 'fas fa-headset', label: 'Soporte 24/7' },
+              ].map((t) => (
+                <div key={t.label} className="flex items-center gap-2">
+                  <i className={`${t.icon} text-white/60 text-xs`} />
+                  <span className="text-[11px] font-bold text-white/50 tracking-wider uppercase">{t.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+      )}
+
+      {/* ═══════════════════════════════════════════════════
+         MAIN CONTENT (after rifa selected)
+      ═══════════════════════════════════════════════════ */}
+      {step !== 'pick-rifa' && (
       <main className="pt-16 min-h-screen bg-[#FAFAFA]">
         {/* ═══ HERO BANNER ═══ */}
         <section className="relative bg-[#111113] overflow-hidden">
@@ -1800,6 +2038,7 @@ export default function BoletasShop() {
           </section>
         )}
       </main>
+      )}
     </>
   );
 }
