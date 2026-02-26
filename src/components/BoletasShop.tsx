@@ -247,6 +247,7 @@ export default function BoletasShop() {
   });
   const [selectedMedioPago, setSelectedMedioPago] = useState<string>('');
   const [notas, setNotas] = useState('');
+  const [formTouched, setFormTouched] = useState<Record<string, boolean>>({});
 
   /* ─── Lookup token state ─── */
   const [lookupToken, setLookupToken] = useState('');
@@ -268,6 +269,22 @@ export default function BoletasShop() {
 
   const soldPercent = rifa ? Math.round((rifa.boletas_vendidas / rifa.total_boletas) * 100) : 0;
   const availableCount = rifa ? parseInt(rifa.boletas_disponibles, 10) : 0;
+
+  /* ─── Form validation ─── */
+  const formErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    const { nombre, telefono, email, identificacion } = buyerData;
+    if (nombre.trim().length > 0 && nombre.trim().length < 2) errors.nombre = 'Mínimo 2 caracteres';
+    if (nombre.trim().length > 255) errors.nombre = 'Máximo 255 caracteres';
+    if (telefono.trim().length > 0 && telefono.trim().length < 7) errors.telefono = 'Mínimo 7 dígitos';
+    if (telefono.trim().length > 20) errors.telefono = 'Máximo 20 caracteres';
+    if (telefono.trim() && !/^[0-9+\-() ]+$/.test(telefono.trim())) errors.telefono = 'Solo números, +, -, (, ) y espacios';
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errors.email = 'Correo no válido';
+    if (identificacion.trim().length > 0 && identificacion.trim().length < 4) errors.identificacion = 'Mínimo 4 caracteres';
+    return errors;
+  }, [buyerData]);
+
+  const isFormValid = buyerData.nombre.trim().length >= 2 && buyerData.telefono.trim().length >= 7 && Object.keys(formErrors).length === 0;
 
   /* ─── Selected numbers for display ─── */
   const selectedNums = useMemo(() => {
@@ -522,8 +539,9 @@ export default function BoletasShop() {
   /* ═══ STEP 5: Crear reserva ═══ */
   const handleReservar = useCallback(async () => {
     if (!reservaToken) return;
-    if (!buyerData.nombre.trim() || !buyerData.telefono.trim()) {
-      setActionError('Nombre y teléfono son obligatorios.');
+    if (!isFormValid) {
+      setFormTouched({ nombre: true, telefono: true, email: true, identificacion: true, direccion: true });
+      setActionError('Por favor completa los campos obligatorios correctamente.');
       return;
     }
     setActionLoading(true);
@@ -553,7 +571,7 @@ export default function BoletasShop() {
     } finally {
       setActionLoading(false);
     }
-  }, [reservaToken, buyerData, selectedMedioPago, notas]);
+  }, [reservaToken, buyerData, selectedMedioPago, notas, isFormValid]);
 
   /* ═══ STEP 6: Consultar estado ═══ */
   const handleCheckStatus = useCallback(
@@ -591,6 +609,7 @@ export default function BoletasShop() {
     setEstadoReserva(null);
     setActionError(null);
     setBuyerData({ nombre: '', telefono: '', email: '', identificacion: '', direccion: '' });
+    setFormTouched({});
     setSelectedMedioPago('');
     setNotas('');
     setLookupToken('');
@@ -1272,250 +1291,473 @@ export default function BoletasShop() {
            STEP: CHECKOUT (After boletas are blocked)
         ═══════════════════════════════════════════════════ */}
         {step === 'checkout' && (
-          <section ref={checkoutRef} className="max-w-[700px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
-            <div className="bg-white rounded-2xl shadow-xl border border-black/[0.06] overflow-hidden shop-fade-in">
-              {/* Header with timer */}
-              <div className="bg-gradient-to-br from-[#111113] to-[#1a1a1f] px-6 py-6 relative overflow-hidden">
-                <div className="absolute inset-0 prize-shimmer pointer-events-none" />
-                <div className="relative">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3
-                        className="text-2xl sm:text-3xl tracking-wider uppercase text-white"
-                        style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-                      >
-                        COMPLETA TU RESERVA
-                      </h3>
-                      <p className="text-white/40 text-[12px] font-semibold mt-1">
-                        {selectedCount} boleta{selectedCount > 1 ? 's' : ''} seleccionada
-                        {selectedCount > 1 ? 's' : ''}
-                      </p>
-                    </div>
-                    <button
-                      onClick={handleCancelBloqueo}
-                      className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/20 transition-all"
-                    >
-                      <i className="fas fa-times text-sm" />
-                    </button>
-                  </div>
-
-                  {/* Bloqueo countdown bar */}
-                  {bloqueoHasta && !bloqueoTimer.expired && (
-                    <div className="bg-white/10 rounded-xl p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <i className="fas fa-clock text-[#FFB703] text-sm" />
-                          <span className="text-[11px] font-bold text-white/60 uppercase tracking-wider">
-                            Tiempo para completar
-                          </span>
-                        </div>
-                        <span
-                          className={`text-lg font-black tabular-nums ${
-                            bloqueoTimer.total < 120000
-                              ? 'text-[#E63946] animate-pulse'
-                              : 'text-[#FFB703]'
-                          }`}
-                          style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '2px' }}
-                        >
-                          {pad(bloqueoTimer.minutes)}:{pad(bloqueoTimer.seconds)}
-                        </span>
-                      </div>
-                      <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-1000 ${
-                            bloqueoTimer.total < 120000 ? 'bg-[#E63946]' : 'bg-[#FFB703]'
-                          }`}
-                          style={{
-                            width: `${Math.min(100, (bloqueoTimer.total / (15 * 60 * 1000)) * 100)}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
+          <section ref={checkoutRef} className="max-w-[900px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
+            <div className="shop-fade-in">
+              {/* ── Checkout Header ── */}
+              <div className="text-center mb-8">
+                <h2
+                  className="text-3xl sm:text-4xl tracking-wider uppercase text-[#1A1A1A]"
+                  style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                >
+                  COMPLETA TU <span className="text-truck-red">RESERVA</span>
+                </h2>
+                <p className="text-[#999] text-sm mt-2">
+                  Llena tus datos para asegurar {selectedCount > 1 ? 'tus' : 'tu'}{' '}
+                  {selectedCount} boleta{selectedCount > 1 ? 's' : ''}
+                </p>
               </div>
 
-              <div className="px-6 py-6 space-y-6">
-                {/* Selected boletas */}
-                <div>
-                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider block mb-3">
-                    Tus Boletas
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedNums.map((num) => (
-                      <span
-                        key={num}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#E63946]/[0.07] border border-[#E63946]/15 text-[#E63946] text-sm font-black tracking-wider"
-                        style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-                      >
-                        #{formatNumero(num, totalBoletas)}
+              {/* ── Timer Bar (if active) ── */}
+              {bloqueoHasta && !bloqueoTimer.expired && (
+                <div className="mb-6 bg-gradient-to-r from-[#111113] to-[#1a1a1f] rounded-2xl px-5 py-4 shadow-lg border border-white/[0.06]">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <i className="fas fa-clock text-[#FFB703] text-sm" />
+                      <span className="text-[11px] font-bold text-white/60 uppercase tracking-wider">
+                        Tiempo para completar
                       </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Price summary */}
-                <div className="bg-[#FAFAFA] rounded-xl p-4 space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#888]">{selectedCount} × Boleta</span>
-                    <span className="text-[#555] font-semibold">{formatCOP(precio)}</span>
-                  </div>
-                  <div className="h-px bg-black/[0.06]" />
-                  <div className="flex justify-between">
-                    <span className="text-[13px] font-bold text-[#1A1A1A]">Total a Pagar</span>
+                    </div>
                     <span
-                      className="text-2xl font-black text-[#E63946]"
-                      style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}
+                      className={`text-xl font-black tabular-nums ${
+                        bloqueoTimer.total < 120000
+                          ? 'text-[#E63946] animate-pulse'
+                          : 'text-[#FFB703]'
+                      }`}
+                      style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '2px' }}
                     >
-                      {formatCOP(totalAmount)}
+                      {pad(bloqueoTimer.minutes)}:{pad(bloqueoTimer.seconds)}
                     </span>
                   </div>
+                  <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-1000 ${
+                        bloqueoTimer.total < 120000 ? 'bg-[#E63946]' : 'bg-[#FFB703]'
+                      }`}
+                      style={{
+                        width: `${Math.min(100, (bloqueoTimer.total / (15 * 60 * 1000)) * 100)}%`,
+                      }}
+                    />
+                  </div>
                 </div>
+              )}
 
-                {/* Client form */}
-                <div className="space-y-4">
-                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider block">
-                    Tus Datos
-                  </label>
-                  {[
-                    {
-                      key: 'nombre',
-                      label: 'Nombre completo *',
-                      icon: 'fa-user',
-                      type: 'text',
-                      placeholder: 'Juan Pérez',
-                    },
-                    {
-                      key: 'identificacion',
-                      label: 'Cédula',
-                      icon: 'fa-id-card',
-                      type: 'text',
-                      placeholder: '1.234.567.890',
-                    },
-                    {
-                      key: 'telefono',
-                      label: 'WhatsApp / Teléfono *',
-                      icon: 'fa-whatsapp fab',
-                      type: 'tel',
-                      placeholder: '300 123 4567',
-                    },
-                    {
-                      key: 'email',
-                      label: 'Correo (opcional)',
-                      icon: 'fa-envelope',
-                      type: 'email',
-                      placeholder: 'correo@ejemplo.com',
-                    },
-                    {
-                      key: 'direccion',
-                      label: 'Dirección (opcional)',
-                      icon: 'fa-map-marker-alt',
-                      type: 'text',
-                      placeholder: 'Calle 123 #45-67, Ciudad',
-                    },
-                  ].map((field) => (
-                    <div key={field.key} className="relative">
-                      <i
-                        className={`${
-                          field.icon.includes('fab') ? field.icon : `fas ${field.icon}`
-                        } absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm`}
-                      />
-                      <input
-                        type={field.type}
-                        placeholder={field.placeholder}
-                        value={buyerData[field.key as keyof typeof buyerData]}
-                        onChange={(e) =>
-                          setBuyerData({ ...buyerData, [field.key]: e.target.value })
-                        }
-                        className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-black/[0.08] bg-white text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10 transition-all"
-                      />
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                {/* ══════════════════════════════════════
+                   LEFT COLUMN — Client Form (3/5)
+                ══════════════════════════════════════ */}
+                <div className="lg:col-span-3 space-y-5">
+                  {/* ── Section: Datos Personales ── */}
+                  <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
+                    <div className="flex items-center gap-3 px-5 py-4 border-b border-black/[0.04] bg-[#FAFAFA]">
+                      <div className="w-8 h-8 rounded-full bg-[#E63946]/10 flex items-center justify-center">
+                        <i className="fas fa-user text-[#E63946] text-xs" />
+                      </div>
+                      <div>
+                        <h4
+                          className="text-base tracking-wider uppercase text-[#1A1A1A]"
+                          style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                        >
+                          DATOS DEL COMPRADOR
+                        </h4>
+                        <p className="text-[10px] text-[#999] font-medium">
+                          Si ya has comprado antes, te identificamos automáticamente
+                        </p>
+                      </div>
                     </div>
-                  ))}
-                </div>
 
-                {/* Payment methods from API */}
-                {mediosPago.length > 0 && (
-                  <div>
-                    <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider block mb-3">
-                      Método de Pago
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {mediosPago.map((mp) => {
-                        const isActive = selectedMedioPago === mp.id;
-                        const iconMap: Record<string, string> = {
-                          Nequi: 'from-[#E20074] to-[#B0005C]',
-                          PSE: 'from-[#003DA5] to-[#002D7A]',
-                          Efectivo: 'from-[#34C759] to-[#2AAE4A]',
-                          'Tarjeta Crédito': 'from-[#1A1A1A] to-[#333]',
-                          'Tarjeta Débito': 'from-[#555] to-[#333]',
-                          Bancolombia: 'from-[#FDDA24] to-[#E6C420]',
-                          Daviplata: 'from-[#ED1C24] to-[#C0161E]',
-                        };
-                        const gradient = iconMap[mp.nombre] || 'from-[#888] to-[#666]';
-
-                        return (
-                          <button
-                            key={mp.id}
-                            type="button"
-                            onClick={() => setSelectedMedioPago(isActive ? '' : mp.id)}
-                            className={`flex items-center justify-center gap-2 px-3 py-3 rounded-xl border text-[12px] font-bold transition-all ${
-                              isActive
-                                ? 'border-[#E63946]/30 bg-[#E63946]/[0.06] text-[#E63946] ring-2 ring-[#E63946]/10'
-                                : 'border-black/[0.06] bg-[#FAFAFA] text-[#555] hover:border-black/15'
+                    <div className="p-5 space-y-4">
+                      {/* Nombre */}
+                      <div>
+                        <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
+                          Nombre Completo <span className="text-[#E63946]">*</span>
+                        </label>
+                        <div className="relative">
+                          <i className="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
+                          <input
+                            type="text"
+                            placeholder="Juan Carlos Pérez"
+                            value={buyerData.nombre}
+                            onChange={(e) => setBuyerData({ ...buyerData, nombre: e.target.value })}
+                            onBlur={() => setFormTouched({ ...formTouched, nombre: true })}
+                            className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
+                              formTouched.nombre && formErrors.nombre
+                                ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
+                                : formTouched.nombre && buyerData.nombre.trim().length >= 2
+                                ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
+                                : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
                             }`}
-                          >
-                            <div
-                              className={`w-2.5 h-2.5 rounded-full bg-gradient-to-r ${gradient}`}
-                            />
-                            {mp.nombre}
-                            {isActive && <i className="fas fa-check text-[9px] ml-auto" />}
-                          </button>
-                        );
-                      })}
+                          />
+                          {formTouched.nombre && buyerData.nombre.trim().length >= 2 && !formErrors.nombre && (
+                            <i className="fas fa-check-circle absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm" />
+                          )}
+                        </div>
+                        {formTouched.nombre && formErrors.nombre && (
+                          <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
+                            <i className="fas fa-exclamation-circle text-[9px]" />
+                            {formErrors.nombre}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Cédula */}
+                      <div>
+                        <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
+                          Cédula / Documento
+                          <span className="text-[10px] font-normal normal-case text-[#bbb] tracking-normal ml-1">(opcional)</span>
+                        </label>
+                        <div className="relative">
+                          <i className="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
+                          <input
+                            type="text"
+                            placeholder="1.234.567.890"
+                            value={buyerData.identificacion}
+                            onChange={(e) => setBuyerData({ ...buyerData, identificacion: e.target.value })}
+                            onBlur={() => setFormTouched({ ...formTouched, identificacion: true })}
+                            className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
+                              formTouched.identificacion && formErrors.identificacion
+                                ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
+                                : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
+                            }`}
+                          />
+                        </div>
+                        {formTouched.identificacion && formErrors.identificacion && (
+                          <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
+                            <i className="fas fa-exclamation-circle text-[9px]" />
+                            {formErrors.identificacion}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Teléfono */}
+                      <div>
+                        <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
+                          <i className="fab fa-whatsapp text-green-500 text-xs" /> WhatsApp / Teléfono <span className="text-[#E63946]">*</span>
+                        </label>
+                        <div className="relative">
+                          <i className="fab fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
+                          <input
+                            type="tel"
+                            placeholder="300 123 4567"
+                            value={buyerData.telefono}
+                            onChange={(e) => setBuyerData({ ...buyerData, telefono: e.target.value })}
+                            onBlur={() => setFormTouched({ ...formTouched, telefono: true })}
+                            className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
+                              formTouched.telefono && formErrors.telefono
+                                ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
+                                : formTouched.telefono && buyerData.telefono.trim().length >= 7 && !formErrors.telefono
+                                ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
+                                : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
+                            }`}
+                          />
+                          {formTouched.telefono && buyerData.telefono.trim().length >= 7 && !formErrors.telefono && (
+                            <i className="fas fa-check-circle absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm" />
+                          )}
+                        </div>
+                        {formTouched.telefono && formErrors.telefono && (
+                          <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
+                            <i className="fas fa-exclamation-circle text-[9px]" />
+                            {formErrors.telefono}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Email */}
+                      <div>
+                        <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
+                          Correo Electrónico
+                          <span className="text-[10px] font-normal normal-case text-[#bbb] tracking-normal ml-1">(opcional)</span>
+                        </label>
+                        <div className="relative">
+                          <i className="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
+                          <input
+                            type="email"
+                            placeholder="correo@ejemplo.com"
+                            value={buyerData.email}
+                            onChange={(e) => setBuyerData({ ...buyerData, email: e.target.value })}
+                            onBlur={() => setFormTouched({ ...formTouched, email: true })}
+                            className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
+                              formTouched.email && formErrors.email
+                                ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
+                                : formTouched.email && buyerData.email.trim() && !formErrors.email
+                                ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
+                                : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
+                            }`}
+                          />
+                          {formTouched.email && buyerData.email.trim() && !formErrors.email && (
+                            <i className="fas fa-check-circle absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm" />
+                          )}
+                        </div>
+                        {formTouched.email && formErrors.email && (
+                          <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
+                            <i className="fas fa-exclamation-circle text-[9px]" />
+                            {formErrors.email}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Dirección */}
+                      <div>
+                        <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
+                          Dirección
+                          <span className="text-[10px] font-normal normal-case text-[#bbb] tracking-normal ml-1">(opcional)</span>
+                        </label>
+                        <div className="relative">
+                          <i className="fas fa-map-marker-alt absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
+                          <input
+                            type="text"
+                            placeholder="Calle 123 #45-67, Ciudad"
+                            value={buyerData.direccion}
+                            onChange={(e) => setBuyerData({ ...buyerData, direccion: e.target.value })}
+                            className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-black/[0.08] bg-white text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10 transition-all"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Returning client hint */}
+                    <div className="px-5 pb-4">
+                      <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                        <i className="fas fa-info-circle text-blue-400 text-xs mt-0.5" />
+                        <p className="text-[11px] text-blue-600/80 leading-relaxed">
+                          <strong>¿Ya compraste antes?</strong> Ingresa el mismo teléfono o cédula y tu historial de compras se vinculará automáticamente.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                )}
 
-                {/* Notas */}
-                <div>
-                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider block mb-2">
-                    Notas (opcional)
-                  </label>
-                  <textarea
-                    value={notas}
-                    onChange={(e) => setNotas(e.target.value)}
-                    placeholder="Información adicional sobre tu pago..."
-                    maxLength={1000}
-                    rows={2}
-                    className="w-full px-4 py-3 rounded-xl border border-black/[0.08] bg-white text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10 transition-all resize-none"
-                  />
+                  {/* ── Section: Método de Pago ── */}
+                  {mediosPago.length > 0 && (
+                    <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
+                      <div className="flex items-center gap-3 px-5 py-4 border-b border-black/[0.04] bg-[#FAFAFA]">
+                        <div className="w-8 h-8 rounded-full bg-[#FFB703]/10 flex items-center justify-center">
+                          <i className="fas fa-credit-card text-[#FFB703] text-xs" />
+                        </div>
+                        <div>
+                          <h4
+                            className="text-base tracking-wider uppercase text-[#1A1A1A]"
+                            style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                          >
+                            MÉTODO DE PAGO
+                          </h4>
+                          <p className="text-[10px] text-[#999] font-medium">
+                            Selecciona cómo vas a pagar
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="p-5">
+                        <div className="grid grid-cols-2 gap-2.5">
+                          {mediosPago.map((mp) => {
+                            const isActive = selectedMedioPago === mp.id;
+                            const iconMap: Record<string, { gradient: string; icon: string }> = {
+                              Nequi: { gradient: 'from-[#E20074] to-[#B0005C]', icon: 'fas fa-mobile-alt' },
+                              PSE: { gradient: 'from-[#003DA5] to-[#002D7A]', icon: 'fas fa-university' },
+                              Efectivo: { gradient: 'from-[#34C759] to-[#2AAE4A]', icon: 'fas fa-money-bill-wave' },
+                              'Tarjeta Crédito': { gradient: 'from-[#1A1A1A] to-[#333]', icon: 'fas fa-credit-card' },
+                              'Tarjeta Débito': { gradient: 'from-[#555] to-[#333]', icon: 'far fa-credit-card' },
+                              Bancolombia: { gradient: 'from-[#FDDA24] to-[#E6C420]', icon: 'fas fa-building-columns' },
+                              Daviplata: { gradient: 'from-[#ED1C24] to-[#C0161E]', icon: 'fas fa-wallet' },
+                            };
+                            const config = iconMap[mp.nombre] || { gradient: 'from-[#888] to-[#666]', icon: 'fas fa-wallet' };
+
+                            return (
+                              <button
+                                key={mp.id}
+                                type="button"
+                                onClick={() => setSelectedMedioPago(isActive ? '' : mp.id)}
+                                className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl border text-left transition-all ${
+                                  isActive
+                                    ? 'border-[#E63946]/30 bg-[#E63946]/[0.04] ring-2 ring-[#E63946]/10 shadow-sm'
+                                    : 'border-black/[0.06] bg-[#FAFAFA] hover:border-black/15 hover:bg-white'
+                                }`}
+                              >
+                                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${config.gradient} flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                                  <i className={`${config.icon} text-white text-xs`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-[12px] font-bold truncate ${isActive ? 'text-[#E63946]' : 'text-[#333]'}`}>
+                                    {mp.nombre}
+                                  </p>
+                                  {mp.descripcion && (
+                                    <p className="text-[10px] text-[#999] truncate">{mp.descripcion}</p>
+                                  )}
+                                </div>
+                                {isActive && (
+                                  <i className="fas fa-check-circle text-[#E63946] text-sm flex-shrink-0" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Section: Notas ── */}
+                  <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
+                    <div className="flex items-center gap-3 px-5 py-4 border-b border-black/[0.04] bg-[#FAFAFA]">
+                      <div className="w-8 h-8 rounded-full bg-[#6366F1]/10 flex items-center justify-center">
+                        <i className="fas fa-sticky-note text-[#6366F1] text-xs" />
+                      </div>
+                      <div>
+                        <h4
+                          className="text-base tracking-wider uppercase text-[#1A1A1A]"
+                          style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                        >
+                          NOTAS ADICIONALES
+                        </h4>
+                        <p className="text-[10px] text-[#999] font-medium">
+                          Información extra sobre tu pago (opcional)
+                        </p>
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      <textarea
+                        value={notas}
+                        onChange={(e) => setNotas(e.target.value)}
+                        placeholder="Ej: Pagaré por Nequi mañana a primera hora, envío comprobante por WhatsApp..."
+                        maxLength={1000}
+                        rows={3}
+                        className="w-full px-4 py-3 rounded-xl border border-black/[0.08] bg-white text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10 transition-all resize-none"
+                      />
+                      <p className="text-[10px] text-[#ccc] text-right mt-1">{notas.length}/1000</p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* CTA */}
-                <button
-                  onClick={handleReservar}
-                  disabled={
-                    actionLoading || !buyerData.nombre.trim() || !buyerData.telefono.trim()
-                  }
-                  className="w-full btn-primary text-[14px] py-4 justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {actionLoading ? (
-                    <>
-                      <i className="fas fa-spinner fa-spin text-xs" />
-                      PROCESANDO...
-                    </>
-                  ) : (
-                    <>
-                      <i className="fas fa-lock text-xs" />
-                      CONFIRMAR RESERVA — {formatCOP(totalAmount)}
-                    </>
-                  )}
-                </button>
+                {/* ══════════════════════════════════════
+                   RIGHT COLUMN — Order Summary (2/5)
+                ══════════════════════════════════════ */}
+                <div className="lg:col-span-2">
+                  <div className="lg:sticky lg:top-[72px] space-y-5">
+                    {/* Order summary card */}
+                    <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
+                      <div className="bg-gradient-to-br from-[#111113] to-[#1a1a1f] px-5 py-5 relative overflow-hidden">
+                        <div className="absolute inset-0 prize-shimmer pointer-events-none" />
+                        <div className="relative">
+                          <h4
+                            className="text-lg tracking-wider uppercase text-white mb-1"
+                            style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                          >
+                            RESUMEN DE COMPRA
+                          </h4>
+                          <p className="text-white/40 text-[11px] font-semibold">
+                            {rifa?.nombre}
+                          </p>
+                        </div>
+                      </div>
 
-                <p className="text-center text-[11px] text-[#bbb]">
-                  <i className="fas fa-shield-halved text-[9px] mr-1" />
-                  Tienes 72 horas para enviar tu comprobante de pago.
-                </p>
+                      <div className="p-5 space-y-4">
+                        {/* Boletas */}
+                        <div>
+                          <label className="text-[10px] font-bold text-[#999] uppercase tracking-wider block mb-2">
+                            Boletas Seleccionadas
+                          </label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {selectedNums.map((num) => (
+                              <span
+                                key={num}
+                                className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#E63946]/[0.07] border border-[#E63946]/15 text-[#E63946] text-[12px] font-black tracking-wider"
+                                style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                              >
+                                #{formatNumero(num, totalBoletas)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Prize reminder */}
+                        {rifa?.premio_principal && (
+                          <div className="flex items-center gap-2 bg-gradient-to-r from-[#FFB703]/10 to-[#FFD700]/5 border border-[#FFB703]/15 rounded-xl px-3 py-2.5">
+                            <span className="text-lg">🏆</span>
+                            <div>
+                              <p className="text-[10px] font-bold text-[#B87A00] uppercase tracking-wider">Premio Mayor</p>
+                              <p className="text-[12px] font-bold text-[#8B6914]">{rifa.premio_principal}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Price breakdown */}
+                        <div className="space-y-2 pt-2 border-t border-black/[0.04]">
+                          <div className="flex justify-between text-[13px]">
+                            <span className="text-[#888]">{selectedCount} × Boleta</span>
+                            <span className="text-[#555] font-semibold">{formatCOP(precio)}</span>
+                          </div>
+                          {selectedMedioPago && (
+                            <div className="flex justify-between text-[13px]">
+                              <span className="text-[#888]">Método</span>
+                              <span className="text-[#555] font-semibold">
+                                {mediosPago.find(m => m.id === selectedMedioPago)?.nombre || '—'}
+                              </span>
+                            </div>
+                          )}
+                          <div className="h-px bg-black/[0.06] my-1" />
+                          <div className="flex justify-between items-end">
+                            <span className="text-[13px] font-bold text-[#1A1A1A]">Total a Pagar</span>
+                            <span
+                              className="text-3xl font-black text-[#E63946]"
+                              style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}
+                            >
+                              {formatCOP(totalAmount)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* CTA Button */}
+                    <button
+                      onClick={handleReservar}
+                      disabled={actionLoading || !isFormValid}
+                      className="w-full btn-primary text-[14px] py-4 justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#E63946]/20"
+                    >
+                      {actionLoading ? (
+                        <>
+                          <i className="fas fa-spinner fa-spin text-xs" />
+                          PROCESANDO...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-lock text-xs" />
+                          CONFIRMAR RESERVA — {formatCOP(totalAmount)}
+                        </>
+                      )}
+                    </button>
+
+                    {/* Validation summary */}
+                    {!isFormValid && Object.keys(formTouched).length > 0 && (
+                      <div className="bg-[#FFF5F5] border border-[#E63946]/10 rounded-xl px-4 py-3">
+                        <p className="text-[11px] text-[#E63946]/80 font-medium flex items-center gap-1.5">
+                          <i className="fas fa-info-circle text-[10px]" />
+                          Completa nombre y teléfono para continuar
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Cancel button */}
+                    <button
+                      onClick={handleCancelBloqueo}
+                      className="w-full text-center text-[12px] text-[#999] hover:text-[#E63946] font-semibold transition-colors py-2"
+                    >
+                      <i className="fas fa-arrow-left text-[10px] mr-1" />
+                      Cancelar y volver a seleccionar
+                    </button>
+
+                    {/* Trust badges */}
+                    <div className="flex flex-col items-center gap-2 pt-2">
+                      {[
+                        { icon: 'fa-shield-halved', text: '72 horas para enviar comprobante' },
+                        { icon: 'fa-clock', text: 'Tu reserva queda guardada' },
+                        { icon: 'fa-whatsapp fab', text: 'Soporte por WhatsApp' },
+                      ].map((badge) => (
+                        <div key={badge.text} className="flex items-center gap-2">
+                          <i className={`${badge.icon.includes('fab') ? badge.icon : `fas ${badge.icon}`} text-[#ccc] text-[10px]`} />
+                          <span className="text-[10px] text-[#bbb] font-medium">{badge.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
