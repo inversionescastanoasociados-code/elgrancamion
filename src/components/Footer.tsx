@@ -11,14 +11,25 @@ export default function Footer() {
       <div className="max-w-[1000px] mx-auto px-6">
         {/* Top: Logo + brand */}
         <div className="flex flex-col items-center gap-4 mb-10">
-          <div className="relative w-16 h-16 sm:w-20 sm:h-20">
-            <Image
-              src="/uploads/logos/logo-blanco.png"
-              alt="Gran Rifa Camionera"
-              fill
-              className="object-contain"
-              sizes="80px"
-            />
+          <div className="flex items-center gap-2">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20">
+              <Image
+                src="/uploads/logos/logo-principal.png"
+                alt="Gran Rifa Camionera"
+                fill
+                className="object-contain drop-shadow-lg"
+                sizes="80px"
+              />
+            </div>
+            <div className="relative w-12 h-12 sm:w-14 sm:h-14 opacity-50">
+              <Image
+                src="/uploads/logos/logo-blanco.png"
+                alt=""
+                fill
+                className="object-contain"
+                sizes="56px"
+              />
+            </div>
           </div>
           <span
             className="text-2xl tracking-wider text-white/80"

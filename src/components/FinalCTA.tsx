@@ -14,14 +14,25 @@ export default function FinalCTA() {
       <div className="max-w-[700px] mx-auto px-6 relative">
         <div className="text-center">
           {/* Logo watermark */}
-          <div className="relative w-20 h-20 mx-auto mb-8 opacity-40">
-            <Image
-              src="/uploads/logos/logo-blanco.png"
-              alt=""
-              fill
-              className="object-contain"
-              sizes="80px"
-            />
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <div className="relative w-20 h-20 opacity-80">
+              <Image
+                src="/uploads/logos/logo-principal.png"
+                alt=""
+                fill
+                className="object-contain drop-shadow-lg"
+                sizes="80px"
+              />
+            </div>
+            <div className="relative w-14 h-14 opacity-30">
+              <Image
+                src="/uploads/logos/logo-blanco.png"
+                alt=""
+                fill
+                className="object-contain"
+                sizes="56px"
+              />
+            </div>
           </div>
 
           {/* Eyebrow */}

@@ -60,14 +60,23 @@ export default function Hero() {
           <div className="w-full lg:w-[50%] text-center lg:text-left">
 
             {/* Logo mark */}
-            <div className="mb-5 flex justify-center lg:justify-start">
-              <div className="relative w-14 h-14 sm:w-16 sm:h-16 opacity-80">
+            <div className="mb-5 flex items-center gap-2 justify-center lg:justify-start">
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20">
                 <Image
-                  src="/uploads/logos/logo-blanco.png"
+                  src="/uploads/logos/logo-principal.png"
                   alt="Gran Rifa Camionera"
                   fill
+                  className="object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)]"
+                  sizes="80px"
+                />
+              </div>
+              <div className="relative w-12 h-12 sm:w-14 sm:h-14 opacity-60">
+                <Image
+                  src="/uploads/logos/logo-blanco.png"
+                  alt=""
+                  fill
                   className="object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]"
-                  sizes="64px"
+                  sizes="56px"
                 />
               </div>
             </div>

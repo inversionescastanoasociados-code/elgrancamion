@@ -34,15 +34,24 @@ export default function Navbar() {
     >
       <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between">
         {/* Brand with Logo */}
-        <a href="#inicio" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 sm:w-11 sm:h-11 flex-shrink-0 transition-transform duration-300 group-hover:scale-105">
+        <a href="#inicio" className="flex items-center gap-2.5 group">
+          <div className="relative w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 transition-transform duration-300 group-hover:scale-105">
             <Image
-              src={scrolled ? '/uploads/logos/logo-negro.png' : '/uploads/logos/logo-blanco.png'}
+              src="/uploads/logos/logo-principal.png"
               alt="Gran Rifa Camionera"
               fill
-              className="object-contain transition-opacity duration-300"
-              sizes="44px"
+              className="object-contain drop-shadow-sm"
+              sizes="48px"
               priority
+            />
+          </div>
+          <div className="relative w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 -ml-1 opacity-70 transition-transform duration-300 group-hover:scale-105">
+            <Image
+              src={scrolled ? '/uploads/logos/logo-negro.png' : '/uploads/logos/logo-blanco.png'}
+              alt=""
+              fill
+              className="object-contain transition-opacity duration-300"
+              sizes="36px"
             />
           </div>
           <span

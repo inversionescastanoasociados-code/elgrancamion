@@ -83,7 +83,56 @@ interface EstadoReserva {
   created_at: string;
 }
 
-type ShopStep = 'pick-rifa' | 'selecting' | 'blocking' | 'checkout' | 'reserving' | 'confirmed' | 'status';
+/* ── Cédula lookup types ── */
+interface CedulaAbonoInfo {
+  monto: number;
+  moneda: string;
+  estado: string;
+  referencia: string | null;
+  metodo_pago: string;
+  notas: string | null;
+  fecha: string;
+}
+
+interface CedulaBoletaInfo {
+  numero: number;
+  estado: string;
+  qr_hash: string | null;
+  qr_url: string | null;
+  precio_boleta: number;
+  total_pagado_boleta: number;
+  saldo_pendiente_boleta: number;
+  porcentaje_pagado: number;
+  abonos: CedulaAbonoInfo[];
+}
+
+interface CedulaVenta {
+  venta_id: string;
+  rifa_nombre: string;
+  premio_principal: string | null;
+  fecha_sorteo: string;
+  estado_venta: string;
+  monto_total: number;
+  abono_total: number;
+  saldo_pendiente: number;
+  medio_pago: string | null;
+  created_at: string;
+  expires_at: string | null;
+  boletas: CedulaBoletaInfo[];
+}
+
+interface CedulaLookupResult {
+  cliente: {
+    nombre: string;
+    telefono: string;
+    email: string | null;
+    identificacion: string;
+  };
+  ventas: CedulaVenta[];
+  total_ventas: number;
+}
+
+type ShopStep = 'pick-rifa' | 'selecting' | 'blocking' | 'checkout' | 'reserving' | 'confirmed' | 'status' | 'mi-cuenta';
 
 /* ═══════════════════════════════════════════════════
    HELPERS
@@ -206,6 +255,8 @@ const api = {
     }),
   getEstado: (token: string) =>
     apiCall<EstadoReserva>(`/api/ventas-online/reservas/${token}/estado`),
+  consultaCedula: (cedula: string) =>
+    apiCall<CedulaLookupResult>(`/api/ventas-online/consulta/cedula/${encodeURIComponent(cedula)}`),
 };
 
 /* ═══════════════════════════════════════════════════
@@ -251,6 +302,11 @@ export default function BoletasShop() {
 
   /* ─── Lookup token state ─── */
   const [lookupToken, setLookupToken] = useState('');
+
+  /* ─── Cédula lookup state ─── */
+  const [lookupCedula, setLookupCedula] = useState('');
+  const [cedulaResult, setCedulaResult] = useState<CedulaLookupResult | null>(null);
+  const [selectedBoletaView, setSelectedBoletaView] = useState<{ venta: CedulaVenta; boleta: CedulaBoletaInfo } | null>(null);
 
   /* ─── Refs ─── */
   const gridRef = useRef<HTMLDivElement>(null);
@@ -597,6 +653,45 @@ export default function BoletasShop() {
     [reservaToken, lookupToken]
   );
 
+  /* ═══ Cédula lookup ═══ */
+  const handleCedulaLookup = useCallback(async (cedulaToCheck?: string) => {
+    const cedula = (cedulaToCheck || lookupCedula).trim().replace(/\D/g, '');
+    if (!cedula || cedula.length < 4) {
+      setActionError('Ingresa un número de cédula válido (mínimo 4 dígitos).');
+      return;
+    }
+    setActionLoading(true);
+    setActionError(null);
+    setCedulaResult(null);
+    setSelectedBoletaView(null);
+
+    try {
+      const res = await api.consultaCedula(cedula);
+      if (res.data) {
+        // Normalize response: ensure cliente and ventas exist
+        const raw = res.data as unknown as Record<string, unknown>;
+        const normalized: CedulaLookupResult = {
+          cliente: (raw.cliente as CedulaLookupResult['cliente']) || {
+            nombre: 'Sin nombre',
+            telefono: '',
+            email: null,
+            identificacion: cedula,
+          },
+          ventas: Array.isArray(raw.ventas) ? (raw.ventas as CedulaVenta[]) : [],
+          total_ventas: typeof raw.total_ventas === 'number' ? raw.total_ventas : (Array.isArray(raw.ventas) ? (raw.ventas as CedulaVenta[]).length : 0),
+        };
+        setCedulaResult(normalized);
+        setStep('mi-cuenta');
+      } else {
+        setActionError('No se encontraron compras con esa cédula.');
+      }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'No se encontraron compras con esa cédula');
+    } finally {
+      setActionLoading(false);
+    }
+  }, [lookupCedula]);
+
   /* ═══ Reset to start ═══ */
   const handleReset = useCallback(() => {
     setSelectedIds(new Map());
@@ -607,12 +702,15 @@ export default function BoletasShop() {
     setBloqueoHasta(null);
     setReservaResult(null);
     setEstadoReserva(null);
+    setCedulaResult(null);
+    setSelectedBoletaView(null);
     setActionError(null);
     setBuyerData({ nombre: '', telefono: '', email: '', identificacion: '', direccion: '' });
     setFormTouched({});
     setSelectedMedioPago('');
     setNotas('');
     setLookupToken('');
+    setLookupCedula('');
     setSearch('');
     setPage(0);
   }, []);
@@ -662,15 +760,24 @@ export default function BoletasShop() {
       {/* ═══ SHOP NAVBAR ═══ */}
       <nav className="fixed top-0 left-0 right-0 z-50 py-3 bg-white/95 backdrop-blur-xl border-b border-black/[0.06] shadow-sm">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="relative w-10 h-10 sm:w-11 sm:h-11 flex-shrink-0">
               <Image
-                src="/uploads/logos/logo-negro.png"
+                src="/uploads/logos/logo-principal.png"
                 alt="Gran Rifa Camionera"
                 fill
-                className="object-contain"
-                sizes="40px"
+                className="object-contain drop-shadow-sm"
+                sizes="44px"
                 priority
+              />
+            </div>
+            <div className="relative w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 -ml-1 opacity-60">
+              <Image
+                src="/uploads/logos/logo-negro.png"
+                alt=""
+                fill
+                className="object-contain"
+                sizes="32px"
               />
             </div>
             <span
@@ -725,11 +832,39 @@ export default function BoletasShop() {
                 </span>
               </button>
             )}
+
+            {/* Mi Cuenta button */}
+            {(step === 'pick-rifa' || step === 'selecting') && (
+              <button
+                onClick={() => {
+                  setStep('mi-cuenta');
+                  setActionError(null);
+                  setCedulaResult(null);
+                  setSelectedBoletaView(null);
+                }}
+                className="text-[11px] sm:text-[12px] font-bold text-[#555] hover:text-[#E63946] transition-colors flex items-center gap-1.5"
+              >
+                <i className="fas fa-user-circle text-[12px]" />
+                <span className="hidden sm:inline">Mi Cuenta</span>
+              </button>
+            )}
+
+            {/* Back from mi-cuenta */}
+            {step === 'mi-cuenta' && (
+              <button
+                onClick={handleReset}
+                className="text-[11px] sm:text-[12px] font-bold text-[#888] hover:text-[#E63946] transition-colors flex items-center gap-1.5"
+              >
+                <i className="fas fa-arrow-left text-[9px]" />
+                <span className="hidden sm:inline">Volver</span>
+              </button>
+            )}
+
             <Link
               href="/"
               className="text-[13px] text-[#888] hover:text-[#333] transition-colors font-semibold hidden sm:block"
             >
-              ← Volver
+              ← Inicio
             </Link>
           </div>
         </div>
@@ -2250,35 +2385,598 @@ export default function BoletasShop() {
                 </a>
               </div>
 
-              {/* Lookup token section */}
+              {/* Lookup section — Token + Cédula */}
               <div className="mt-10 pt-8 border-t border-white/10">
-                <p className="text-white/30 text-[11px] font-bold uppercase tracking-wider mb-3">
-                  ¿Ya tienes una reserva?
+                <p className="text-white/30 text-[11px] font-bold uppercase tracking-wider mb-4">
+                  ¿Ya compraste? Consulta tu estado
                 </p>
-                <div className="flex gap-2 max-w-md mx-auto">
-                  <input
-                    type="text"
-                    placeholder="Ingresa tu token de reserva..."
-                    value={lookupToken}
-                    onChange={(e) => setLookupToken(e.target.value)}
-                    className="flex-1 px-4 py-3 rounded-xl bg-white/10 border border-white/10 text-white text-sm font-mono placeholder:text-white/25 focus:outline-none focus:border-white/25 transition-all"
-                  />
-                  <button
-                    onClick={() => handleCheckStatus()}
-                    disabled={!lookupToken.trim() || actionLoading}
-                    className="px-5 py-3 rounded-xl bg-white/15 text-white text-sm font-bold hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                  >
-                    {actionLoading ? (
-                      <i className="fas fa-spinner fa-spin" />
-                    ) : (
-                      <i className="fas fa-search" />
-                    )}
-                  </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
+                  {/* Token lookup */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Token de reserva..."
+                      value={lookupToken}
+                      onChange={(e) => setLookupToken(e.target.value)}
+                      className="flex-1 px-3 py-3 rounded-xl bg-white/10 border border-white/10 text-white text-sm font-mono placeholder:text-white/25 focus:outline-none focus:border-white/25 transition-all"
+                    />
+                    <button
+                      onClick={() => handleCheckStatus()}
+                      disabled={!lookupToken.trim() || actionLoading}
+                      className="px-4 py-3 rounded-xl bg-white/15 text-white text-sm font-bold hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      {actionLoading ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-search" />}
+                    </button>
+                  </div>
+                  {/* Cédula lookup */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="Nº de cédula..."
+                      value={lookupCedula}
+                      onChange={(e) => setLookupCedula(e.target.value.replace(/\D/g, ''))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleCedulaLookup();
+                      }}
+                      className="flex-1 px-3 py-3 rounded-xl bg-white/10 border border-white/10 text-white text-sm font-mono placeholder:text-white/25 focus:outline-none focus:border-white/25 transition-all"
+                    />
+                    <button
+                      onClick={() => handleCedulaLookup()}
+                      disabled={!lookupCedula.trim() || actionLoading}
+                      className="px-4 py-3 rounded-xl bg-[#E63946]/80 text-white text-sm font-bold hover:bg-[#E63946] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      {actionLoading ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-id-card" />}
+                    </button>
+                  </div>
                 </div>
+                <p className="text-white/20 text-[10px] mt-2">
+                  Busca por token de reserva o número de cédula
+                </p>
               </div>
             </div>
           </section>
         )}
+
+        {/* ═══════════════════════════════════════════════════
+           STEP: MI CUENTA (Cédula lookup)
+        ═══════════════════════════════════════════════════ */}
+        {step === 'mi-cuenta' && (
+          <section className="max-w-[900px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
+            <div className="shop-fade-in">
+              {/* Header */}
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#E63946]/10 mb-4">
+                  <i className="fas fa-user-circle text-[#E63946] text-2xl" />
+                </div>
+                <h2
+                  className="text-3xl sm:text-4xl tracking-wider uppercase text-[#1A1A1A]"
+                  style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                >
+                  MI <span className="text-truck-red">CUENTA</span>
+                </h2>
+                <p className="text-[#999] text-sm mt-2">
+                  Consulta el estado de tus compras y boletas
+                </p>
+              </div>
+
+              {/* Search box */}
+              {!cedulaResult && (
+                <div className="max-w-md mx-auto mb-8">
+                  <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm p-6 space-y-4">
+                    <label className="text-[11px] font-bold text-[#666] uppercase tracking-wider block">
+                      Ingresa tu número de cédula
+                    </label>
+                    <div className="relative">
+                      <i className="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="1.234.567.890"
+                        value={lookupCedula}
+                        onChange={(e) => setLookupCedula(e.target.value.replace(/\D/g, ''))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleCedulaLookup();
+                        }}
+                        className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-black/[0.08] bg-white text-[#1A1A1A] text-lg font-mono font-semibold placeholder:text-[#ccc] focus:outline-none focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10 transition-all tracking-wider"
+                      />
+                    </div>
+                    <button
+                      onClick={() => handleCedulaLookup()}
+                      disabled={!lookupCedula.trim() || actionLoading}
+                      className="w-full btn-primary text-[13px] py-3.5 justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {actionLoading ? (
+                        <>
+                          <i className="fas fa-spinner fa-spin text-xs" />
+                          BUSCANDO...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-search text-xs" />
+                          CONSULTAR MIS COMPRAS
+                        </>
+                      )}
+                    </button>
+
+                    {/* Also support token lookup */}
+                    <div className="pt-3 border-t border-black/[0.04]">
+                      <p className="text-[10px] text-[#bbb] font-bold uppercase tracking-wider mb-2 text-center">
+                        O busca por token de reserva
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Token de reserva..."
+                          value={lookupToken}
+                          onChange={(e) => setLookupToken(e.target.value)}
+                          className="flex-1 px-3 py-2.5 rounded-lg border border-black/[0.06] bg-[#FAFAFA] text-[#1A1A1A] text-xs font-mono placeholder:text-[#ccc] focus:outline-none focus:border-[#E63946]/40 transition-all"
+                        />
+                        <button
+                          onClick={() => handleCheckStatus()}
+                          disabled={!lookupToken.trim() || actionLoading}
+                          className="px-4 py-2.5 rounded-lg bg-[#111] text-white text-xs font-bold hover:bg-[#333] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        >
+                          <i className="fas fa-search" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Error */}
+                  {actionError && (
+                    <div className="mt-4 bg-[#FFF5F5] border border-[#E63946]/10 rounded-xl px-4 py-3 flex items-center gap-2">
+                      <i className="fas fa-exclamation-circle text-[#E63946] text-sm" />
+                      <p className="text-[#E63946] text-sm font-medium flex-1">{actionError}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ─── Cédula Results ─── */}
+              {cedulaResult && !selectedBoletaView && (
+                <div className="space-y-6">
+                  {/* Client info card */}
+                  <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
+                    <div className="bg-gradient-to-br from-[#111113] to-[#1a1a1f] px-6 py-5 flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                        <i className="fas fa-user text-white/60 text-xl" />
+                      </div>
+                      <div>
+                        <h3
+                          className="text-xl tracking-wider uppercase text-white"
+                          style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                        >
+                          {cedulaResult.cliente?.nombre || 'Cliente'}
+                        </h3>
+                        <div className="flex items-center gap-3 text-[11px] text-white/40 font-semibold mt-1">
+                          <span><i className="fas fa-id-card mr-1" /> CC {cedulaResult.cliente?.identificacion || lookupCedula}</span>
+                          {cedulaResult.cliente?.telefono && <span><i className="fas fa-phone mr-1" /> {cedulaResult.cliente.telefono}</span>}
+                          {cedulaResult.cliente?.email && (
+                            <span className="hidden sm:inline"><i className="fas fa-envelope mr-1" /> {cedulaResult.cliente.email}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="px-6 py-3 bg-[#FAFAFA] flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-[#999] uppercase tracking-wider">
+                        {cedulaResult.total_ventas ?? cedulaResult.ventas?.length ?? 0} compra{(cedulaResult.total_ventas ?? cedulaResult.ventas?.length ?? 0) !== 1 ? 's' : ''} encontrada{(cedulaResult.total_ventas ?? cedulaResult.ventas?.length ?? 0) !== 1 ? 's' : ''}
+                      </span>
+                      <button
+                        onClick={() => {
+                          setCedulaResult(null);
+                          setLookupCedula('');
+                        }}
+                        className="text-[11px] font-bold text-[#E63946] hover:text-red-700 transition-colors"
+                      >
+                        <i className="fas fa-search mr-1" /> Nueva búsqueda
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Ventas list */}
+                  {(cedulaResult.ventas || []).map((venta) => {
+                    const estadoConfig: Record<string, { bg: string; text: string; icon: string }> = {
+                      PENDIENTE: { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', icon: 'fa-clock' },
+                      ABONADA: { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-700', icon: 'fa-coins' },
+                      PAGADA: { bg: 'bg-green-50 border-green-200', text: 'text-green-700', icon: 'fa-check-circle' },
+                      CANCELADA: { bg: 'bg-red-50 border-red-200', text: 'text-red-600', icon: 'fa-times-circle' },
+                    };
+                    const cfg = estadoConfig[venta.estado_venta] || estadoConfig.PENDIENTE;
+                    const sorteoStr = new Date(venta.fecha_sorteo).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+                    const createdStr = new Date(venta.created_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                    return (
+                      <div key={venta.venta_id} className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden shop-pop-in">
+                        {/* Venta header */}
+                        <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-black/[0.04]">
+                          <div>
+                            <h4
+                              className="text-lg tracking-wider uppercase text-[#1A1A1A]"
+                              style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                            >
+                              {venta.rifa_nombre}
+                            </h4>
+                            <div className="flex items-center gap-3 text-[11px] text-[#999] font-medium mt-1">
+                              <span><i className="fas fa-calendar-alt text-[#E63946] text-[9px] mr-1" />Sorteo: {sorteoStr}</span>
+                              <span><i className="fas fa-clock text-[#999] text-[9px] mr-1" />{createdStr}</span>
+                            </div>
+                          </div>
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold ${cfg.bg} ${cfg.text}`}>
+                            <i className={`fas ${cfg.icon} text-[10px]`} />
+                            {venta.estado_venta}
+                          </div>
+                        </div>
+
+                        {/* Financial info */}
+                        <div className="px-5 py-3 bg-[#FAFAFA] border-b border-black/[0.04]">
+                          <div className="flex flex-wrap gap-4 sm:gap-6">
+                            <div>
+                              <p className="text-[10px] font-bold text-[#bbb] uppercase tracking-wider">Total</p>
+                              <p className="text-sm font-black text-[#1A1A1A]" style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}>
+                                {formatCOP(venta.monto_total)}
+                              </p>
+                            </div>
+                            {venta.abono_total > 0 && (
+                              <div>
+                                <p className="text-[10px] font-bold text-[#bbb] uppercase tracking-wider">Abonado</p>
+                                <p className="text-sm font-black text-green-600" style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}>
+                                  {formatCOP(venta.abono_total)}
+                                </p>
+                              </div>
+                            )}
+                            {venta.saldo_pendiente > 0 && (
+                              <div>
+                                <p className="text-[10px] font-bold text-[#bbb] uppercase tracking-wider">Saldo</p>
+                                <p className="text-sm font-black text-[#E63946]" style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}>
+                                  {formatCOP(venta.saldo_pendiente)}
+                                </p>
+                              </div>
+                            )}
+                            {venta.premio_principal && (
+                              <div className="ml-auto">
+                                <p className="text-[10px] font-bold text-[#bbb] uppercase tracking-wider">Premio</p>
+                                <p className="text-[12px] font-bold text-[#B87A00]">🏆 {venta.premio_principal}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Boletas grid */}
+                        <div className="p-5">
+                          <p className="text-[10px] font-bold text-[#999] uppercase tracking-wider mb-3">
+                            {venta.boletas.length} Boleta{venta.boletas.length !== 1 ? 's' : ''}
+                          </p>
+                          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                            {venta.boletas.map((boleta) => {
+                              const pct = boleta.porcentaje_pagado ?? 0;
+                              const isPagada = pct >= 100 || boleta.estado === 'VENDIDA' || boleta.estado === 'PAGADA';
+                              const isAbonada = boleta.estado === 'ABONADA' && !isPagada;
+                              const isDisponible = boleta.estado === 'DISPONIBLE';
+
+                              return (
+                                <button
+                                  key={boleta.numero}
+                                  onClick={() => setSelectedBoletaView({ venta, boleta })}
+                                  className={`relative flex flex-col items-center gap-1 p-3 rounded-xl border transition-all cursor-pointer ${
+                                    isPagada
+                                      ? 'border-green-200 bg-green-50 hover:border-green-300 hover:shadow-sm'
+                                      : isAbonada
+                                      ? 'border-blue-200 bg-blue-50 hover:border-blue-300 hover:shadow-sm'
+                                      : isDisponible
+                                      ? 'border-gray-200 bg-gray-50 opacity-60 cursor-default'
+                                      : 'border-amber-200 bg-amber-50 hover:border-amber-300 hover:shadow-sm'
+                                  }`}
+                                >
+                                  <span
+                                    className={`text-lg font-black tracking-wider ${isPagada ? 'text-green-700' : isAbonada ? 'text-blue-700' : isDisponible ? 'text-gray-400' : 'text-amber-700'}`}
+                                    style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                                  >
+                                    #{String(boleta.numero).padStart(4, '0')}
+                                  </span>
+                                  {/* Per-boleta progress mini-bar */}
+                                  {!isDisponible && pct > 0 && pct < 100 && (
+                                    <div className="w-full h-1.5 rounded-full bg-black/[0.06] overflow-hidden">
+                                      <div
+                                        className={`h-full rounded-full ${isAbonada ? 'bg-blue-500' : 'bg-amber-500'}`}
+                                        style={{ width: `${pct}%` }}
+                                      />
+                                    </div>
+                                  )}
+                                  <span className={`text-[9px] font-bold uppercase tracking-wider ${isPagada ? 'text-green-600' : isAbonada ? 'text-blue-600' : isDisponible ? 'text-gray-400' : 'text-amber-600'}`}>
+                                    {isPagada ? '100%' : pct > 0 ? `${pct}%` : boleta.estado}
+                                  </span>
+                                  {(boleta.qr_hash || boleta.qr_url) && (
+                                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#E63946] flex items-center justify-center shadow-sm">
+                                      <i className="fas fa-qrcode text-white text-[8px]" />
+                                    </div>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {venta.boletas.some(b => b.qr_hash || b.qr_url) && (
+                            <p className="text-[10px] text-[#bbb] mt-3 flex items-center gap-1">
+                              <i className="fas fa-info-circle text-[8px]" />
+                              Toca una boleta con <i className="fas fa-qrcode text-[8px] mx-0.5" /> para ver su detalle como si escanearas el QR
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Back to shop CTA */}
+                  <div className="text-center pt-4">
+                    <button
+                      onClick={handleReset}
+                      className="btn-primary text-[13px] px-8 py-3.5"
+                    >
+                      <i className="fas fa-shopping-cart text-xs" />
+                      COMPRAR MÁS BOLETAS
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ─── Boleta Detail View (QR scan style) ─── */}
+              {cedulaResult && selectedBoletaView && (() => {
+                const b = selectedBoletaView.boleta;
+                const v = selectedBoletaView.venta;
+                const precioBoleta = b.precio_boleta ?? 0;
+                const totalPagado = b.total_pagado_boleta ?? 0;
+                const saldoBoleta = b.saldo_pendiente_boleta ?? (precioBoleta - totalPagado);
+                const pctPagado = b.porcentaje_pagado ?? (precioBoleta > 0 ? Math.round((totalPagado / precioBoleta) * 100) : 0);
+                const isPagada = pctPagado >= 100 || b.estado === 'VENDIDA' || b.estado === 'PAGADA';
+                const isCancelada = v.estado_venta === 'CANCELADA';
+                const isAbonada = b.estado === 'ABONADA' && !isPagada;
+
+                const headerBg = isPagada
+                  ? 'from-green-600 to-green-800'
+                  : isCancelada
+                  ? 'from-red-600 to-red-800'
+                  : isAbonada
+                  ? 'from-blue-600 to-blue-800'
+                  : 'from-[#FFB703] to-[#E6A800]';
+                const statusText = isPagada
+                  ? '✅ BOLETA PAGADA'
+                  : isCancelada
+                  ? '❌ CANCELADA'
+                  : isAbonada
+                  ? '💳 ABONADA — PARCIALMENTE PAGADA'
+                  : '⏳ PENDIENTE DE PAGO';
+                const statusBadge = isPagada
+                  ? { bg: 'bg-green-50 border-green-200', text: 'text-green-700' }
+                  : isCancelada
+                  ? { bg: 'bg-red-50 border-red-200', text: 'text-red-600' }
+                  : isAbonada
+                  ? { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-700' }
+                  : { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700' };
+
+                return (
+                <div className="space-y-4">
+                  {/* Back button */}
+                  <button
+                    onClick={() => setSelectedBoletaView(null)}
+                    className="text-[12px] font-bold text-[#888] hover:text-[#E63946] transition-colors flex items-center gap-1.5"
+                  >
+                    <i className="fas fa-arrow-left text-[10px]" />
+                    Volver a mis compras
+                  </button>
+
+                  {/* QR-style boleta card */}
+                  <div className="max-w-[540px] mx-auto bg-white rounded-2xl border border-black/[0.06] shadow-xl overflow-hidden shop-pop-in">
+                    {/* Status header */}
+                    <div className={`bg-gradient-to-br ${headerBg} px-6 py-8 text-center relative overflow-hidden`}>
+                      <div className="absolute inset-0 prize-shimmer pointer-events-none" />
+                      <div className="relative">
+                        <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-4">
+                          <span
+                            className="text-3xl font-black text-white"
+                            style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '2px' }}
+                          >
+                            #{String(b.numero).padStart(4, '0')}
+                          </span>
+                        </div>
+                        <p className="text-white text-lg font-black tracking-wider uppercase" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
+                          {statusText}
+                        </p>
+                        <p className="text-white/60 text-[12px] font-semibold mt-1">
+                          {v.rifa_nombre}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Details */}
+                    <div className="p-6 space-y-4">
+                      {/* Info grid — boleta-specific */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { icon: 'fa-user', label: 'Propietario', value: cedulaResult.cliente?.nombre || 'N/A' },
+                          { icon: 'fa-id-card', label: 'Cédula', value: cedulaResult.cliente?.identificacion || lookupCedula },
+                          { icon: 'fa-trophy', label: 'Premio', value: v.premio_principal || 'N/A' },
+                          { icon: 'fa-calendar', label: 'Sorteo', value: new Date(v.fecha_sorteo).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) },
+                        ].map((item) => (
+                          <div key={item.label} className="bg-[#FAFAFA] rounded-xl p-3 border border-black/[0.04]">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <i className={`fas ${item.icon} text-[#E63946] text-[9px]`} />
+                              <span className="text-[9px] font-bold text-[#bbb] uppercase tracking-wider">{item.label}</span>
+                            </div>
+                            <p className="text-[13px] font-bold text-[#1A1A1A] truncate">{item.value}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* ── Boleta-specific financial summary ── */}
+                      <div className="bg-gradient-to-br from-[#FAFAFA] to-white rounded-xl border border-black/[0.06] overflow-hidden">
+                        <div className="px-4 py-3 border-b border-black/[0.04] flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-[#999] uppercase tracking-wider">
+                            <i className="fas fa-receipt text-[#E63946] text-[8px] mr-1" />
+                            Estado Financiero — Boleta #{String(b.numero).padStart(4, '0')}
+                          </span>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[9px] font-bold ${statusBadge.bg} ${statusBadge.text}`}>
+                            {b.estado}
+                          </span>
+                        </div>
+                        <div className="p-4 space-y-3">
+                          {/* Amount cards */}
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="text-center p-3 rounded-lg bg-white border border-black/[0.04]">
+                              <p className="text-[9px] font-bold text-[#bbb] uppercase tracking-wider mb-1">Precio</p>
+                              <p className="text-[15px] font-black text-[#1A1A1A]" style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}>
+                                {formatCOP(precioBoleta)}
+                              </p>
+                            </div>
+                            <div className="text-center p-3 rounded-lg bg-green-50 border border-green-100">
+                              <p className="text-[9px] font-bold text-green-500 uppercase tracking-wider mb-1">Pagado</p>
+                              <p className="text-[15px] font-black text-green-700" style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}>
+                                {formatCOP(totalPagado)}
+                              </p>
+                            </div>
+                            <div className={`text-center p-3 rounded-lg ${saldoBoleta > 0 ? 'bg-red-50 border border-red-100' : 'bg-green-50 border border-green-100'}`}>
+                              <p className={`text-[9px] font-bold uppercase tracking-wider mb-1 ${saldoBoleta > 0 ? 'text-red-400' : 'text-green-500'}`}>Saldo</p>
+                              <p className={`text-[15px] font-black ${saldoBoleta > 0 ? 'text-[#E63946]' : 'text-green-700'}`} style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}>
+                                {saldoBoleta > 0 ? formatCOP(saldoBoleta) : '✓ $0'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Progress bar */}
+                          <div>
+                            <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-1.5">
+                              <span className="text-[#999]">Progreso</span>
+                              <span className={pctPagado >= 100 ? 'text-green-600' : 'text-[#E63946]'}>
+                                {pctPagado}%
+                              </span>
+                            </div>
+                            <div className="h-3 rounded-full bg-black/[0.06] overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-1000 ${
+                                  pctPagado >= 100
+                                    ? 'bg-gradient-to-r from-green-500 to-green-600'
+                                    : pctPagado > 0
+                                    ? 'bg-gradient-to-r from-[#E63946] to-[#FF6B6B]'
+                                    : 'bg-gray-300'
+                                }`}
+                                style={{ width: `${Math.min(100, pctPagado)}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* ── Abonos History ── */}
+                      {(b.abonos?.length ?? 0) > 0 && (
+                        <div className="bg-white rounded-xl border border-black/[0.06] overflow-hidden">
+                          <div className="px-4 py-3 border-b border-black/[0.04] bg-[#FAFAFA]">
+                            <span className="text-[10px] font-bold text-[#999] uppercase tracking-wider">
+                              <i className="fas fa-history text-[#E63946] text-[8px] mr-1" />
+                              Historial de Pagos ({b.abonos.length})
+                            </span>
+                          </div>
+                          <div className="divide-y divide-black/[0.04]">
+                            {b.abonos.map((abono, idx) => {
+                              const abonoDate = new Date(abono.fecha);
+                              const dateStr = abonoDate.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+                              const timeStr = abonoDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                              const isConfirmado = abono.estado === 'CONFIRMADO';
+
+                              return (
+                                <div key={idx} className="px-4 py-3 flex items-center gap-3 hover:bg-[#FAFAFA]/60 transition-colors">
+                                  {/* Icon */}
+                                  <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                    isConfirmado ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'
+                                  }`}>
+                                    <i className={`fas ${isConfirmado ? 'fa-check-circle' : 'fa-clock'} text-sm`} />
+                                  </div>
+                                  {/* Info */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[13px] font-black text-[#1A1A1A]" style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}>
+                                        {formatCOP(abono.monto)}
+                                      </span>
+                                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${isConfirmado ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-amber-50 text-amber-600 border border-amber-200'}`}>
+                                        {abono.estado}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[10px] text-[#999] mt-0.5">
+                                      <span className="font-semibold">{abono.metodo_pago}</span>
+                                      <span>•</span>
+                                      <span>{dateStr} — {timeStr}</span>
+                                    </div>
+                                    {abono.notas && (
+                                      <p className="text-[10px] text-[#bbb] italic mt-0.5 truncate">"{abono.notas}"</p>
+                                    )}
+                                    {abono.referencia && (
+                                      <p className="text-[10px] text-[#ccc] font-mono mt-0.5">Ref: {abono.referencia}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* No abonos message */}
+                      {(!b.abonos || b.abonos.length === 0) && !isPagada && (
+                        <div className="bg-amber-50 rounded-xl border border-amber-100 p-4 text-center">
+                          <i className="fas fa-info-circle text-amber-500 text-sm mb-1" />
+                          <p className="text-[12px] text-amber-700 font-semibold">Aún no se han registrado pagos para esta boleta</p>
+                        </div>
+                      )}
+
+                      {/* QR link */}
+                      {b.qr_url && (
+                        <Link
+                          href={b.qr_url.replace('https://elgrancamion.com', '')}
+                          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-[#E63946]/20 bg-[#E63946]/[0.04] text-[#E63946] text-[12px] font-bold hover:bg-[#E63946]/[0.08] transition-all"
+                        >
+                          <i className="fas fa-qrcode text-sm" />
+                          VER VERIFICACIÓN COMPLETA
+                        </Link>
+                      )}
+                      {b.qr_hash && !b.qr_url && (
+                        <Link
+                          href={`/verificar/${b.qr_hash}`}
+                          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-[#E63946]/20 bg-[#E63946]/[0.04] text-[#E63946] text-[12px] font-bold hover:bg-[#E63946]/[0.08] transition-all"
+                        >
+                          <i className="fas fa-qrcode text-sm" />
+                          VER VERIFICACIÓN COMPLETA
+                        </Link>
+                      )}
+
+                      {/* WhatsApp CTA */}
+                      {saldoBoleta > 0 && !isCancelada && (
+                        <a
+                          href={`https://wa.me/573000000000?text=${encodeURIComponent(
+                            `Hola! Soy ${cedulaResult.cliente?.nombre || 'Cliente'}, CC ${cedulaResult.cliente?.identificacion || lookupCedula}. Quiero enviar comprobante de pago para mi boleta #${String(b.numero).padStart(4, '0')} de la rifa "${v.rifa_nombre}". Precio boleta: ${formatCOP(precioBoleta)}, Pagado: ${formatCOP(totalPagado)}, Saldo: ${formatCOP(saldoBoleta)}`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl bg-green-600 text-white text-[13px] font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-600/20"
+                        >
+                          <i className="fab fa-whatsapp text-lg" />
+                          ENVIAR COMPROBANTE DE PAGO
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Security footer */}
+                    <div className="px-6 pb-5">
+                      <div className="flex items-center justify-center gap-2 text-[10px] text-[#bbb]">
+                        <i className="fas fa-shield-halved text-[9px]" />
+                        <span>Verificado por Gran Rifa Camionera</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                );
+              })()}
+            </div>
+          </section>
+        )}
+
       </main>
       )}
     </>

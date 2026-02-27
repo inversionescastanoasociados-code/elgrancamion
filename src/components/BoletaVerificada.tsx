@@ -272,14 +272,23 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
       {/* ══════ NAVBAR ══════ */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-black/[0.06] shadow-sm">
         <div className="max-w-[1200px] mx-auto px-6 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-10 h-10 flex-shrink-0 transition-transform duration-300 group-hover:scale-105">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="relative w-11 h-11 flex-shrink-0 transition-transform duration-300 group-hover:scale-105">
               <Image
-                src="/uploads/logos/logo-negro.png"
+                src="/uploads/logos/logo-principal.png"
                 alt="Gran Rifa Camionera"
                 fill
+                className="object-contain drop-shadow-sm"
+                sizes="44px"
+              />
+            </div>
+            <div className="relative w-8 h-8 flex-shrink-0 -ml-1 opacity-60 transition-transform duration-300 group-hover:scale-105">
+              <Image
+                src="/uploads/logos/logo-negro.png"
+                alt=""
+                fill
                 className="object-contain"
-                sizes="40px"
+                sizes="32px"
               />
             </div>
             <span className="text-lg tracking-wider text-[#1A1A1A] hidden sm:block" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
@@ -969,8 +978,13 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
       {/* ══════ FOOTER ══════ */}
       <footer className="bg-[#111113] border-t border-white/[0.04] py-8">
         <div className="max-w-[700px] mx-auto px-6 text-center">
-          <div className="relative w-10 h-10 mx-auto mb-3 opacity-40">
-            <Image src="/uploads/logos/logo-blanco.png" alt="Logo" fill className="object-contain" sizes="40px" />
+          <div className="flex items-center justify-center gap-1.5 mb-3">
+            <div className="relative w-10 h-10">
+              <Image src="/uploads/logos/logo-principal.png" alt="Logo" fill className="object-contain drop-shadow-sm" sizes="40px" />
+            </div>
+            <div className="relative w-7 h-7 opacity-40">
+              <Image src="/uploads/logos/logo-blanco.png" alt="" fill className="object-contain" sizes="28px" />
+            </div>
           </div>
           <p className="text-[12px] text-white/30">
             © 2026 Gran Rifa Camionera · Todos los derechos reservados

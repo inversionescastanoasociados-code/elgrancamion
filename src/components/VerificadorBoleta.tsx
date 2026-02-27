@@ -180,14 +180,23 @@ export default function VerificadorBoleta() {
       {/* ══════ NAVBAR ══════ */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-black/[0.06] shadow-sm">
         <div className="max-w-[1200px] mx-auto px-6 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-10 h-10 flex-shrink-0 transition-transform duration-300 group-hover:scale-105">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="relative w-11 h-11 flex-shrink-0 transition-transform duration-300 group-hover:scale-105">
               <Image
-                src="/uploads/logos/logo-negro.png"
+                src="/uploads/logos/logo-principal.png"
                 alt="Gran Rifa Camionera"
                 fill
+                className="object-contain drop-shadow-sm"
+                sizes="44px"
+              />
+            </div>
+            <div className="relative w-8 h-8 flex-shrink-0 -ml-1 opacity-60 transition-transform duration-300 group-hover:scale-105">
+              <Image
+                src="/uploads/logos/logo-negro.png"
+                alt=""
+                fill
                 className="object-contain"
-                sizes="40px"
+                sizes="32px"
               />
             </div>
             <span className="text-lg tracking-wider text-[#1A1A1A] hidden sm:block" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
