@@ -132,7 +132,7 @@ interface CedulaLookupResult {
   total_ventas: number;
 }
 
-type ShopStep = 'pick-rifa' | 'selecting' | 'blocking' | 'checkout' | 'reserving' | 'confirmed' | 'status' | 'mi-cuenta';
+type ShopStep = 'pick-rifa' | 'auth' | 'selecting' | 'blocking' | 'checkout' | 'reserving' | 'confirmed' | 'status' | 'mi-cuenta';
 
 /* ═══════════════════════════════════════════════════
    HELPERS
@@ -308,6 +308,13 @@ export default function BoletasShop() {
   const [cedulaResult, setCedulaResult] = useState<CedulaLookupResult | null>(null);
   const [selectedBoletaView, setSelectedBoletaView] = useState<{ venta: CedulaVenta; boleta: CedulaBoletaInfo } | null>(null);
 
+  /* ─── Auth step state ─── */
+  const [isReturningClient, setIsReturningClient] = useState(false);
+  const [authCedula, setAuthCedula] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authConfirmed, setAuthConfirmed] = useState(false); // true = client data shown, waiting for confirm
+
   /* ─── Refs ─── */
   const gridRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -383,19 +390,28 @@ export default function BoletasShop() {
     };
   }, []);
 
-  /* ═══ Select a rifa and load its boletas ═══ */
-  const handleSelectRifa = useCallback(async (selectedRifa: RifaPublica) => {
+  /* ═══ Select a rifa → go to auth step ═══ */
+  const handleSelectRifa = useCallback((selectedRifa: RifaPublica) => {
     setRifa(selectedRifa);
+    setActionError(null);
+    setAuthError(null);
+    setAuthCedula('');
+    setIsReturningClient(false);
+    setStep('auth');
+  }, []);
+
+  /* ═══ After auth, load boletas and proceed ═══ */
+  const handleProceedToSelecting = useCallback(async () => {
+    if (!rifa) return;
     setLoadingBoletas(true);
     setActionError(null);
     setBoletas([]);
     setSelectedIds(new Map());
 
     try {
-      const boletasRes = await api.getBoletas(selectedRifa.id);
+      const boletasRes = await api.getBoletas(rifa.id);
       if (boletasRes.data) {
         setBoletas(boletasRes.data.boletas);
-        // Update rifa data with fresh info from boletas endpoint
         setRifa(prev => prev ? {
           ...prev,
           boletas_vendidas: boletasRes.data!.rifa.boletas_vendidas,
@@ -405,9 +421,72 @@ export default function BoletasShop() {
       setStep('selecting');
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Error al cargar boletas');
+      setStep('auth');
     } finally {
       setLoadingBoletas(false);
     }
+  }, [rifa]);
+
+  /* ═══ Auth: New client → proceed directly ═══ */
+  const handleNewClient = useCallback(() => {
+    setIsReturningClient(false);
+    setBuyerData({ nombre: '', telefono: '', email: '', identificacion: '', direccion: '' });
+    setFormTouched({});
+    handleProceedToSelecting();
+  }, [handleProceedToSelecting]);
+
+  /* ═══ Auth: Returning client → lookup by cédula, show confirmation ═══ */
+  const handleAuthCedulaLookup = useCallback(async () => {
+    const cedula = authCedula.trim().replace(/\D/g, '');
+    if (!cedula || cedula.length < 4) {
+      setAuthError('Ingresa un número de cédula válido (mínimo 4 dígitos).');
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError(null);
+    setAuthConfirmed(false);
+
+    try {
+      const res = await api.consultaCedula(cedula);
+      if (res.data) {
+        const raw = res.data as unknown as Record<string, unknown>;
+        const cliente = raw.cliente as CedulaLookupResult['cliente'] | null;
+        if (cliente) {
+          setBuyerData({
+            nombre: cliente.nombre || '',
+            telefono: cliente.telefono || '',
+            email: cliente.email || '',
+            identificacion: cliente.identificacion || cedula,
+            direccion: '',
+          });
+          setFormTouched({ nombre: true, telefono: true, email: true, identificacion: true });
+          setIsReturningClient(true);
+          setAuthConfirmed(true); // Show confirmation card, DON'T proceed yet
+        } else {
+          setBuyerData(prev => ({ ...prev, identificacion: cedula }));
+          setAuthError('No se encontró un cliente con esa cédula. ¿Deseas registrarte como nuevo cliente?');
+        }
+      } else {
+        setAuthError('No se encontró un cliente con esa cédula. ¿Deseas registrarte como nuevo cliente?');
+      }
+    } catch {
+      setAuthError('No se encontró un cliente con esa cédula. Puedes continuar como nuevo cliente.');
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [authCedula]);
+
+  /* ═══ Auth: Confirm client data → proceed to selecting ═══ */
+  const handleConfirmAuth = useCallback(() => {
+    handleProceedToSelecting();
+  }, [handleProceedToSelecting]);
+
+  /* ═══ Auth: Cancel confirmation → go back to cédula input ═══ */
+  const handleCancelAuth = useCallback(() => {
+    setAuthConfirmed(false);
+    setIsReturningClient(false);
+    setBuyerData({ nombre: '', telefono: '', email: '', identificacion: '', direccion: '' });
+    setFormTouched({});
   }, []);
 
   /* ═══ Go back to rifa selection ═══ */
@@ -417,6 +496,10 @@ export default function BoletasShop() {
     setSelectedIds(new Map());
     setStep('pick-rifa');
     setActionError(null);
+    setAuthError(null);
+    setAuthCedula('');
+    setIsReturningClient(false);
+    setAuthConfirmed(false);
     setSearch('');
     setPage(0);
   }, []);
@@ -705,6 +788,10 @@ export default function BoletasShop() {
     setCedulaResult(null);
     setSelectedBoletaView(null);
     setActionError(null);
+    setAuthError(null);
+    setAuthCedula('');
+    setIsReturningClient(false);
+    setAuthConfirmed(false);
     setBuyerData({ nombre: '', telefono: '', email: '', identificacion: '', direccion: '' });
     setFormTouched({});
     setSelectedMedioPago('');
@@ -834,7 +921,7 @@ export default function BoletasShop() {
             )}
 
             {/* Mi Cuenta button */}
-            {(step === 'pick-rifa' || step === 'selecting') && (
+            {(step === 'pick-rifa' || step === 'selecting' || step === 'auth') && (
               <button
                 onClick={() => {
                   setStep('mi-cuenta');
@@ -1063,6 +1150,371 @@ export default function BoletasShop() {
                 </div>
               ))}
             </div>
+
+            {/* ═══ CONSULTAR MIS BOLETAS — Section in pick-rifa ═══ */}
+            <div className="mt-16 sm:mt-20 pt-10 border-t border-white/[0.06]">
+              <div className="max-w-lg mx-auto text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-white/[0.06] mb-4">
+                  <i className="fas fa-user-circle text-white/40 text-xl" />
+                </div>
+                <h3
+                  className="text-2xl sm:text-3xl tracking-wider uppercase text-white mb-2"
+                  style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                >
+                  CONSULTA TUS <span className="text-truck-red">BOLETAS</span>
+                </h3>
+                <p className="text-white/35 text-sm mb-6">
+                  Ingresa tu cédula para ver el estado de tus compras y boletas
+                </p>
+
+                {/* Cédula input */}
+                <div className="flex gap-2 max-w-sm mx-auto mb-3">
+                  <div className="relative flex-1">
+                    <i className="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-sm" />
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="Nº de cédula..."
+                      value={lookupCedula}
+                      onChange={(e) => setLookupCedula(e.target.value.replace(/\D/g, ''))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleCedulaLookup();
+                      }}
+                      className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/[0.07] border border-white/10 text-white text-sm font-mono placeholder:text-white/20 focus:outline-none focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10 transition-all"
+                    />
+                  </div>
+                  <button
+                    onClick={() => handleCedulaLookup()}
+                    disabled={!lookupCedula.trim() || actionLoading}
+                    className="px-6 py-3.5 rounded-xl bg-[#E63946] text-white text-sm font-bold hover:bg-[#D62B39] disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                  >
+                    {actionLoading ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-search" />}
+                    <span className="hidden sm:inline">Buscar</span>
+                  </button>
+                </div>
+
+                {/* Token lookup below */}
+                <div className="flex gap-2 max-w-sm mx-auto">
+                  <div className="relative flex-1">
+                    <i className="fas fa-key absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-sm" />
+                    <input
+                      type="text"
+                      placeholder="O ingresa tu token de reserva..."
+                      value={lookupToken}
+                      onChange={(e) => setLookupToken(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleCheckStatus();
+                      }}
+                      className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-white text-xs font-mono placeholder:text-white/15 focus:outline-none focus:border-white/20 transition-all"
+                    />
+                  </div>
+                  <button
+                    onClick={() => handleCheckStatus()}
+                    disabled={!lookupToken.trim() || actionLoading}
+                    className="px-5 py-3 rounded-xl bg-white/10 text-white text-xs font-bold hover:bg-white/15 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                  >
+                    <i className="fas fa-search" />
+                  </button>
+                </div>
+
+                {actionError && step === 'pick-rifa' && (
+                  <div className="mt-4 bg-[#E63946]/10 border border-[#E63946]/20 rounded-xl px-4 py-3 flex items-center gap-2 max-w-sm mx-auto">
+                    <i className="fas fa-exclamation-circle text-[#E63946] text-sm" />
+                    <p className="text-[#FF8A93] text-sm font-medium flex-1 text-left">{actionError}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </main>
+      )}
+
+      {/* ═══════════════════════════════════════════════════
+         STEP: AUTH (New or Returning Client)
+      ═══════════════════════════════════════════════════ */}
+      {step === 'auth' && rifa && (
+        <main className="pt-16 min-h-screen bg-[#111113] relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#E63946_0%,transparent_50%)] opacity-[0.04]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_#FFB703_0%,transparent_50%)] opacity-[0.03]" />
+
+          <div className="relative z-10 max-w-[700px] mx-auto px-4 sm:px-6 py-12 sm:py-16">
+            {/* Back button */}
+            <button
+              onClick={handleBackToRifas}
+              className="text-[12px] font-bold text-white/40 hover:text-[#E63946] transition-colors flex items-center gap-1.5 mb-8"
+            >
+              <i className="fas fa-arrow-left text-[10px]" />
+              Volver a rifas
+            </button>
+
+            {/* Header */}
+            <div className="text-center mb-10 shop-fade-in">
+              <div className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/10 rounded-full px-4 py-2 mb-5">
+                <i className="fas fa-ticket-alt text-[#FFB703] text-[10px]" />
+                <span className="text-[11px] font-bold tracking-wider uppercase text-white/50">
+                  {rifa.nombre}
+                </span>
+              </div>
+              <h2
+                className="text-[clamp(28px,6vw,52px)] leading-[0.9] uppercase tracking-wider text-white mb-3"
+                style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+              >
+                ¿CÓMO QUIERES{' '}
+                <span className="bg-gradient-to-r from-[#E63946] to-[#FF6B6B] bg-clip-text text-transparent">
+                  CONTINUAR
+                </span>
+                ?
+              </h2>
+              <p className="text-white/35 text-sm max-w-md mx-auto">
+                Si ya has comprado boletas antes, podemos cargar tus datos automáticamente
+              </p>
+            </div>
+
+            {/* Auth options */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-6 shop-pop-in">
+              {/* New Client */}
+              <button
+                onClick={handleNewClient}
+                disabled={loadingBoletas}
+                className="group relative bg-gradient-to-br from-[#1A1A1E] to-[#16161A] rounded-2xl border border-white/[0.06] hover:border-[#E63946]/40 p-6 sm:p-8 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-[#E63946]/10 focus:outline-none focus:ring-2 focus:ring-[#E63946]/30"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-[#E63946]/10 flex items-center justify-center mb-5 group-hover:bg-[#E63946]/20 transition-colors">
+                  <i className="fas fa-user-plus text-[#E63946] text-xl" />
+                </div>
+                <h3
+                  className="text-xl sm:text-2xl uppercase tracking-wider text-white mb-2 group-hover:text-[#FF8A93] transition-colors"
+                  style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                >
+                  SOY NUEVO
+                </h3>
+                <p className="text-white/30 text-[13px] leading-relaxed">
+                  Primera vez comprando boletas. Registraré mis datos al momento de la compra.
+                </p>
+                <div className="mt-5 flex items-center gap-2">
+                  <span className="text-[12px] font-bold text-[#E63946] uppercase tracking-wider group-hover:text-white transition-colors" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
+                    Continuar →
+                  </span>
+                </div>
+                {loadingBoletas && (
+                  <div className="absolute inset-0 rounded-2xl bg-black/50 flex items-center justify-center">
+                    <div className="shop-loader" />
+                  </div>
+                )}
+              </button>
+
+              {/* Returning Client */}
+              <button
+                onClick={() => setIsReturningClient(true)}
+                className={`group relative bg-gradient-to-br from-[#1A1A1E] to-[#16161A] rounded-2xl border p-6 sm:p-8 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-[#FFB703]/10 focus:outline-none focus:ring-2 focus:ring-[#FFB703]/30 ${
+                  isReturningClient
+                    ? 'border-[#FFB703]/40 shadow-lg shadow-[#FFB703]/5'
+                    : 'border-white/[0.06] hover:border-[#FFB703]/40'
+                }`}
+              >
+                <div className="w-14 h-14 rounded-2xl bg-[#FFB703]/10 flex items-center justify-center mb-5 group-hover:bg-[#FFB703]/20 transition-colors">
+                  <i className="fas fa-user-check text-[#FFB703] text-xl" />
+                </div>
+                <h3
+                  className="text-xl sm:text-2xl uppercase tracking-wider text-white mb-2 group-hover:text-[#FFD700] transition-colors"
+                  style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                >
+                  YA SOY CLIENTE
+                </h3>
+                <p className="text-white/30 text-[13px] leading-relaxed">
+                  Ya he comprado antes. Ingresaré mi cédula para cargar mis datos automáticamente.
+                </p>
+                <div className="mt-5 flex items-center gap-2">
+                  <span className="text-[12px] font-bold text-[#FFB703] uppercase tracking-wider group-hover:text-white transition-colors" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
+                    Identificarme →
+                  </span>
+                </div>
+              </button>
+            </div>
+
+            {/* Returning client: Cédula input (only if NOT confirmed yet) */}
+            {isReturningClient && !authConfirmed && (
+              <div className="shop-fade-in bg-gradient-to-br from-[#1A1A1E] to-[#16161A] rounded-2xl border border-[#FFB703]/20 p-6 sm:p-8">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-full bg-[#FFB703]/10 flex items-center justify-center">
+                    <i className="fas fa-id-card text-[#FFB703] text-sm" />
+                  </div>
+                  <div>
+                    <h4
+                      className="text-lg tracking-wider uppercase text-white"
+                      style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                    >
+                      INGRESA TU CÉDULA
+                    </h4>
+                    <p className="text-[11px] text-white/30">Buscaremos tus datos para pre-llenar el formulario</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="relative flex-1">
+                    <i className="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-sm" />
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="1.234.567.890"
+                      value={authCedula}
+                      onChange={(e) => setAuthCedula(e.target.value.replace(/\D/g, ''))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAuthCedulaLookup();
+                      }}
+                      className="w-full pl-11 pr-4 py-4 rounded-xl bg-white/[0.06] border border-white/10 text-white text-lg font-mono font-semibold placeholder:text-white/15 focus:outline-none focus:border-[#FFB703]/40 focus:ring-2 focus:ring-[#FFB703]/10 transition-all tracking-wider"
+                      autoFocus
+                    />
+                  </div>
+                  <button
+                    onClick={handleAuthCedulaLookup}
+                    disabled={!authCedula.trim() || authLoading}
+                    className="px-6 py-4 rounded-xl bg-[#FFB703] text-black text-sm font-bold hover:bg-[#FFD700] disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                  >
+                    {authLoading ? (
+                      <i className="fas fa-spinner fa-spin" />
+                    ) : (
+                      <>
+                        <i className="fas fa-search text-xs" />
+                        <span className="hidden sm:inline">Buscar</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {authError && (
+                  <div className="mt-4 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 flex items-start gap-2">
+                    <i className="fas fa-info-circle text-amber-400 text-sm mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-amber-300 text-sm font-medium">{authError}</p>
+                      <button
+                        onClick={handleNewClient}
+                        className="mt-2 text-[12px] font-bold text-[#E63946] hover:text-[#FF6B6B] transition-colors"
+                      >
+                        → Continuar como nuevo cliente
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ═══ Client Data Confirmation Card ═══ */}
+            {authConfirmed && buyerData.nombre && (
+              <div className="shop-pop-in bg-gradient-to-br from-[#1A1A1E] to-[#16161A] rounded-2xl border border-green-500/30 overflow-hidden">
+                {/* Green header */}
+                <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/10 px-6 py-4 border-b border-green-500/10 flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <i className="fas fa-user-check text-green-400 text-sm" />
+                  </div>
+                  <div>
+                    <h4
+                      className="text-lg tracking-wider uppercase text-white"
+                      style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                    >
+                      ¡TE ENCONTRAMOS!
+                    </h4>
+                    <p className="text-[11px] text-green-400/60">Confirma que estos son tus datos</p>
+                  </div>
+                </div>
+
+                {/* Client data grid */}
+                <div className="p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    {[
+                      { icon: 'fa-user', label: 'Nombre', value: buyerData.nombre },
+                      { icon: 'fa-id-card', label: 'Cédula', value: buyerData.identificacion },
+                      { icon: 'fa-phone', label: 'Teléfono', value: buyerData.telefono || 'No registrado' },
+                      { icon: 'fa-envelope', label: 'Correo', value: buyerData.email || 'No registrado' },
+                    ].map((item) => (
+                      <div key={item.label} className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06]">
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <i className={`fas ${item.icon} text-green-400 text-[9px]`} />
+                          <span className="text-[9px] font-bold text-white/30 uppercase tracking-wider">{item.label}</span>
+                        </div>
+                        <p className="text-[14px] font-semibold text-white truncate">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* WhatsApp edit notice */}
+                  <div className="bg-amber-500/[0.08] border border-amber-500/15 rounded-xl px-4 py-3 mb-6 flex items-start gap-2.5">
+                    <i className="fas fa-info-circle text-amber-400 text-sm mt-0.5" />
+                    <div>
+                      <p className="text-[12px] text-amber-300/80 leading-relaxed">
+                        ¿Algún dato es incorrecto? Escríbenos para corregirlo:
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <a
+                          href={`https://wa.me/573207120787?text=${encodeURIComponent(
+                            `Hola! Soy ${buyerData.nombre}, CC ${buyerData.identificacion}. Necesito actualizar mis datos de registro para la rifa.`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 text-[11px] font-bold hover:bg-green-500/30 transition-colors"
+                        >
+                          <i className="fab fa-whatsapp text-xs" />
+                          320 712 0787
+                        </a>
+                        <a
+                          href={`https://wa.me/573207120779?text=${encodeURIComponent(
+                            `Hola! Soy ${buyerData.nombre}, CC ${buyerData.identificacion}. Necesito actualizar mis datos de registro para la rifa.`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 text-[11px] font-bold hover:bg-green-500/30 transition-colors"
+                        >
+                          <i className="fab fa-whatsapp text-xs" />
+                          320 712 0779
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={handleConfirmAuth}
+                      disabled={loadingBoletas}
+                      className="flex-1 relative inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white text-[14px] font-bold hover:from-green-500 hover:to-green-600 transition-all shadow-lg shadow-green-600/20 disabled:opacity-50"
+                    >
+                      {loadingBoletas ? (
+                        <>
+                          <i className="fas fa-spinner fa-spin text-sm" />
+                          CARGANDO BOLETAS...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-check-circle text-sm" />
+                          SÍ, SOY YO · CONTINUAR
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={handleCancelAuth}
+                      disabled={loadingBoletas}
+                      className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl border border-white/10 text-white/50 text-[13px] font-bold hover:border-white/20 hover:text-white/70 transition-all disabled:opacity-30"
+                    >
+                      <i className="fas fa-arrow-left text-xs" />
+                      CANCELAR
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Trust footer */}
+            <div className="mt-12 flex flex-wrap justify-center gap-6 text-center opacity-30">
+              {[
+                { icon: 'fas fa-shield-alt', label: 'Compra segura' },
+                { icon: 'fas fa-lock', label: 'Datos protegidos' },
+                { icon: 'fas fa-headset', label: 'Soporte 24/7' },
+              ].map((t) => (
+                <div key={t.label} className="flex items-center gap-2">
+                  <i className={`${t.icon} text-white/60 text-xs`} />
+                  <span className="text-[11px] font-bold text-white/50 tracking-wider uppercase">{t.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </main>
       )}
@@ -1070,7 +1522,7 @@ export default function BoletasShop() {
       {/* ═══════════════════════════════════════════════════
          MAIN CONTENT (after rifa selected)
       ═══════════════════════════════════════════════════ */}
-      {step !== 'pick-rifa' && (
+      {step !== 'pick-rifa' && step !== 'auth' && (
       <main className="pt-16 min-h-screen bg-[#FAFAFA]">
         {/* ═══ HERO BANNER ═══ */}
         <section className="relative bg-[#111113] overflow-hidden">
@@ -1365,12 +1817,83 @@ export default function BoletasShop() {
                   })}
                 </div>
               ) : (
-                <div className="text-center py-20">
+                <div className="text-center py-12">
                   <div className="text-5xl mb-4">🔍</div>
-                  <p className="text-[#999] text-lg font-semibold">No se encontraron boletas</p>
-                  <p className="text-[#ccc] text-sm mt-1">
-                    Intenta con otro número o cambia el filtro
+                  <p className="text-[#999] text-lg font-semibold">No se encontró la boleta #{search}</p>
+                  <p className="text-[#ccc] text-sm mt-1 mb-6">
+                    Puede que esté vendida o reservada. Mira estas boletas con números parecidos:
                   </p>
+                  {/* Similar numbers */}
+                  {(() => {
+                    const searchNum = parseInt(search, 10);
+                    if (isNaN(searchNum)) return null;
+                    // Find boletas with close numbers (±10 range), available preferred
+                    const similar = boletas
+                      .filter(b => {
+                        const diff = Math.abs(b.numero - searchNum);
+                        return diff > 0 && diff <= 20;
+                      })
+                      .sort((a, b) => {
+                        // Prioritize available, then by closeness
+                        if (a.estado === 'DISPONIBLE' && b.estado !== 'DISPONIBLE') return -1;
+                        if (a.estado !== 'DISPONIBLE' && b.estado === 'DISPONIBLE') return 1;
+                        return Math.abs(a.numero - searchNum) - Math.abs(b.numero - searchNum);
+                      })
+                      .slice(0, 12);
+
+                    if (similar.length === 0) {
+                      return (
+                        <p className="text-[#bbb] text-sm">
+                          No hay boletas con números cercanos disponibles.
+                          <button onClick={() => setSearch('')} className="text-[#E63946] font-bold ml-1 hover:underline">Ver todas</button>
+                        </p>
+                      );
+                    }
+
+                    return (
+                      <div className="max-w-md mx-auto">
+                        <p className="text-[10px] font-bold text-[#999] uppercase tracking-wider mb-3">
+                          Números similares a #{String(searchNum).padStart(String(totalBoletas - 1).length, '0')}
+                        </p>
+                        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                          {similar.map((b) => {
+                            const isAvailable = b.estado === 'DISPONIBLE';
+                            const isSelected = selectedIds.has(b.id);
+                            return (
+                              <button
+                                key={b.id}
+                                onClick={() => { if (isAvailable) { toggleBoleta(b); setSearch(''); } }}
+                                disabled={!isAvailable || step === 'checkout'}
+                                className={`relative p-2.5 rounded-xl border text-center transition-all ${
+                                  isSelected
+                                    ? 'bg-[#E63946] border-[#E63946] text-white shadow-lg shadow-[#E63946]/20 scale-105'
+                                    : isAvailable
+                                    ? 'bg-white border-green-200 text-[#1A1A1A] hover:border-[#E63946]/40 hover:shadow-sm cursor-pointer'
+                                    : 'bg-[#F5F5F5] border-black/[0.04] text-[#ccc] cursor-not-allowed'
+                                }`}
+                              >
+                                <span className="text-[14px] font-black tracking-wider" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
+                                  {formatNumero(b.numero, totalBoletas)}
+                                </span>
+                                {isAvailable && !isSelected && (
+                                  <span className="block text-[8px] font-bold text-green-600 uppercase mt-0.5">Disponible</span>
+                                )}
+                                {!isAvailable && (
+                                  <span className="block text-[8px] font-bold text-[#ccc] uppercase mt-0.5">{b.estado === 'VENDIDA' ? 'Vendida' : 'Reservada'}</span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <button
+                          onClick={() => setSearch('')}
+                          className="mt-4 text-[12px] font-bold text-[#E63946] hover:text-[#FF6B6B] transition-colors"
+                        >
+                          ← Ver todas las boletas
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
@@ -1442,6 +1965,26 @@ export default function BoletasShop() {
                 </p>
               </div>
 
+              {/* ── Returning Client Badge ── */}
+              {isReturningClient && buyerData.nombre && (
+                <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl px-5 py-4 flex items-center gap-4 shop-fade-in">
+                  <div className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <i className="fas fa-user-check text-green-600 text-sm" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-bold text-green-800 truncate">{buyerData.nombre}</p>
+                    <p className="text-[11px] text-green-600">
+                      CC {buyerData.identificacion}
+                      {buyerData.telefono && <span> · {buyerData.telefono}</span>}
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-100 text-[10px] font-bold text-green-700 border border-green-200">
+                    <i className="fas fa-check-circle text-[8px]" />
+                    VERIFICADO
+                  </span>
+                </div>
+              )}
+
               {/* ── Timer Bar (if active) ── */}
               {bloqueoHasta && !bloqueoTimer.expired && (
                 <div className="mb-6 bg-gradient-to-r from-[#111113] to-[#1a1a1f] rounded-2xl px-5 py-4 shadow-lg border border-white/[0.06]">
@@ -1507,26 +2050,29 @@ export default function BoletasShop() {
                           Nombre Completo <span className="text-[#E63946]">*</span>
                         </label>
                         <div className="relative">
-                          <i className="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
+                          <i className={`fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
                           <input
                             type="text"
                             placeholder="Juan Carlos Pérez"
                             value={buyerData.nombre}
-                            onChange={(e) => setBuyerData({ ...buyerData, nombre: e.target.value })}
+                            onChange={(e) => { if (!isReturningClient) setBuyerData({ ...buyerData, nombre: e.target.value }); }}
                             onBlur={() => setFormTouched({ ...formTouched, nombre: true })}
+                            readOnly={isReturningClient}
                             className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
-                              formTouched.nombre && formErrors.nombre
+                              isReturningClient
+                                ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
+                                : formTouched.nombre && formErrors.nombre
                                 ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
                                 : formTouched.nombre && buyerData.nombre.trim().length >= 2
                                 ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
                                 : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
                             }`}
                           />
-                          {formTouched.nombre && buyerData.nombre.trim().length >= 2 && !formErrors.nombre && (
-                            <i className="fas fa-check-circle absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm" />
+                          {(isReturningClient || (formTouched.nombre && buyerData.nombre.trim().length >= 2 && !formErrors.nombre)) && (
+                            <i className={`fas ${isReturningClient ? 'fa-lock' : 'fa-check-circle'} absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm`} />
                           )}
                         </div>
-                        {formTouched.nombre && formErrors.nombre && (
+                        {formTouched.nombre && formErrors.nombre && !isReturningClient && (
                           <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
                             <i className="fas fa-exclamation-circle text-[9px]" />
                             {formErrors.nombre}
@@ -1538,24 +2084,30 @@ export default function BoletasShop() {
                       <div>
                         <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
                           Cédula / Documento
-                          <span className="text-[10px] font-normal normal-case text-[#bbb] tracking-normal ml-1">(opcional)</span>
+                          {!isReturningClient && <span className="text-[10px] font-normal normal-case text-[#bbb] tracking-normal ml-1">(opcional)</span>}
                         </label>
                         <div className="relative">
-                          <i className="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
+                          <i className={`fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
                           <input
                             type="text"
                             placeholder="1.234.567.890"
                             value={buyerData.identificacion}
-                            onChange={(e) => setBuyerData({ ...buyerData, identificacion: e.target.value })}
+                            onChange={(e) => { if (!isReturningClient) setBuyerData({ ...buyerData, identificacion: e.target.value }); }}
                             onBlur={() => setFormTouched({ ...formTouched, identificacion: true })}
+                            readOnly={isReturningClient}
                             className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
-                              formTouched.identificacion && formErrors.identificacion
+                              isReturningClient
+                                ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
+                                : formTouched.identificacion && formErrors.identificacion
                                 ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
                                 : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
                             }`}
                           />
+                          {isReturningClient && (
+                            <i className="fas fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm" />
+                          )}
                         </div>
-                        {formTouched.identificacion && formErrors.identificacion && (
+                        {formTouched.identificacion && formErrors.identificacion && !isReturningClient && (
                           <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
                             <i className="fas fa-exclamation-circle text-[9px]" />
                             {formErrors.identificacion}
@@ -1569,26 +2121,29 @@ export default function BoletasShop() {
                           <i className="fab fa-whatsapp text-green-500 text-xs" /> WhatsApp / Teléfono <span className="text-[#E63946]">*</span>
                         </label>
                         <div className="relative">
-                          <i className="fab fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
+                          <i className={`fab fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
                           <input
                             type="tel"
                             placeholder="300 123 4567"
                             value={buyerData.telefono}
-                            onChange={(e) => setBuyerData({ ...buyerData, telefono: e.target.value })}
+                            onChange={(e) => { if (!isReturningClient) setBuyerData({ ...buyerData, telefono: e.target.value }); }}
                             onBlur={() => setFormTouched({ ...formTouched, telefono: true })}
+                            readOnly={isReturningClient}
                             className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
-                              formTouched.telefono && formErrors.telefono
+                              isReturningClient
+                                ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
+                                : formTouched.telefono && formErrors.telefono
                                 ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
                                 : formTouched.telefono && buyerData.telefono.trim().length >= 7 && !formErrors.telefono
                                 ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
                                 : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
                             }`}
                           />
-                          {formTouched.telefono && buyerData.telefono.trim().length >= 7 && !formErrors.telefono && (
-                            <i className="fas fa-check-circle absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm" />
+                          {(isReturningClient || (formTouched.telefono && buyerData.telefono.trim().length >= 7 && !formErrors.telefono)) && (
+                            <i className={`fas ${isReturningClient ? 'fa-lock' : 'fa-check-circle'} absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm`} />
                           )}
                         </div>
-                        {formTouched.telefono && formErrors.telefono && (
+                        {formTouched.telefono && formErrors.telefono && !isReturningClient && (
                           <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
                             <i className="fas fa-exclamation-circle text-[9px]" />
                             {formErrors.telefono}
@@ -1600,29 +2155,32 @@ export default function BoletasShop() {
                       <div>
                         <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
                           Correo Electrónico
-                          <span className="text-[10px] font-normal normal-case text-[#bbb] tracking-normal ml-1">(opcional)</span>
+                          {!isReturningClient && <span className="text-[10px] font-normal normal-case text-[#bbb] tracking-normal ml-1">(opcional)</span>}
                         </label>
                         <div className="relative">
-                          <i className="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
+                          <i className={`fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
                           <input
                             type="email"
                             placeholder="correo@ejemplo.com"
                             value={buyerData.email}
-                            onChange={(e) => setBuyerData({ ...buyerData, email: e.target.value })}
+                            onChange={(e) => { if (!isReturningClient) setBuyerData({ ...buyerData, email: e.target.value }); }}
                             onBlur={() => setFormTouched({ ...formTouched, email: true })}
+                            readOnly={isReturningClient}
                             className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
-                              formTouched.email && formErrors.email
+                              isReturningClient
+                                ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
+                                : formTouched.email && formErrors.email
                                 ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
                                 : formTouched.email && buyerData.email.trim() && !formErrors.email
                                 ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
                                 : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
                             }`}
                           />
-                          {formTouched.email && buyerData.email.trim() && !formErrors.email && (
-                            <i className="fas fa-check-circle absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm" />
+                          {(isReturningClient || (formTouched.email && buyerData.email.trim() && !formErrors.email)) && (
+                            <i className={`fas ${isReturningClient ? 'fa-lock' : 'fa-check-circle'} absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm`} />
                           )}
                         </div>
-                        {formTouched.email && formErrors.email && (
+                        {formTouched.email && formErrors.email && !isReturningClient && (
                           <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
                             <i className="fas fa-exclamation-circle text-[9px]" />
                             {formErrors.email}
@@ -1649,14 +2207,26 @@ export default function BoletasShop() {
                       </div>
                     </div>
 
-                    {/* Returning client hint */}
+                    {/* Returning client hint / WhatsApp edit notice */}
                     <div className="px-5 pb-4">
-                      <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-                        <i className="fas fa-info-circle text-blue-400 text-xs mt-0.5" />
-                        <p className="text-[11px] text-blue-600/80 leading-relaxed">
-                          <strong>¿Ya compraste antes?</strong> Ingresa el mismo teléfono o cédula y tu historial de compras se vinculará automáticamente.
-                        </p>
-                      </div>
+                      {isReturningClient ? (
+                        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                          <i className="fas fa-lock text-amber-500 text-xs mt-0.5" />
+                          <p className="text-[11px] text-amber-700 leading-relaxed">
+                            <strong>Tus datos están protegidos.</strong> Si necesitas modificarlos, comunícate con nosotros:{' '}
+                            <a href="https://wa.me/573207120787?text=Hola!%20Necesito%20actualizar%20mis%20datos%20de%20registro%20para%20la%20rifa." target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-green-600 font-bold hover:text-green-700 transition-colors">
+                              <i className="fab fa-whatsapp text-xs" /> WhatsApp
+                            </a>
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                          <i className="fas fa-info-circle text-blue-400 text-xs mt-0.5" />
+                          <p className="text-[11px] text-blue-600/80 leading-relaxed">
+                            <strong>¿Ya compraste antes?</strong> Ingresa el mismo teléfono o cédula y tu historial de compras se vinculará automáticamente.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -2011,17 +2581,24 @@ export default function BoletasShop() {
 
                 {/* Actions */}
                 <div className="flex flex-col gap-2">
-                  <a
-                    href={`https://wa.me/573000000000?text=${encodeURIComponent(
-                      `¡Hola! Acabo de reservar ${reservaResult.cantidad_boletas} boleta(s): ${reservaResult.boletas.map((n) => `#${formatNumero(n, totalBoletas)}`).join(', ')}. Mi nombre es ${reservaResult.cliente_nombre}. Total: ${formatCOP(reservaResult.monto_total)}. Token: ${reservaResult.reserva_token.slice(0, 16)}...`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-[#25D366] text-white text-[14px] font-bold shadow-lg hover:bg-[#20BD5A] transition-all"
-                  >
-                    <i className="fab fa-whatsapp text-xl" />
-                    ENVIAR COMPROBANTE POR WHATSAPP
-                  </a>
+                  {/* WhatsApp buttons — dual numbers */}
+                  {[
+                    { num: '573207120787', display: '320 712 0787' },
+                    { num: '573207120779', display: '320 712 0779' },
+                  ].map((wa) => (
+                    <a
+                      key={wa.num}
+                      href={`https://wa.me/${wa.num}?text=${encodeURIComponent(
+                        `¡Hola! Acabo de reservar ${reservaResult.cantidad_boletas} boleta(s): ${reservaResult.boletas.map((n) => `#${formatNumero(n, totalBoletas)}`).join(', ')}. Mi nombre es ${reservaResult.cliente_nombre}. Total: ${formatCOP(reservaResult.monto_total)}.${selectedMedioPago ? ` Medio de pago: ${mediosPago.find(m => m.id === selectedMedioPago)?.nombre || 'No seleccionado'}.` : ''}`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-[#25D366] text-white text-[14px] font-bold shadow-lg hover:bg-[#20BD5A] transition-all"
+                    >
+                      <i className="fab fa-whatsapp text-xl" />
+                      WHATSAPP {wa.display}
+                    </a>
+                  ))}
 
                   <button
                     onClick={() => handleCheckStatus(reservaResult.reserva_token)}
@@ -2226,17 +2803,25 @@ export default function BoletasShop() {
                 <div className="flex flex-col gap-2">
                   {(estadoReserva.estado === 'PENDIENTE' ||
                     estadoReserva.estado === 'ABONADA') && (
-                    <a
-                      href={`https://wa.me/573000000000?text=${encodeURIComponent(
-                        `¡Hola! Quiero enviar mi comprobante de pago. Token: ${reservaToken?.slice(0, 16)}... Nombre: ${estadoReserva.cliente}`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-[#25D366] text-white text-[14px] font-bold shadow-lg hover:bg-[#20BD5A] transition-all"
-                    >
-                      <i className="fab fa-whatsapp text-xl" />
-                      ENVIAR COMPROBANTE
-                    </a>
+                    <div className="flex flex-col gap-2">
+                      {[
+                        { num: '573207120787', display: '320 712 0787' },
+                        { num: '573207120779', display: '320 712 0779' },
+                      ].map((wa) => (
+                        <a
+                          key={wa.num}
+                          href={`https://wa.me/${wa.num}?text=${encodeURIComponent(
+                            `¡Hola! Soy ${estadoReserva.cliente}. Quiero enviar mi comprobante de pago para mi reserva de boleta(s).`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-[#25D366] text-white text-[14px] font-bold shadow-lg hover:bg-[#20BD5A] transition-all"
+                        >
+                          <i className="fab fa-whatsapp text-xl" />
+                          WHATSAPP {wa.display}
+                        </a>
+                      ))}
+                    </div>
                   )}
                   <button
                     onClick={() => handleCheckStatus()}
@@ -2374,15 +2959,26 @@ export default function BoletasShop() {
                   <i className="fas fa-dice" />
                   ELEGIR AL AZAR
                 </button>
-                <a
-                  href="https://wa.me/573000000000?text=Tengo%20una%20pregunta%20sobre%20las%20boletas"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/15 text-white/60 text-[13px] font-bold hover:border-white/30 hover:text-white/80 transition-all"
-                >
-                  <i className="fab fa-whatsapp text-lg text-green-400" />
-                  Preguntar por WhatsApp
-                </a>
+                <div className="flex flex-col sm:flex-row items-center gap-2">
+                  <a
+                    href="https://wa.me/573207120787?text=Tengo%20una%20pregunta%20sobre%20las%20boletas"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/15 text-white/60 text-[13px] font-bold hover:border-white/30 hover:text-white/80 transition-all"
+                  >
+                    <i className="fab fa-whatsapp text-lg text-green-400" />
+                    320 712 0787
+                  </a>
+                  <a
+                    href="https://wa.me/573207120779?text=Tengo%20una%20pregunta%20sobre%20las%20boletas"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/15 text-white/60 text-[13px] font-bold hover:border-white/30 hover:text-white/80 transition-all"
+                  >
+                    <i className="fab fa-whatsapp text-lg text-green-400" />
+                    320 712 0779
+                  </a>
+                </div>
               </div>
 
               {/* Lookup section — Token + Cédula */}
@@ -2946,19 +3542,27 @@ export default function BoletasShop() {
                         </Link>
                       )}
 
-                      {/* WhatsApp CTA */}
+                      {/* WhatsApp CTA — dual numbers */}
                       {saldoBoleta > 0 && !isCancelada && (
-                        <a
-                          href={`https://wa.me/573000000000?text=${encodeURIComponent(
-                            `Hola! Soy ${cedulaResult.cliente?.nombre || 'Cliente'}, CC ${cedulaResult.cliente?.identificacion || lookupCedula}. Quiero enviar comprobante de pago para mi boleta #${String(b.numero).padStart(4, '0')} de la rifa "${v.rifa_nombre}". Precio boleta: ${formatCOP(precioBoleta)}, Pagado: ${formatCOP(totalPagado)}, Saldo: ${formatCOP(saldoBoleta)}`
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl bg-green-600 text-white text-[13px] font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-600/20"
-                        >
-                          <i className="fab fa-whatsapp text-lg" />
-                          ENVIAR COMPROBANTE DE PAGO
-                        </a>
+                        <div className="flex flex-col gap-2">
+                          {[
+                            { num: '573207120787', display: '320 712 0787' },
+                            { num: '573207120779', display: '320 712 0779' },
+                          ].map((wa) => (
+                            <a
+                              key={wa.num}
+                              href={`https://wa.me/${wa.num}?text=${encodeURIComponent(
+                                `Hola! Soy ${cedulaResult.cliente?.nombre || 'Cliente'}, CC ${cedulaResult.cliente?.identificacion || lookupCedula}. Quiero enviar comprobante de pago para mi boleta #${String(b.numero).padStart(4, '0')} de la rifa "${v.rifa_nombre}". Precio boleta: ${formatCOP(precioBoleta)}, Pagado: ${formatCOP(totalPagado)}, Saldo: ${formatCOP(saldoBoleta)}`
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl bg-green-600 text-white text-[13px] font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-600/20"
+                            >
+                              <i className="fab fa-whatsapp text-lg" />
+                              WHATSAPP {wa.display}
+                            </a>
+                          ))}
+                        </div>
                       )}
                     </div>
 

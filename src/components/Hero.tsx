@@ -18,7 +18,7 @@ function getTimeLeft(target: Date) {
 export default function Hero() {
   const heroRef = useRef<HTMLElement>(null);
   const [mounted, setMounted] = useState(false);
-  const targetDate = new Date('2026-05-10T00:00:00');
+  const targetDate = new Date('2026-06-20T00:00:00');
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
@@ -91,7 +91,7 @@ export default function Hero() {
             {/* Main Title */}
             <h1 style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
               <span className="block text-[clamp(48px,8vw,100px)] leading-[0.85] tracking-[3px] text-white drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)]">
-                EL REY DE LA
+                EL GUERRERO DE LA
               </span>
               <span className="block text-[clamp(48px,8vw,100px)] leading-[0.85] tracking-[3px] text-truck-red drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)]">
                 CARRETERA
@@ -103,11 +103,11 @@ export default function Hero() {
 
             {/* Description */}
             <p className="mt-6 text-[15px] sm:text-[17px] leading-relaxed text-white/70 max-w-[48ch] mx-auto lg:mx-0">
-              Una tractomula, un <span className="text-warning-yellow font-semibold">Kia Picanto 0km</span>,{' '}
-              <span className="text-warning-yellow font-semibold">$20 millones en premios</span> y un{' '}
-              <span className="text-warning-yellow font-semibold">crucero por las Bahamas</span>.
+              Una Camion, un <span className="text-warning-yellow font-semibold">Kia Picanto 0km</span>,{' '}
+              <span className="text-warning-yellow font-semibold">$400 millones en premios</span> y un{' '}
+              <span className="text-warning-yellow font-semibold">crucero por el caribe</span>.
               <br className="hidden sm:block" />
-              Todo por solo <span className="text-white font-bold">$50.000 COP</span>.
+              Todo por solo <span className="text-white font-bold">$120.000 COP</span>.
             </p>
 
             {/* Countdown */}
