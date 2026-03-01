@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}"
+self.__REACT_LOADABLE_MANIFEST="{\"app/mis-boletas/[identificacion]/page.tsx -> html2canvas-pro\":{\"id\":\"app/mis-boletas/[identificacion]/page.tsx -> html2canvas-pro\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_html2canvas-pro_dist_html2canvas-pro_esm_js.js\"]}}"

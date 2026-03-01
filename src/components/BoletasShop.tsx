@@ -2613,6 +2613,19 @@ export default function BoletasShop() {
                     Consultar Estado
                   </button>
 
+                  {/* Download boletas link */}
+                  {buyerData.identificacion && (
+                    <a
+                      href={`/mis-boletas/${buyerData.identificacion}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full border border-[#E63946]/20 text-[#E63946] text-[13px] font-bold hover:bg-[#E63946]/5 hover:border-[#E63946]/30 transition-all"
+                    >
+                      <i className="fas fa-download text-sm" />
+                      Descargar Mis Boletas
+                    </a>
+                  )}
+
                   <button
                     onClick={handleReset}
                     className="text-[13px] text-[#999] hover:text-[#555] font-semibold py-2 transition-colors"
@@ -3302,8 +3315,29 @@ export default function BoletasShop() {
                     );
                   })}
 
-                  {/* Back to shop CTA */}
-                  <div className="text-center pt-4">
+                  {/* Download + Shop CTAs */}
+                  <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm p-5 space-y-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-8 h-8 rounded-full bg-[#E63946]/10 flex items-center justify-center">
+                        <i className="fas fa-download text-[#E63946] text-sm" />
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-bold text-[#1A1A1A]">Descarga tus boletas</p>
+                        <p className="text-[10px] text-[#999]">Descarga como imagen con estado actualizado</p>
+                      </div>
+                    </div>
+                    <a
+                      href={`/mis-boletas/${cedulaResult.cliente?.identificacion || lookupCedula}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-gradient-to-r from-[#E63946] to-[#C62B38] text-white text-[13px] font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
+                    >
+                      <i className="fas fa-download text-xs" />
+                      DESCARGAR MIS BOLETAS
+                    </a>
+                  </div>
+
+                  <div className="text-center pt-2">
                     <button
                       onClick={handleReset}
                       className="btn-primary text-[13px] px-8 py-3.5"
