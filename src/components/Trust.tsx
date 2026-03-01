@@ -5,7 +5,7 @@ import { useState } from 'react';
 const faqs = [
   {
     q: '¿Cuándo juega la rifa?',
-    a: 'Juega el próximo 30 de Diciembre con el premio mayor de la Lotería de Medellín.',
+    a: 'Juega el próximo 20 de junio con el premio mayor de la Lotería de Boyaca ,ademas tenemos premios anticipados que juegan cada semana con la misma loteria.',
   },
   {
     q: '¿Qué pasa si no cae el número?',
@@ -13,15 +13,15 @@ const faqs = [
   },
   {
     q: '¿Puedo comprar desde el exterior?',
-    a: 'Sí, puedes pagar con tarjeta de crédito o PayPal. Contacta a soporte para el link de pago internacional.',
+    a: 'Sí, puedes pagar con diferentes métodos de pago. Contacta a soporte para el proceso de pago internacional.',
   },
   {
     q: '¿Es legal esta rifa?',
-    a: 'Sí, la rifa está autorizada y supervisada por las autoridades competentes.',
+    a: 'Sí, la rifa está autorizada y supervisada por las autoridades competentes EDSA.',
   },
   {
     q: '¿Cómo recibo mi boleta?',
-    a: 'Tu boleta digital te llega directamente a tu WhatsApp inmediatamente después de confirmar el pago.',
+    a: 'Tu boleta digital te llega directamente a tu WhatsApp inmediatamente después de confirmar el pago, o la puedes descargar desde este sitio web en el apartado de "Mis Boletas".',
   },
 ];
 

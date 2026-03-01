@@ -12,7 +12,7 @@ const steps = [
   {
     number: '02',
     title: 'Realiza el Pago',
-    desc: 'Paga por Nequi, Bancolombia, Daviplata o Tarjeta. 100% seguro y verificado.',
+    desc: 'Paga por llave, Bancolombia, . Punto Fisico.',
     icon: 'fa-credit-card',
     color: 'from-[#FFB703] to-[#F57F17]',
     bgColor: 'bg-[#FFB703]/[0.06]',
@@ -111,7 +111,7 @@ export default function HowItWorks() {
             className="text-[clamp(48px,7vw,80px)] gradient-text-red leading-none mb-6"
             style={{ fontFamily: '"Bebas Neue", sans-serif' }}
           >
-            $50.000 COP
+            $120.000 COP
           </div>
           <a
             href="/boletas"

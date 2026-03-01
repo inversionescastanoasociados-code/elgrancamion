@@ -2230,73 +2230,86 @@ export default function BoletasShop() {
                     </div>
                   </div>
 
-                  {/* ── Section: Método de Pago ── */}
-                  {mediosPago.length > 0 && (
-                    <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
-                      <div className="flex items-center gap-3 px-5 py-4 border-b border-black/[0.04] bg-[#FAFAFA]">
-                        <div className="w-8 h-8 rounded-full bg-[#FFB703]/10 flex items-center justify-center">
-                          <i className="fas fa-credit-card text-[#FFB703] text-xs" />
-                        </div>
-                        <div>
-                          <h4
-                            className="text-base tracking-wider uppercase text-[#1A1A1A]"
-                            style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-                          >
-                            MÉTODO DE PAGO
-                          </h4>
-                          <p className="text-[10px] text-[#999] font-medium">
-                            Selecciona cómo vas a pagar
-                          </p>
-                        </div>
+                  {/* ── Section: Medios de Pago (Informativo) ── */}
+                  <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
+                    <div className="flex items-center gap-3 px-5 py-4 border-b border-black/[0.04] bg-[#FAFAFA]">
+                      <div className="w-8 h-8 rounded-full bg-[#FFB703]/10 flex items-center justify-center">
+                        <i className="fas fa-credit-card text-[#FFB703] text-xs" />
                       </div>
-
-                      <div className="p-5">
-                        <div className="grid grid-cols-2 gap-2.5">
-                          {mediosPago.map((mp) => {
-                            const isActive = selectedMedioPago === mp.id;
-                            const iconMap: Record<string, { gradient: string; icon: string }> = {
-                              Nequi: { gradient: 'from-[#E20074] to-[#B0005C]', icon: 'fas fa-mobile-alt' },
-                              PSE: { gradient: 'from-[#003DA5] to-[#002D7A]', icon: 'fas fa-university' },
-                              Efectivo: { gradient: 'from-[#34C759] to-[#2AAE4A]', icon: 'fas fa-money-bill-wave' },
-                              'Tarjeta Crédito': { gradient: 'from-[#1A1A1A] to-[#333]', icon: 'fas fa-credit-card' },
-                              'Tarjeta Débito': { gradient: 'from-[#555] to-[#333]', icon: 'far fa-credit-card' },
-                              Bancolombia: { gradient: 'from-[#FDDA24] to-[#E6C420]', icon: 'fas fa-building-columns' },
-                              Daviplata: { gradient: 'from-[#ED1C24] to-[#C0161E]', icon: 'fas fa-wallet' },
-                            };
-                            const config = iconMap[mp.nombre] || { gradient: 'from-[#888] to-[#666]', icon: 'fas fa-wallet' };
-
-                            return (
-                              <button
-                                key={mp.id}
-                                type="button"
-                                onClick={() => setSelectedMedioPago(isActive ? '' : mp.id)}
-                                className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl border text-left transition-all ${
-                                  isActive
-                                    ? 'border-[#E63946]/30 bg-[#E63946]/[0.04] ring-2 ring-[#E63946]/10 shadow-sm'
-                                    : 'border-black/[0.06] bg-[#FAFAFA] hover:border-black/15 hover:bg-white'
-                                }`}
-                              >
-                                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${config.gradient} flex items-center justify-center flex-shrink-0 shadow-sm`}>
-                                  <i className={`${config.icon} text-white text-xs`} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className={`text-[12px] font-bold truncate ${isActive ? 'text-[#E63946]' : 'text-[#333]'}`}>
-                                    {mp.nombre}
-                                  </p>
-                                  {mp.descripcion && (
-                                    <p className="text-[10px] text-[#999] truncate">{mp.descripcion}</p>
-                                  )}
-                                </div>
-                                {isActive && (
-                                  <i className="fas fa-check-circle text-[#E63946] text-sm flex-shrink-0" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
+                      <div>
+                        <h4
+                          className="text-base tracking-wider uppercase text-[#1A1A1A]"
+                          style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                        >
+                          MEDIOS DE PAGO
+                        </h4>
+                        <p className="text-[10px] text-[#999] font-medium">
+                          Realiza tu pago a cualquiera de estas cuentas
+                        </p>
                       </div>
                     </div>
-                  )}
+
+                    <div className="p-5 space-y-3">
+                      {/* Nequi */}
+                      <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl border border-black/[0.06] bg-[#FAFAFA]">
+                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#E20074] to-[#B0005C] flex items-center justify-center flex-shrink-0 shadow-sm">
+                          <i className="fas fa-mobile-alt text-white text-xs" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[12px] font-bold text-[#333]">llave</p>
+                          <p className="text-[13px] font-mono font-bold text-[#E20074] tracking-wide">0091761012</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => navigator.clipboard?.writeText('0091761012')}
+                          className="w-8 h-8 rounded-lg bg-white border border-black/[0.08] flex items-center justify-center hover:bg-[#E20074]/5 hover:border-[#E20074]/20 transition-all flex-shrink-0"
+                          title="Copiar"
+                        >
+                          <i className="fas fa-copy text-[11px] text-[#AAA]" />
+                        </button>
+                      </div>
+
+                      {/* Bancolombia */}
+                      <div className="flex items-start gap-3 px-4 py-3.5 rounded-xl border border-black/[0.06] bg-[#FAFAFA]">
+                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#FDDA24] to-[#E6C420] flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5">
+                          <i className="fas fa-building-columns text-white text-xs" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[12px] font-bold text-[#333]">Bancolombia — Cuenta de Ahorros</p>
+                          <p className="text-[13px] font-mono font-bold text-[#1A1A1A] tracking-wide">70800002342</p>
+                          <p className="text-[10px] text-[#999] mt-0.5">Inversiones Castaño Asociados SAS</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => navigator.clipboard?.writeText('70800002342')}
+                          className="w-8 h-8 rounded-lg bg-white border border-black/[0.08] flex items-center justify-center hover:bg-[#FDDA24]/10 hover:border-[#FDDA24]/30 transition-all flex-shrink-0 mt-0.5"
+                          title="Copiar"
+                        >
+                          <i className="fas fa-copy text-[11px] text-[#AAA]" />
+                        </button>
+                      </div>
+
+                      {/* WhatsApp contact */}
+                      <div className="bg-[#25D366]/[0.06] border border-[#25D366]/15 rounded-xl px-4 py-3">
+                        <p className="text-[11px] font-bold text-[#25D366] mb-1.5">
+                          <i className="fab fa-whatsapp mr-1" /> Envía tu comprobante por WhatsApp
+                        </p>
+                        <div className="flex flex-wrap gap-3">
+                          <a href="https://wa.me/573207120787" target="_blank" rel="noopener noreferrer" className="text-[12px] font-bold text-[#128C7E] hover:underline">
+                            <i className="fas fa-phone text-[9px] mr-1" /> 320 712 0787
+                          </a>
+                          <a href="https://wa.me/573207120779" target="_blank" rel="noopener noreferrer" className="text-[12px] font-bold text-[#128C7E] hover:underline">
+                            <i className="fas fa-phone text-[9px] mr-1" /> 320 712 0779
+                          </a>
+                        </div>
+                      </div>
+
+                      <p className="text-[10px] text-[#BBB] text-center">
+                        <i className="fas fa-info-circle text-[9px] mr-1" />
+                        Después de reservar, realiza el pago y envía el comprobante
+                      </p>
+                    </div>
+                  </div>
 
                   {/* ── Section: Notas ── */}
                   <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
@@ -2320,7 +2333,7 @@ export default function BoletasShop() {
                       <textarea
                         value={notas}
                         onChange={(e) => setNotas(e.target.value)}
-                        placeholder="Ej: Pagaré por Nequi mañana a primera hora, envío comprobante por WhatsApp..."
+                        placeholder="Ej: Pagaré por llave mañana a primera hora, envío comprobante por WhatsApp..."
                         maxLength={1000}
                         rows={3}
                         className="w-full px-4 py-3 rounded-xl border border-black/[0.08] bg-white text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10 transition-all resize-none"
@@ -2388,14 +2401,6 @@ export default function BoletasShop() {
                             <span className="text-[#888]">{selectedCount} × Boleta</span>
                             <span className="text-[#555] font-semibold">{formatCOP(precio)}</span>
                           </div>
-                          {selectedMedioPago && (
-                            <div className="flex justify-between text-[13px]">
-                              <span className="text-[#888]">Método</span>
-                              <span className="text-[#555] font-semibold">
-                                {mediosPago.find(m => m.id === selectedMedioPago)?.nombre || '—'}
-                              </span>
-                            </div>
-                          )}
                           <div className="h-px bg-black/[0.06] my-1" />
                           <div className="flex justify-between items-end">
                             <span className="text-[13px] font-bold text-[#1A1A1A]">Total a Pagar</span>
@@ -3323,7 +3328,7 @@ export default function BoletasShop() {
                       </div>
                       <div>
                         <p className="text-[13px] font-bold text-[#1A1A1A]">Descarga tus boletas</p>
-                        <p className="text-[10px] text-[#999]">Descarga como imagen con estado actualizado</p>
+                        <p className="text-[10px] text-[#999]">Descarga en PDF con estado actualizado</p>
                       </div>
                     </div>
                     <a

@@ -58,7 +58,7 @@ export default function Navbar() {
             className={`text-lg tracking-wider transition-colors hidden sm:block ${scrolled ? 'text-[#1A1A1A]' : 'text-white/90'}`}
             style={{ fontFamily: '"Bebas Neue", sans-serif' }}
           >
-            GRAN RIFA <span className={scrolled ? 'text-truck-red' : 'text-truck-red'}>CAMIONERA</span>
+             RIFAS <span className={scrolled ? 'text-truck-red' : 'text-truck-red'}>EL GRAN CAMION</span>
           </span>
         </a>
 

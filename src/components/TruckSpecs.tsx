@@ -1,12 +1,11 @@
 'use client';
 
 const specs = [
-  { label: 'Motor', value: 'Cummins ISX 450HP' },
-  { label: 'Transmisión', value: 'Eaton Fuller 18 vel.' },
-  { label: 'Extras', value: 'SOAT + Tanque lleno + $5M viáticos' },
-  { label: 'Cabina', value: 'A/C, litera doble, cuero' },
-  { label: 'Kia Picanto', value: '2025 Full Equipo 0km' },
-  { label: 'Estado', value: 'Papeles al día, llantas nuevas' },
+  { label: 'Motor', value: 'Cummins 7ct' },
+  { label: 'Transmisión', value: 'Eaton Fuller 7 vel.' },
+  { label: 'Extras', value: 'carpa nueva + llantas nuevas + Cupo de chatarrizacion' },
+  { label: 'Modelo', value: '2015' },
+  { label: 'Estado', value: 'Papeles al día, Unico dueño ,Nunca estrellado' },
 ];
 
 export default function TruckSpecs() {
@@ -27,7 +26,7 @@ export default function TruckSpecs() {
               className="text-[clamp(36px,5vw,56px)] leading-[0.9] uppercase tracking-wider text-white mb-5"
               style={{ fontFamily: '"Bebas Neue", sans-serif' }}
             >
-              CONOCE A LA <span className="gradient-text-red">BESTIA</span>
+              CONOCE A ESTE <span className="gradient-text-red">GUERRERO</span>
             </h2>
             <p className="text-white/50 text-[16px] leading-relaxed">
               Esta máquina está lista para trabajar desde el día uno. Motor ajustado, llantas nuevas, documentos al día.

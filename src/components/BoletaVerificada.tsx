@@ -268,7 +268,19 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
 
   /* ═══ RENDER ═══ */
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen bg-[#FAFAFA] relative">
+      {/* ══════ FLYER BACKGROUND ══════ */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Image
+          src="/uploads/boleta/diseño-flyr.png"
+          alt=""
+          fill
+          className="object-cover opacity-[0.06]"
+          sizes="100vw"
+          priority
+        />
+      </div>
+
       {/* ══════ NAVBAR ══════ */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-black/[0.06] shadow-sm">
         <div className="max-w-[1200px] mx-auto px-6 py-3 flex items-center justify-between">
@@ -310,7 +322,7 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
 
       {/* ══════ LOADING STATE ══════ */}
       {state === 'loading' && (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
+        <div className="relative z-[1] flex flex-col items-center justify-center min-h-[80vh] px-6">
           <div className="relative">
             {/* Outer ring */}
             <div className="w-24 h-24 rounded-full border-[3px] border-black/[0.04] flex items-center justify-center">
@@ -336,7 +348,7 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
 
       {/* ══════ INVALID HASH ══════ */}
       {state === 'invalid' && (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
+        <div className="relative z-[1] flex flex-col items-center justify-center min-h-[80vh] px-6">
           <div className="verificar-bounce-in max-w-[440px] w-full text-center">
             <div className="w-20 h-20 rounded-full bg-red-50 border-2 border-red-100 flex items-center justify-center mx-auto mb-6">
               <i className="fas fa-link-slash text-red-400 text-2xl" />
@@ -364,7 +376,7 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
 
       {/* ══════ NOT FOUND ══════ */}
       {state === 'not-found' && (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
+        <div className="relative z-[1] flex flex-col items-center justify-center min-h-[80vh] px-6">
           <div className="verificar-bounce-in max-w-[440px] w-full text-center">
             <div className="w-20 h-20 rounded-full bg-warning-yellow/10 border-2 border-warning-yellow/20 flex items-center justify-center mx-auto mb-6">
               <i className="fas fa-magnifying-glass text-warning-yellow text-2xl" />
@@ -396,7 +408,7 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
 
       {/* ══════ ERROR ══════ */}
       {state === 'error' && (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
+        <div className="relative z-[1] flex flex-col items-center justify-center min-h-[80vh] px-6">
           <div className="verificar-bounce-in max-w-[440px] w-full text-center">
             <div className="w-20 h-20 rounded-full bg-red-50 border-2 border-red-100 flex items-center justify-center mx-auto mb-6">
               <i className="fas fa-wifi text-red-400 text-2xl" />
@@ -421,10 +433,10 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
           {/* ── HERO BANNER ── */}
           <section className="dark-section relative overflow-hidden">
             <Image
-              src="/uploads/IMG_7996.JPG"
+              src="/uploads/boleta/diseño-flyr.png"
               alt="Verificación"
               fill
-              className="object-cover opacity-20"
+              className="object-cover opacity-25"
               sizes="100vw"
               priority
             />
@@ -976,7 +988,7 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
       )}
 
       {/* ══════ FOOTER ══════ */}
-      <footer className="bg-[#111113] border-t border-white/[0.04] py-8">
+      <footer className="relative z-[1] bg-[#111113] border-t border-white/[0.04] py-8">
         <div className="max-w-[700px] mx-auto px-6 text-center">
           <div className="flex items-center justify-center gap-1.5 mb-3">
             <div className="relative w-10 h-10">

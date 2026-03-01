@@ -63,7 +63,7 @@ export default function FinalCTA() {
               className="block text-[clamp(48px,8vw,72px)] gradient-text-gold leading-none mb-8"
               style={{ fontFamily: '"Bebas Neue", sans-serif' }}
             >
-              $50.000
+              $120.000
             </span>
             <a
               href="/boletas"
@@ -76,7 +76,7 @@ export default function FinalCTA() {
 
           {/* Payment methods */}
           <div className="flex flex-wrap justify-center gap-3 mb-6">
-            {['Nequi', 'Bancolombia', 'Daviplata', 'Tarjeta'].map((method) => (
+            {['llave', 'Transferencia', 'Efectivo'].map((method) => (
               <span
                 key={method}
                 className="px-4 py-2 rounded-full border border-white/[0.1] text-[12px] font-semibold text-white/40"

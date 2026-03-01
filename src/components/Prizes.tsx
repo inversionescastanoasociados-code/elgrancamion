@@ -8,10 +8,10 @@ const prizes = [
   {
     id: 'truck',
     rank: 'GRAN PREMIO',
-    title: 'Tractomula VW Worker',
-    subtitle: 'Modelo 2024 · Papeles al día',
+    title: 'CAMIÓN VOLKSWAGEN 17220',
+    subtitle: 'Modelo 2015 · Papeles al día ·Unico dueño',
     description:
-      'Tu propio negocio sobre ruedas. Motor ajustado, llantas nuevas, documentos al día. Empieza a generar ingresos desde el día uno.',
+      'Tu propio negocio sobre ruedas. Cupo de chatarrizacion, llantas nuevas, documentos al día. Empieza a generar ingresos desde el día uno.',
     image: '/uploads/IMG_7998.JPG',
     badge: '🥇',
     badgeColor: 'from-[#E63946] to-[#B71C1C]',
@@ -20,16 +20,16 @@ const prizes = [
     subtitleColor: 'text-white/50',
     descColor: 'text-white/60',
     featured: true,
-    value: '+$200M',
+    value: '+$280M',
   },
   {
     id: 'kia',
     rank: '2DO PREMIO',
-    title: 'Kia Picanto 0km',
-    subtitle: 'Full Equipo · Matrícula incluida',
+    title: 'Kia Picanto Zenith 0km',
+    subtitle: 'Full Equipo · Matrícula incluida · Papeles al día' ,
     description:
-      'Color plata, full equipo, matrícula incluida. El carro perfecto para tu familia.',
-    image: '/uploads/kia-picanto.jpg',
+      'Color gris, full equipo, matrícula incluida. El carro perfecto para tu familia.',
+    image: '/uploads/kia-picanto.JPEG',
     badge: '🥈',
     badgeColor: 'from-[#FFB703] to-[#F57F17]',
     cardBg: 'bg-gradient-to-br from-white via-[#FFFDF5] to-[#FFF8E7]',
@@ -37,33 +37,16 @@ const prizes = [
     subtitleColor: 'text-[#999]',
     descColor: 'text-[#666]',
     featured: false,
-    value: '$45M',
+    value: '$70M',
   },
-  {
-    id: 'mothers',
-    rank: 'DÍA DE LA MADRE',
-    title: '$10 Millones',
-    subtitle: '14 de Mayo · En Efectivo',
-    description:
-      'Porque mamá merece lo mejor. Dinero directo a tu cuenta.',
-    image: null,
-    icon: 'mothers',
-    badge: '💝',
-    badgeColor: 'from-[#E91E63] to-[#AD1457]',
-    cardBg: 'bg-gradient-to-br from-[#FFF0F3] via-white to-[#FFF0F3]',
-    textColor: 'text-[#1A1A1A]',
-    subtitleColor: 'text-[#999]',
-    descColor: 'text-[#666]',
-    featured: false,
-    value: '$10M',
-  },
+  
   {
     id: 'fathers',
-    rank: 'DÍA DEL PADRE',
-    title: '$10 Millones',
-    subtitle: '18 de Junio · En Efectivo',
+    rank: 'ATICIPADOS semanalaes',
+    title: '$2 Millones',
+    subtitle: 'Desde el 7 de marzo · Hasta el 20 de junio Día del Padre',
     description:
-      'Premios en efectivo para el papá de la casa. Celebra en grande.',
+      'Premios en efectivo cada sabado . Celebra en grande. Premio acomulable',
     image: null,
     icon: 'fathers',
     badge: '👔',
@@ -73,15 +56,15 @@ const prizes = [
     subtitleColor: 'text-[#999]',
     descColor: 'text-[#666]',
     featured: false,
-    value: '$10M',
+    value: '$2M',
   },
   {
     id: 'cruise',
-    rank: '5TO PREMIO',
-    title: 'Crucero Bahamas',
-    subtitle: 'Para 2 Personas · All Inclusive',
+    rank: 'DIA DE LA MADRE',
+    title: 'Crucero por el Caribe + $2 Millones de anticipado',
+    subtitle: 'Para 2 Personas · En habitacion suite ',
     description:
-      'El viaje de tus sueños por las islas del Caribe con todo incluido.',
+      'El viaje de tus sueños por las islas del Caribe con todo incluido desde cartagena.',
     image: null,
     icon: 'cruise',
     badge: '🚢',
@@ -91,36 +74,13 @@ const prizes = [
     subtitleColor: 'text-[#999]',
     descColor: 'text-[#666]',
     featured: false,
-    value: '$25M',
+    value: '$13M',
   },
 ];
 
 /* ─── Cash prize illustration ─── */
 function CashPrizeVisual({ type }: { type: string }) {
-  if (type === 'mothers') {
-    return (
-      <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-40 h-40 rounded-full bg-gradient-to-br from-pink-200/60 to-pink-300/30 blur-2xl" />
-        </div>
-        <div className="relative text-center">
-          <div className="text-6xl sm:text-7xl mb-2 animate-float">💝</div>
-          <div
-            className="text-4xl sm:text-5xl font-black tracking-wider bg-gradient-to-r from-[#E91E63] to-[#C2185B] bg-clip-text text-transparent"
-            style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-          >
-            $10M
-          </div>
-          <div className="mt-1 text-[10px] font-bold tracking-[3px] uppercase text-[#E91E63]/60">
-            En Efectivo
-          </div>
-          <div className="absolute -top-4 -left-6 text-xl animate-float" style={{ animationDelay: '0.5s' }}>❤️</div>
-          <div className="absolute -top-2 right-0 text-lg animate-float" style={{ animationDelay: '1s' }}>💕</div>
-          <div className="absolute bottom-0 -right-4 text-sm animate-float" style={{ animationDelay: '1.5s' }}>🌹</div>
-        </div>
-      </div>
-    );
-  }
+
 
   if (type === 'fathers') {
     return (
@@ -134,7 +94,7 @@ function CashPrizeVisual({ type }: { type: string }) {
             className="text-4xl sm:text-5xl font-black tracking-wider bg-gradient-to-r from-[#1565C0] to-[#0D47A1] bg-clip-text text-transparent"
             style={{ fontFamily: '"Bebas Neue", sans-serif' }}
           >
-            $10M
+            Mas de $32M
           </div>
           <div className="mt-1 text-[10px] font-bold tracking-[3px] uppercase text-[#1565C0]/60">
             En Efectivo
@@ -158,10 +118,10 @@ function CashPrizeVisual({ type }: { type: string }) {
           className="text-3xl sm:text-4xl font-black tracking-wider bg-gradient-to-r from-[#00838F] to-[#00695C] bg-clip-text text-transparent"
           style={{ fontFamily: '"Bebas Neue", sans-serif' }}
         >
-          BAHAMAS
+          CARIBE
         </div>
         <div className="mt-1 text-[10px] font-bold tracking-[3px] uppercase text-[#00838F]/60">
-          2 Personas · All Inclusive
+          POSIBILIDAD DE CAMBIARLO POR 13 MILLONES EN EFECTIVO 
         </div>
         <div className="absolute -top-4 -left-6 text-xl animate-float" style={{ animationDelay: '0.5s' }}>🌴</div>
         <div className="absolute -top-2 right-0 text-lg animate-float" style={{ animationDelay: '1s' }}>🏝️</div>
@@ -195,7 +155,7 @@ export default function Prizes() {
             LO QUE PUEDES <span className="gradient-text-red">GANAR</span>
           </h2>
           <p className="text-[#777] text-lg max-w-xl mx-auto leading-relaxed">
-            Más de <strong className="text-[#1A1A1A]">$300 millones</strong> en premios esperando
+            Más de <strong className="text-[#1A1A1A]">$400 millones</strong> en premios esperando
             por ti. Una boleta puede cambiar tu vida para siempre.
           </p>
         </div>
@@ -356,11 +316,11 @@ export default function Prizes() {
                   style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                 >
                   <span className="bg-gradient-to-r from-[#FFB703] via-[#FFD700] to-[#FFB703] bg-clip-text text-transparent">
-                    +$300 MILLONES
+                    +$400 MILLONES
                   </span>
                 </div>
                 <span className="block text-[13px] text-white/35 mt-2">
-                  Todo puede ser tuyo con una sola boleta de <strong className="text-white/60">$50.000</strong>
+                  Todo puede ser tuyo con una sola boleta de <strong className="text-white/60">$120.000</strong>
                 </span>
               </div>
 

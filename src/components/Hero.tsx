@@ -103,8 +103,8 @@ export default function Hero() {
 
             {/* Description */}
             <p className="mt-6 text-[15px] sm:text-[17px] leading-relaxed text-white/70 max-w-[48ch] mx-auto lg:mx-0">
-              Una Camion, un <span className="text-warning-yellow font-semibold">Kia Picanto 0km</span>,{' '}
-              <span className="text-warning-yellow font-semibold">$400 millones en premios</span> y un{' '}
+              Una Camion Volkswagen 17220, un <span className="text-warning-yellow font-semibold">Kia Picanto 0km</span>,{' '}
+              <span className="text-warning-yellow font-semibold">mas de $30 millones en premios anticipados</span> y un{' '}
               <span className="text-warning-yellow font-semibold">crucero por el caribe</span>.
               <br className="hidden sm:block" />
               Todo por solo <span className="text-white font-bold">$120.000 COP</span>.

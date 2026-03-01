@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import BoletaTicket from '../../../components/BoletaTicket';
+import { descargarBoletaPDF, descargarTodasPDF } from '../../../lib/boletaPDF';
+import type { BoletaPDFData } from '../../../lib/boletaPDF';
 
 /* ═══════════════════════════════════════════════════
    MIS BOLETAS — Acceso directo por cédula en URL
@@ -57,12 +58,24 @@ const API_BASE = 'https://rifas-backend-production.up.railway.app/api';
 const PUBLIC_API_KEY = 'pk_4f9a8c7e2d1b6a9f3c0d5e7f8a2b4c6d';
 
 function formatCOP(n: number) {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(n);
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+}
+
+function padNum(n: number) {
+  return n.toString().padStart(4, '0');
+}
+
+function getEstadoStyle(estado: string) {
+  const e = estado.toUpperCase().trim();
+  if (e === 'PAGADA' || e === 'VENDIDA')
+    return { label: 'PAGADA', bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/30', icon: 'fa-check-circle' };
+  if (e === 'ABONADA')
+    return { label: 'ABONADA', bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30', icon: 'fa-coins' };
+  if (e === 'RESERVADA')
+    return { label: 'RESERVADA', bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30', icon: 'fa-clock' };
+  if (e === 'CANCELADA')
+    return { label: 'CANCELADA', bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30', icon: 'fa-times-circle' };
+  return { label: 'DISPONIBLE', bg: 'bg-gray-500/20', text: 'text-gray-400', border: 'border-gray-500/30', icon: 'fa-ticket-alt' };
 }
 
 export default function MisBoletasPage() {
@@ -82,23 +95,11 @@ export default function MisBoletasPage() {
       try {
         setLoading(true);
         setError(null);
-
-        const res = await fetch(
-          `${API_BASE}/public/cliente/${encodeURIComponent(identificacion)}/boletas`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': PUBLIC_API_KEY,
-            },
-          }
-        );
-
+        const res = await fetch(`${API_BASE}/public/cliente/${encodeURIComponent(identificacion)}/boletas`, {
+          headers: { 'Content-Type': 'application/json', 'x-api-key': PUBLIC_API_KEY },
+        });
         const data: ApiResponse = await res.json();
-
-        if (!res.ok || !data.success) {
-          throw new Error(data.message || 'Error al consultar boletas');
-        }
-
+        if (!res.ok || !data.success) throw new Error(data.message || 'Error al consultar boletas');
         setCliente(data.data.cliente);
         setRifas(data.data.rifas);
         setTotalBoletas(data.data.total_boletas);
@@ -108,59 +109,50 @@ export default function MisBoletasPage() {
         setLoading(false);
       }
     };
-
     if (identificacion) fetchBoletas();
   }, [identificacion]);
 
-  const descargarBoleta = useCallback(async (boleta: BoletaData, cc: string) => {
+  const toPDFData = useCallback((boleta: BoletaData, rifa: RifaGroup): BoletaPDFData => ({
+    numero: boleta.numero,
+    estado: boleta.estado,
+    qr_url: boleta.qr_url,
+    barcode: boleta.barcode,
+    precio_boleta: boleta.precio_boleta,
+    total_pagado: boleta.total_pagado,
+    saldo_pendiente: boleta.saldo_pendiente,
+    rifaNombre: rifa.rifa_nombre,
+    fechaSorteo: rifa.fecha_sorteo,
+    premio: rifa.premio_principal,
+    clienteNombre: cliente?.nombre ?? 'N/A',
+    clienteIdentificacion: cliente?.identificacion ?? identificacion,
+    imagenUrl: boleta.imagen_url || null,
+  }), [cliente, identificacion]);
+
+  const handleDownloadOne = useCallback(async (boleta: BoletaData, rifa: RifaGroup) => {
     setDownloadingId(boleta.id);
-    try {
-      const html2canvas = (await import('html2canvas-pro')).default;
-      const el = document.getElementById(`boleta-${boleta.id}`) as HTMLElement;
-      if (!el) return;
+    try { await descargarBoletaPDF(toPDFData(boleta, rifa)); }
+    catch (err) { console.error('Error PDF:', err); alert('Error al generar el PDF.'); }
+    finally { setDownloadingId(null); }
+  }, [toPDFData]);
 
-      const canvas = await html2canvas(el, {
-        scale: 4,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-      });
-
-      const link = document.createElement('a');
-      const num = boleta.numero.toString().padStart(4, '0');
-      link.download = `boleta_${num}_CC_${cc.replace(/\s+/g, '_')}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } catch (err) {
-      console.error('Error descargando boleta:', err);
-    } finally {
-      setDownloadingId(null);
-    }
-  }, []);
-
-  const descargarTodas = useCallback(async () => {
+  const handleDownloadAll = useCallback(async () => {
     if (!cliente) return;
     setDownloadingAll(true);
-    const cc = cliente.identificacion || 'SIN_CC';
     try {
-      for (const rifa of rifas) {
-        for (const boleta of rifa.boletas) {
-          await descargarBoleta(boleta, cc);
-          await new Promise((r) => setTimeout(r, 600));
-        }
-      }
-    } finally {
-      setDownloadingAll(false);
-    }
-  }, [rifas, cliente, descargarBoleta]);
+      const all: BoletaPDFData[] = [];
+      for (const rifa of rifas) for (const b of rifa.boletas) all.push(toPDFData(b, rifa));
+      await descargarTodasPDF(all, cliente.nombre, cliente.identificacion);
+    } catch (err) { console.error('Error PDF:', err); alert('Error al generar el PDF.'); }
+    finally { setDownloadingAll(false); }
+  }, [rifas, cliente, toPDFData]);
 
-  // ─── Loading state ───────────────────────────────────
+  // ─── Loading ─────────────────────────────────────────
   if (loading) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-[#0A0A0C] to-[#111113] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-[#E63946]/20 flex items-center justify-center mx-auto mb-4">
-            <i className="fas fa-spinner fa-spin text-[#E63946] text-2xl" />
+          <div className="w-14 h-14 rounded-full bg-[#E63946]/20 flex items-center justify-center mx-auto mb-3">
+            <i className="fas fa-spinner fa-spin text-[#E63946] text-xl" />
           </div>
           <p className="text-white/40 text-sm">Cargando tus boletas...</p>
         </div>
@@ -168,60 +160,36 @@ export default function MisBoletasPage() {
     );
   }
 
-  // ─── Error state ─────────────────────────────────────
+  // ─── Error ───────────────────────────────────────────
   if (error) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-[#0A0A0C] to-[#111113] flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <div className="text-5xl mb-4">❌</div>
-          <h2
-            className="text-2xl tracking-wider uppercase text-white mb-3"
-            style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-          >
-            ERROR
-          </h2>
-          <p className="text-white/40 text-sm mb-6">{error}</p>
-          <Link
-            href="/descargar-boletas"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#E63946] text-white text-[13px] font-bold hover:bg-[#d32f3c] transition-all"
-          >
-            <i className="fas fa-search text-xs" />
-            BUSCAR CON OTRA CÉDULA
+        <div className="text-center max-w-sm">
+          <div className="text-4xl mb-3">❌</div>
+          <h2 className="text-xl tracking-wider uppercase text-white mb-2" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>ERROR</h2>
+          <p className="text-white/40 text-xs mb-4">{error}</p>
+          <Link href="/descargar-boletas" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#E63946] text-white text-[12px] font-bold hover:bg-[#d32f3c] transition-all">
+            <i className="fas fa-search text-[10px]" /> BUSCAR CON OTRA CÉDULA
           </Link>
         </div>
       </main>
     );
   }
 
-  // ─── Empty state ─────────────────────────────────────
+  // ─── Empty ───────────────────────────────────────────
   if (totalBoletas === 0) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-[#0A0A0C] to-[#111113] flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <div className="text-5xl mb-4">📭</div>
-          <h2
-            className="text-2xl tracking-wider uppercase text-white mb-3"
-            style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-          >
-            SIN BOLETAS
-          </h2>
-          <p className="text-white/40 text-sm mb-6">
-            No se encontraron boletas para la cédula <strong className="text-white/60">{identificacion}</strong>
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/boletas"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#E63946] text-white text-[13px] font-bold hover:bg-[#d32f3c] transition-all"
-            >
-              <i className="fas fa-shopping-cart text-xs" />
-              COMPRAR BOLETAS
+        <div className="text-center max-w-sm">
+          <div className="text-4xl mb-3">📭</div>
+          <h2 className="text-xl tracking-wider uppercase text-white mb-2" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>SIN BOLETAS</h2>
+          <p className="text-white/40 text-xs mb-4">No se encontraron boletas para la cédula <strong className="text-white/60">{identificacion}</strong></p>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <Link href="/boletas" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#E63946] text-white text-[12px] font-bold hover:bg-[#d32f3c] transition-all">
+              <i className="fas fa-shopping-cart text-[10px]" /> COMPRAR BOLETAS
             </Link>
-            <Link
-              href="/descargar-boletas"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/10 text-white/50 text-[13px] font-bold hover:border-white/20 hover:text-white/70 transition-all"
-            >
-              <i className="fas fa-search text-xs" />
-              BUSCAR CON OTRA CÉDULA
+            <Link href="/descargar-boletas" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full border border-white/10 text-white/50 text-[12px] font-bold hover:border-white/20 transition-all">
+              <i className="fas fa-search text-[10px]" /> OTRA CÉDULA
             </Link>
           </div>
         </div>
@@ -234,177 +202,96 @@ export default function MisBoletasPage() {
     <main className="min-h-screen bg-gradient-to-br from-[#0A0A0C] to-[#111113]">
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-[#111113]/90 backdrop-blur-xl border-b border-white/[0.06]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/uploads/logos/Logo-principal.png"
-              alt="El Gran Camión"
-              width={40}
-              height={40}
-              className="rounded-lg"
-            />
-            <span
-              className="text-xl tracking-wider text-white uppercase"
-              style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-            >
-              MIS BOLETAS
-            </span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/uploads/logos/Logo-principal.png" alt="El Gran Camión" width={32} height={32} className="rounded-lg" />
+            <span className="text-lg tracking-wider text-white uppercase" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>MIS BOLETAS</span>
           </Link>
-          <Link
-            href="/boletas"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E63946] text-white text-[12px] font-bold hover:bg-[#d32f3c] transition-all"
-          >
-            <i className="fas fa-shopping-cart text-[10px]" />
-            COMPRAR MÁS
+          <Link href="/boletas" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#E63946] text-white text-[11px] font-bold hover:bg-[#d32f3c] transition-all">
+            <i className="fas fa-shopping-cart text-[9px]" /> COMPRAR MÁS
           </Link>
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Client info */}
-        <div className="bg-gradient-to-br from-[#1A1A1E] to-[#16161A] rounded-2xl border border-white/[0.08] p-5 sm:p-6 mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                <i className="fas fa-user-check text-green-400 text-lg" />
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        {/* Client info + Download All */}
+        <div className="bg-[#1A1A1E] rounded-2xl border border-white/[0.08] p-4 sm:p-5 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                <i className="fas fa-user-check text-green-400" />
               </div>
               <div>
-                {cliente && (
-                  <>
-                    <h2 className="text-lg font-bold text-white">{cliente.nombre}</h2>
-                    <p className="text-white/40 text-[12px]">
-                      CC. {cliente.identificacion} · Tel. {cliente.telefono}
-                    </p>
-                  </>
-                )}
-                <p className="text-white/30 text-[11px] mt-0.5">
-                  {totalBoletas} boleta{totalBoletas > 1 ? 's' : ''} encontrada{totalBoletas > 1 ? 's' : ''}
-                </p>
+                {cliente && <h2 className="text-base font-bold text-white">{cliente.nombre}</h2>}
+                {cliente && <p className="text-white/40 text-[11px]">CC. {cliente.identificacion} · Tel. {cliente.telefono}</p>}
+                <p className="text-white/30 text-[10px]">{totalBoletas} boleta{totalBoletas > 1 ? 's' : ''}</p>
               </div>
             </div>
-
             <button
-              onClick={descargarTodas}
+              onClick={handleDownloadAll}
               disabled={downloadingAll}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#E63946] text-white rounded-xl text-[13px] font-bold hover:bg-[#d32f3c] disabled:opacity-50 transition-all shadow-lg shadow-[#E63946]/20"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#E63946] text-white rounded-xl text-[12px] font-bold hover:bg-[#d32f3c] disabled:opacity-50 transition-all shadow-lg shadow-[#E63946]/20 whitespace-nowrap"
             >
-              {downloadingAll ? (
-                <>
-                  <i className="fas fa-spinner fa-spin text-sm" />
-                  Descargando...
-                </>
-              ) : (
-                <>
-                  <i className="fas fa-download text-sm" />
-                  DESCARGAR TODAS ({totalBoletas})
-                </>
-              )}
+              {downloadingAll
+                ? <><i className="fas fa-spinner fa-spin text-xs" /> Generando PDF...</>
+                : <><i className="fas fa-file-pdf text-xs" /> DESCARGAR TODAS ({totalBoletas})</>}
             </button>
           </div>
         </div>
 
         {/* Rifas */}
         {rifas.map((rifa) => (
-          <div key={rifa.rifa_id} className="mb-10">
-            <div className="bg-gradient-to-r from-[#1A1A1E] to-[#222228] rounded-t-2xl border border-white/[0.08] border-b-0 px-6 py-4">
-              <h2
-                className="text-xl tracking-wider uppercase text-white mb-2"
-                style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-              >
-                <i className="fas fa-ticket-alt text-[#FFB703] text-sm mr-2" />
-                {rifa.rifa_nombre}
+          <div key={rifa.rifa_id} className="mb-6">
+            <div className="bg-[#1A1A1E] rounded-t-xl border border-white/[0.08] border-b-0 px-4 py-3">
+              <h2 className="text-base tracking-wider uppercase text-white" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
+                <i className="fas fa-ticket-alt text-[#FFB703] text-xs mr-1.5" />{rifa.rifa_nombre}
               </h2>
-              <div className="flex flex-wrap gap-4 text-[12px] text-white/40">
-                <span>
-                  <i className="fas fa-trophy text-[#FFB703] text-[10px] mr-1" />
-                  {rifa.premio_principal}
-                </span>
-                <span>
-                  <i className="fas fa-calendar text-[10px] mr-1" />
-                  {new Date(rifa.fecha_sorteo).toLocaleDateString('es-CO', {
-                    day: '2-digit',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
-                </span>
-                <span>
-                  <i className="fas fa-tag text-[10px] mr-1" />
-                  {formatCOP(rifa.precio_boleta)}
-                </span>
+              <div className="flex flex-wrap gap-3 text-[10px] text-white/40 mt-1">
+                {rifa.premio_principal && <span><i className="fas fa-trophy text-[#FFB703] text-[8px] mr-1" />{rifa.premio_principal}</span>}
+                <span><i className="fas fa-calendar text-[8px] mr-1" />{new Date(rifa.fecha_sorteo).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                <span><i className="fas fa-tag text-[8px] mr-1" />{formatCOP(rifa.precio_boleta)}</span>
               </div>
             </div>
 
-            <div className="bg-[#111113] rounded-b-2xl border border-white/[0.08] border-t-0 p-4 sm:p-6">
-              <div className="space-y-8">
-                {rifa.boletas.map((boleta) => (
-                  <div key={boleta.id}>
-                    <div className="overflow-x-auto rounded-xl">
-                      <div id={`boleta-${boleta.id}`}>
-                        <BoletaTicket
-                          qrUrl={boleta.qr_url}
-                          barcode={boleta.barcode}
-                          numero={boleta.numero}
-                          imagenUrl={boleta.imagen_url}
-                          rifaNombre={rifa.rifa_nombre}
-                          estado={boleta.estado}
-                          clienteInfo={
-                            cliente
-                              ? {
-                                  nombre: cliente.nombre,
-                                  identificacion: cliente.identificacion,
-                                }
-                              : null
-                          }
-                          deuda={boleta.saldo_pendiente > 0 ? boleta.saldo_pendiente : null}
-                          reservadaHasta={boleta.bloqueo_hasta}
-                          precio={boleta.precio_boleta}
-                        />
+            <div className="bg-[#111113] rounded-b-xl border border-white/[0.08] border-t-0 p-3 sm:p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {rifa.boletas.map((boleta) => {
+                  const est = getEstadoStyle(boleta.estado);
+                  return (
+                    <div key={boleta.id} className={`flex items-center gap-3 p-3 rounded-xl border ${est.border} bg-white/[0.02] hover:bg-white/[0.04] transition-all`}>
+                      <div className="flex-shrink-0 text-center min-w-[60px]">
+                        <div className="text-xl font-black text-white tracking-wider" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
+                          #{padNum(boleta.numero)}
+                        </div>
+                        <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-bold ${est.bg} ${est.text}`}>
+                          <i className={`fas ${est.icon} text-[6px]`} />{est.label}
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-3 px-1">
-                      <div className="text-[12px]">
-                        {boleta.saldo_pendiente > 0 ? (
-                          <span className="text-amber-400 font-medium">
-                            <i className="fas fa-exclamation-triangle text-[10px] mr-1" />
-                            Saldo: {formatCOP(boleta.saldo_pendiente)}
-                          </span>
-                        ) : (
-                          <span className="text-green-400 font-medium">
-                            <i className="fas fa-check-circle text-[10px] mr-1" />
-                            Pago completo
-                          </span>
-                        )}
+                      <div className="flex-1 min-w-0 text-[10px] text-white/30">
+                        {boleta.saldo_pendiente > 0
+                          ? <span className="text-amber-400">Saldo: {formatCOP(boleta.saldo_pendiente)}</span>
+                          : <span className="text-green-400">✓ Pago completo</span>}
                       </div>
                       <button
-                        onClick={() => descargarBoleta(boleta, cliente?.identificacion || 'SIN_CC')}
+                        onClick={() => handleDownloadOne(boleta, rifa)}
                         disabled={downloadingId === boleta.id}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/[0.08] border border-white/10 text-white rounded-xl text-[12px] font-bold hover:bg-white/[0.15] hover:border-white/20 disabled:opacity-50 transition-all"
+                        className="flex-shrink-0 w-9 h-9 rounded-lg bg-white/[0.08] border border-white/10 flex items-center justify-center text-white hover:bg-white/[0.15] hover:border-white/20 disabled:opacity-40 transition-all"
+                        title="Descargar PDF"
                       >
-                        {downloadingId === boleta.id ? (
-                          <>
-                            <i className="fas fa-spinner fa-spin text-[10px]" />
-                            Descargando...
-                          </>
-                        ) : (
-                          <>
-                            <i className="fas fa-download text-[10px]" />
-                            Descargar PNG
-                          </>
-                        )}
+                        {downloadingId === boleta.id
+                          ? <i className="fas fa-spinner fa-spin text-[10px]" />
+                          : <i className="fas fa-file-pdf text-xs text-[#E63946]" />}
                       </button>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
         ))}
 
-        <div className="text-center py-6">
-          <p className="text-white/20 text-[12px]">
-            🍀 ¡Buena suerte en el sorteo! · <Link href="/boletas" className="text-[#E63946] hover:underline">Comprar más boletas</Link>
-          </p>
+        <div className="text-center py-4">
+          <p className="text-white/20 text-[11px]">🍀 ¡Buena suerte! · <Link href="/boletas" className="text-[#E63946] hover:underline">Comprar más boletas</Link></p>
         </div>
       </div>
     </main>

@@ -70,7 +70,7 @@ const galleryImages = [
     label: 'Completo',
   },
   {
-    src: '/uploads/kia-picanto.jpg',
+    src: '/uploads/kia-picanto.JPEG',
     alt: 'Kia Picanto 0km — Segundo premio',
     label: 'Kia Picanto 0km',
   },
