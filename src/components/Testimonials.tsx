@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 const leaders = [
   {
-    name: 'JULIAN CASTAÑO 1',
+    name: 'INVERSIONES CASTANO ASOCIADOS S.A.S',
     role: ' responsable',
     photo: '/uploads/equipo/julian-castano.jpg',
   },

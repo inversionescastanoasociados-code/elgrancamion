@@ -1,7 +1,7 @@
 'use client';
 
 const specs = [
-  { label: 'Motor', value: 'Cummins 7ct' },
+  { label: 'Motor', value: 'Cummins 6ct' },
   { label: 'Transmisión', value: 'Eaton Fuller 7 vel.' },
   { label: 'Extras', value: 'carpa nueva + llantas nuevas + Cupo de chatarrizacion' },
   { label: 'Modelo', value: '2015' },
