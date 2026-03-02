@@ -1026,21 +1026,15 @@ export default function BoletasShop() {
                       style={{ animationDelay: `${idx * 100}ms` }}
                     >
                       {/* Image header */}
-                      <div className="relative h-40 sm:h-48 overflow-hidden">
-                        {r.imagen_url ? (
-                          <Image
-                            src={r.imagen_url}
-                            alt={r.nombre}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                            sizes="(max-width: 640px) 100vw, 400px"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-[#E63946]/20 to-[#FFB703]/10 flex items-center justify-center">
-                            <i className="fas fa-truck text-5xl text-white/10" />
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1E] via-transparent to-transparent" />
+                      <div className="relative h-52 sm:h-64 overflow-hidden">
+                        <Image
+                          src={r.imagen_url || '/uploads/boleta/diseno-flyer.jpg'}
+                          alt={r.nombre}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 640px) 100vw, 400px"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1E] via-[#1A1A1E]/30 to-transparent" />
 
                         {/* Price badge */}
                         <div className="absolute top-3 right-3 bg-[#E63946] rounded-full px-3 py-1.5 shadow-lg">
