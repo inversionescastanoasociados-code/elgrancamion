@@ -2680,7 +2680,7 @@ export default function BoletasShop() {
                     <a
                       key={wa.num}
                       href={`https://wa.me/${wa.num}?text=${encodeURIComponent(
-                        `¡Hola! Acabo de reservar ${reservaResult.cantidad_boletas} boleta(s): ${reservaResult.boletas.map((n) => `#${formatNumero(n, totalBoletas)}`).join(', ')}. Mi nombre es ${reservaResult.cliente_nombre}. Total: ${formatCOP(reservaResult.monto_total)}.${selectedMedioPago ? ` Medio de pago: ${mediosPago.find(m => m.id === selectedMedioPago)?.nombre || 'No seleccionado'}.` : ''}`
+                        `¡Hola! Acabo de reservar ${reservaResult.cantidad_boletas} boleta(s): ${reservaResult.boletas.map((n) => `#${formatNumero(n, totalBoletas)}`).join(', ')}. Mi nombre es ${reservaResult.cliente_nombre}. Cédula: ${buyerData.identificacion.trim()}. Total: ${formatCOP(reservaResult.monto_total)}.${selectedMedioPago ? ` Medio de pago: ${mediosPago.find(m => m.id === selectedMedioPago)?.nombre || 'No seleccionado'}.` : ''}`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
