@@ -15,11 +15,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/boletas/page.js"
-    ],
-    "/mis-boletas/[identificacion]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/mis-boletas/[identificacion]/page.js"
     ]
   }
 }

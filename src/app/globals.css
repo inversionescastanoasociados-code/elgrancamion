@@ -581,3 +581,33 @@ body {
 @media (min-width: 769px) {
   .hide-desktop { display: none !important; }
 }
+
+/* ═══ MOBILE FONT BOOST ═══ 
+   Slightly increase base font-size on mobile for readability
+   without distorting layouts. Bumps rem-based sizes and
+   overrides the very smallest px-based sizes.                */
+@media (max-width: 640px) {
+  /* Bump base for all rem-based Tailwind sizes (text-xs, text-sm, text-base, etc.) */
+  html {
+    font-size: 17px; /* default is 16px — +6.25% bump */
+  }
+
+  /* Override ultra-small arbitrary pixel sizes to slightly larger ones */
+  /* 10px → 12px */
+  .text-\[10px\] { font-size: 12px !important; }
+  /* 11px → 13px */
+  .text-\[11px\] { font-size: 13px !important; }
+  /* 12px → 13.5px */
+  .text-\[12px\] { font-size: 13.5px !important; }
+  /* 13px → 14px */
+  .text-\[13px\] { font-size: 14px !important; }
+
+  /* Pill labels — keep them readable */
+  .pill { font-size: 12px; }
+
+  /* Countdown numbers stay large — no change needed */
+
+  /* Buttons — slight bump for tap targets */
+  .btn-primary { font-size: 15px; }
+  .btn-secondary { font-size: 15px; }
+}

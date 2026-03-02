@@ -621,6 +621,42 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
                     </div>
                   </div>
 
+                  {/* ═══ Cláusulas ═══ */}
+                  <div className="verificar-slide-up bg-white rounded-2xl border border-black/[0.04] shadow-sm overflow-hidden mb-6" style={{ animationDelay: '0.85s' }}>
+                    <details className="group">
+                      <summary className="flex items-center gap-3 px-5 py-4 cursor-pointer select-none hover:bg-[#FAFAFA] transition-colors">
+                        <div className="w-9 h-9 rounded-xl bg-truck-red/8 flex items-center justify-center flex-shrink-0">
+                          <i className="fas fa-file-contract text-truck-red text-[13px]" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-[14px] font-bold text-[#1A1A1A]">Cláusulas y Condiciones</h3>
+                          <p className="text-[10px] text-[#999]">Términos de participación en la rifa</p>
+                        </div>
+                        <i className="fas fa-chevron-down text-[10px] text-[#CCC] transition-transform duration-300 group-open:rotate-180" />
+                      </summary>
+                      <div className="px-5 pb-5 border-t border-black/[0.04]">
+                        <div className="mt-4 space-y-2.5">
+                          {[
+                            'La empresa no se responsabiliza por negocios que hagan los vendedores con terceros. Por su seguridad, verifique los abonos a la rifa mayor conforme al reglamento elaborado para esta clase de pagos y cancelación a nuestros números telefónicos.',
+                            'Caducidad de la boleta: 30 días calendario.',
+                            'El premio mayor se le pagará al comprador original que figure en nuestros libros y que posea el bono de cancelación.',
+                            'El vendedor que no haga efectivo sus cuotas en nuestras oficinas se hace responsable del pago de los premios.',
+                            'La empresa no devuelve dineros abonados ya que estos han causado gastos de administración.',
+                            'El comprador de esta boleta manifiesta haber leído y comprendido cada una de las cláusulas, aceptando en todas sus partes y condiciones, declarando que la compra es voluntaria.',
+                            'Los gastos de traspaso van por cuenta del ganador.',
+                          ].map((clause, i) => (
+                            <div key={i} className="flex gap-2.5 items-start">
+                              <div className="w-5 h-5 rounded-md bg-truck-red/8 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span className="text-[9px] font-black text-truck-red">{i + 1}</span>
+                              </div>
+                              <p className="text-[11px] text-[#666] leading-relaxed">{clause}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </details>
+                  </div>
+
                   {/* Secondary CTAs */}
                   <div className="verificar-slide-up flex flex-col sm:flex-row gap-3" style={{ animationDelay: '0.9s' }}>
                     <Link href="/verificar" className="btn-secondary flex-1 justify-center text-[13px] py-3.5">
@@ -966,6 +1002,42 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
                       <span><i className="fas fa-database text-truck-red/60 mr-1" /> Datos en tiempo real</span>
                       <span><i className="fas fa-lock text-truck-red/60 mr-1" /> Conexión cifrada</span>
                     </div>
+                  </div>
+
+                  {/* ═══ CLAUSULAS ═══ */}
+                  <div className="verificar-slide-up bg-white rounded-2xl border border-black/[0.04] shadow-sm overflow-hidden mb-6" style={{ animationDelay: '1.15s' }}>
+                    <details className="group">
+                      <summary className="flex items-center gap-3 px-5 py-4 cursor-pointer select-none hover:bg-[#FAFAFA] transition-colors">
+                        <div className="w-9 h-9 rounded-xl bg-truck-red/8 flex items-center justify-center flex-shrink-0">
+                          <i className="fas fa-file-contract text-truck-red text-[13px]" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-[14px] font-bold text-[#1A1A1A]">Cláusulas y Condiciones</h3>
+                          <p className="text-[10px] text-[#999]">Términos de participación en la rifa</p>
+                        </div>
+                        <i className="fas fa-chevron-down text-[10px] text-[#CCC] transition-transform duration-300 group-open:rotate-180" />
+                      </summary>
+                      <div className="px-5 pb-5 border-t border-black/[0.04]">
+                        <div className="mt-4 space-y-2.5">
+                          {[
+                            'La empresa no se responsabiliza por negocios que hagan los vendedores con terceros. Por su seguridad, verifique los abonos a la rifa mayor conforme al reglamento elaborado para esta clase de pagos y cancelación a nuestros números telefónicos.',
+                            'Caducidad de la boleta: 30 días calendario.',
+                            'El premio mayor se le pagará al comprador original que figure en nuestros libros y que posea el bono de cancelación.',
+                            'El vendedor que no haga efectivo sus cuotas en nuestras oficinas se hace responsable del pago de los premios.',
+                            'La empresa no devuelve dineros abonados ya que estos han causado gastos de administración.',
+                            'El comprador de esta boleta manifiesta haber leído y comprendido cada una de las cláusulas, aceptando en todas sus partes y condiciones, declarando que la compra es voluntaria.',
+                            'Los gastos de traspaso van por cuenta del ganador.',
+                          ].map((clause, i) => (
+                            <div key={i} className="flex gap-2.5 items-start">
+                              <div className="w-5 h-5 rounded-md bg-truck-red/8 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span className="text-[9px] font-black text-truck-red">{i + 1}</span>
+                              </div>
+                              <p className="text-[11px] text-[#666] leading-relaxed">{clause}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </details>
                   </div>
 
                   {/* ═══ CTAs ═══ */}

@@ -336,18 +336,23 @@ export default function BoletasShop() {
   /* ─── Form validation ─── */
   const formErrors = useMemo(() => {
     const errors: Record<string, string> = {};
-    const { nombre, telefono, email, identificacion } = buyerData;
-    if (nombre.trim().length > 0 && nombre.trim().length < 2) errors.nombre = 'Mínimo 2 caracteres';
-    if (nombre.trim().length > 255) errors.nombre = 'Máximo 255 caracteres';
-    if (telefono.trim().length > 0 && telefono.trim().length < 7) errors.telefono = 'Mínimo 7 dígitos';
-    if (telefono.trim().length > 20) errors.telefono = 'Máximo 20 caracteres';
-    if (telefono.trim() && !/^[0-9+\-() ]+$/.test(telefono.trim())) errors.telefono = 'Solo números, +, -, (, ) y espacios';
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errors.email = 'Correo no válido';
-    if (identificacion.trim().length > 0 && identificacion.trim().length < 4) errors.identificacion = 'Mínimo 4 caracteres';
+    const { nombre, telefono, email, identificacion, direccion } = buyerData;
+    if (!nombre.trim()) errors.nombre = 'El nombre es obligatorio';
+    else if (nombre.trim().length < 2) errors.nombre = 'Mínimo 2 caracteres';
+    else if (nombre.trim().length > 255) errors.nombre = 'Máximo 255 caracteres';
+    if (!telefono.trim()) errors.telefono = 'El teléfono es obligatorio';
+    else if (telefono.trim().length < 7) errors.telefono = 'Mínimo 7 dígitos';
+    else if (telefono.trim().length > 20) errors.telefono = 'Máximo 20 caracteres';
+    else if (!/^[0-9+\-() ]+$/.test(telefono.trim())) errors.telefono = 'Solo números, +, -, (, ) y espacios';
+    if (!email.trim()) errors.email = 'El correo es obligatorio';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errors.email = 'Correo no válido';
+    if (!identificacion.trim()) errors.identificacion = 'La cédula es obligatoria';
+    else if (identificacion.trim().length < 4) errors.identificacion = 'Mínimo 4 caracteres';
+    if (!direccion.trim()) errors.direccion = 'La ciudad/municipio es obligatoria';
     return errors;
   }, [buyerData]);
 
-  const isFormValid = buyerData.nombre.trim().length >= 2 && buyerData.telefono.trim().length >= 7 && Object.keys(formErrors).length === 0;
+  const isFormValid = Object.keys(formErrors).length === 0;
 
   /* ─── Selected numbers for display ─── */
   const selectedNums = useMemo(() => {
@@ -692,11 +697,9 @@ export default function BoletasShop() {
         cliente: {
           nombre: buyerData.nombre.trim(),
           telefono: buyerData.telefono.trim(),
-          ...(buyerData.email.trim() && { email: buyerData.email.trim() }),
-          ...(buyerData.identificacion.trim() && {
-            identificacion: buyerData.identificacion.trim(),
-          }),
-          ...(buyerData.direccion.trim() && { direccion: buyerData.direccion.trim() }),
+          email: buyerData.email.trim(),
+          identificacion: buyerData.identificacion.trim(),
+          direccion: buyerData.direccion.trim(),
         },
         ...(selectedMedioPago && { medio_pago_id: selectedMedioPago }),
         ...(notas.trim() && { notas: notas.trim() }),
@@ -1605,28 +1608,53 @@ export default function BoletasShop() {
             </div>
           </div>
 
-          {/* Prize strip */}
+          {/* Social media strip */}
           <div className="relative z-10 border-t border-white/[0.06]">
             <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-4">
-              <div className="flex flex-wrap justify-center gap-4 sm:gap-8 text-center">
-                {[
-                  {
-                    icon: '🚛',
-                    label: rifa?.premio_principal || 'Premio Principal',
-                    sub: rifa?.nombre || '',
-                  },
-                  { icon: '🚗', label: 'Kia Picanto', sub: '$45M' },
-                  { icon: '💰', label: 'Premios Cash', sub: '$20M' },
-                  { icon: '🚢', label: 'Crucero', sub: 'Bahamas' },
-                ].map((p) => (
-                  <div key={p.label} className="flex items-center gap-2 sm:gap-3">
-                    <span className="text-xl sm:text-2xl">{p.icon}</span>
-                    <div className="text-left">
-                      <div className="text-[11px] font-bold text-white/70 leading-tight">{p.label}</div>
-                      <div className="text-[10px] text-white/35 font-bold tracking-wider">{p.sub}</div>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center justify-center gap-3 sm:gap-5">
+                <span className="text-[11px] font-bold tracking-[3px] uppercase text-white/30 hidden sm:block">Síguenos</span>
+                <div className="flex items-center gap-3 sm:gap-4">
+                  {/* Facebook */}
+                  <a
+                    href="https://www.facebook.com/share/176zWG3VLA/?mibextid=wwXIfr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/[0.06] border border-white/[0.08] hover:bg-[#1877F2]/20 hover:border-[#1877F2]/40 transition-all duration-300"
+                  >
+                    <i className="fab fa-facebook-f text-[#1877F2] text-sm group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px] font-bold text-white/60 group-hover:text-[#1877F2] transition-colors hidden sm:inline">Facebook</span>
+                  </a>
+                  {/* Instagram */}
+                  <a
+                    href="https://www.instagram.com/proyectoelgrancamion?igsh=bTZmdDZraXU1ODZq"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/[0.06] border border-white/[0.08] hover:bg-[#E1306C]/20 hover:border-[#E1306C]/40 transition-all duration-300"
+                  >
+                    <i className="fab fa-instagram text-[#E1306C] text-sm group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px] font-bold text-white/60 group-hover:text-[#E1306C] transition-colors hidden sm:inline">Instagram</span>
+                  </a>
+                  {/* TikTok */}
+                  <a
+                    href="https://www.tiktok.com/@elgrancamion.oficial?_r=1&_t=ZS-94LHsPFrtbR"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/[0.06] border border-white/[0.08] hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+                  >
+                    <i className="fab fa-tiktok text-white text-sm group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px] font-bold text-white/60 group-hover:text-white transition-colors hidden sm:inline">TikTok</span>
+                  </a>
+                  {/* WhatsApp */}
+                  <a
+                    href="https://wa.me/573207120787"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/[0.06] border border-white/[0.08] hover:bg-[#25D366]/20 hover:border-[#25D366]/40 transition-all duration-300"
+                  >
+                    <i className="fab fa-whatsapp text-[#25D366] text-sm group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px] font-bold text-white/60 group-hover:text-[#25D366] transition-colors hidden sm:inline">WhatsApp</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -2083,8 +2111,7 @@ export default function BoletasShop() {
                       {/* Cédula */}
                       <div>
                         <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
-                          Cédula / Documento
-                          {!isReturningClient && <span className="text-[10px] font-normal normal-case text-[#bbb] tracking-normal ml-1">(opcional)</span>}
+                          Cédula / Documento <span className="text-[#E63946]">*</span>
                         </label>
                         <div className="relative">
                           <i className={`fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
@@ -2100,11 +2127,13 @@ export default function BoletasShop() {
                                 ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
                                 : formTouched.identificacion && formErrors.identificacion
                                 ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
+                                : formTouched.identificacion && buyerData.identificacion.trim().length >= 4 && !formErrors.identificacion
+                                ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
                                 : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
                             }`}
                           />
-                          {isReturningClient && (
-                            <i className="fas fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm" />
+                          {(isReturningClient || (formTouched.identificacion && buyerData.identificacion.trim().length >= 4 && !formErrors.identificacion)) && (
+                            <i className={`fas ${isReturningClient ? 'fa-lock' : 'fa-check-circle'} absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm`} />
                           )}
                         </div>
                         {formTouched.identificacion && formErrors.identificacion && !isReturningClient && (
@@ -2154,8 +2183,7 @@ export default function BoletasShop() {
                       {/* Email */}
                       <div>
                         <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
-                          Correo Electrónico
-                          {!isReturningClient && <span className="text-[10px] font-normal normal-case text-[#bbb] tracking-normal ml-1">(opcional)</span>}
+                          Correo Electrónico <span className="text-[#E63946]">*</span>
                         </label>
                         <div className="relative">
                           <i className={`fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
@@ -2188,22 +2216,37 @@ export default function BoletasShop() {
                         )}
                       </div>
 
-                      {/* Dirección */}
+                      {/* Ciudad / Municipio */}
                       <div>
                         <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
-                          Dirección
-                          <span className="text-[10px] font-normal normal-case text-[#bbb] tracking-normal ml-1">(opcional)</span>
+                          Ciudad / Municipio <span className="text-[#E63946]">*</span>
                         </label>
                         <div className="relative">
-                          <i className="fas fa-map-marker-alt absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
+                          <i className="fas fa-city absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
                           <input
                             type="text"
-                            placeholder="Calle 123 #45-67, Ciudad"
+                            placeholder="Ej: Bogotá, Medellín, Cali..."
                             value={buyerData.direccion}
                             onChange={(e) => setBuyerData({ ...buyerData, direccion: e.target.value })}
-                            className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-black/[0.08] bg-white text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10 transition-all"
+                            onBlur={() => setFormTouched({ ...formTouched, direccion: true })}
+                            className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
+                              formTouched.direccion && formErrors.direccion
+                                ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
+                                : formTouched.direccion && buyerData.direccion.trim() && !formErrors.direccion
+                                ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
+                                : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
+                            }`}
                           />
+                          {formTouched.direccion && buyerData.direccion.trim() && !formErrors.direccion && (
+                            <i className="fas fa-check-circle absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm" />
+                          )}
                         </div>
+                        {formTouched.direccion && formErrors.direccion && (
+                          <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
+                            <i className="fas fa-exclamation-circle text-[9px]" />
+                            {formErrors.direccion}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -2415,6 +2458,49 @@ export default function BoletasShop() {
                       </div>
                     </div>
 
+                    {/* ═══ Cláusulas ═══ */}
+                    <details className="group bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
+                      <summary className="flex items-center gap-3 px-5 py-4 cursor-pointer select-none hover:bg-[#FAFAFA] transition-colors">
+                        <div className="w-8 h-8 rounded-full bg-truck-red/8 flex items-center justify-center flex-shrink-0">
+                          <i className="fas fa-file-contract text-truck-red text-xs" />
+                        </div>
+                        <div className="flex-1">
+                          <h4
+                            className="text-sm tracking-wider uppercase text-[#1A1A1A]"
+                            style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                          >
+                            CLÁUSULAS Y CONDICIONES
+                          </h4>
+                          <p className="text-[10px] text-[#999] font-medium">Al reservar aceptas estas condiciones</p>
+                        </div>
+                        <i className="fas fa-chevron-down text-[10px] text-[#CCC] transition-transform duration-300 group-open:rotate-180" />
+                      </summary>
+                      <div className="px-5 pb-5 border-t border-black/[0.04]">
+                        <div className="mt-4 space-y-2.5">
+                          {[
+                            'La empresa no se responsabiliza por negocios que hagan los vendedores con terceros. Por su seguridad, verifique los abonos a la rifa mayor conforme al reglamento elaborado para esta clase de pagos y cancelación a nuestros números telefónicos.',
+                            'Caducidad de la boleta: 30 días calendario.',
+                            'El premio mayor se le pagará al comprador original que figure en nuestros libros y que posea el bono de cancelación.',
+                            'El vendedor que no haga efectivo sus cuotas en nuestras oficinas se hace responsable del pago de los premios.',
+                            'La empresa no devuelve dineros abonados ya que estos han causado gastos de administración.',
+                            'El comprador de esta boleta manifiesta haber leído y comprendido cada una de las cláusulas, aceptando en todas sus partes y condiciones, declarando que la compra es voluntaria.',
+                            'Los gastos de traspaso van por cuenta del ganador.',
+                          ].map((clause, i) => (
+                            <div key={i} className="flex gap-2.5 items-start">
+                              <div className="w-5 h-5 rounded-md bg-truck-red/8 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span className="text-[9px] font-black text-truck-red">{i + 1}</span>
+                              </div>
+                              <p className="text-[11px] text-[#666] leading-relaxed">{clause}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-black/[0.04] flex items-center gap-2">
+                          <i className="fas fa-check-circle text-emerald-500 text-xs" />
+                          <p className="text-[10px] text-emerald-600 font-semibold">Al confirmar tu reserva, aceptas todas las cláusulas anteriores</p>
+                        </div>
+                      </div>
+                    </details>
+
                     {/* CTA Button */}
                     <button
                       onClick={handleReservar}
@@ -2439,7 +2525,7 @@ export default function BoletasShop() {
                       <div className="bg-[#FFF5F5] border border-[#E63946]/10 rounded-xl px-4 py-3">
                         <p className="text-[11px] text-[#E63946]/80 font-medium flex items-center gap-1.5">
                           <i className="fas fa-info-circle text-[10px]" />
-                          Completa nombre y teléfono para continuar
+                          Completa todos los campos obligatorios para continuar
                         </p>
                       </div>
                     )}
@@ -2947,6 +3033,65 @@ export default function BoletasShop() {
                     <p className="text-[11px] text-[#999] mt-0.5">{item.desc}</p>
                   </div>
                 ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ═══ CLÁUSULAS — Visible al seleccionar boletas ═══ */}
+        {step === 'selecting' && (
+          <section className="bg-white border-t border-black/[0.04] py-10 sm:py-14">
+            <div className="max-w-[800px] mx-auto px-6">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-truck-red/8 mb-4">
+                  <i className="fas fa-file-contract text-truck-red text-xl" />
+                </div>
+                <h3
+                  className="text-[clamp(24px,4vw,36px)] leading-[0.95] uppercase tracking-wider text-[#1A1A1A]"
+                  style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                >
+                  CLÁUSULAS Y <span className="text-truck-red">CONDICIONES</span>
+                </h3>
+                <p className="text-[13px] text-[#999] mt-2">Al comprar una boleta aceptas los siguientes términos</p>
+              </div>
+
+              <div className="space-y-3">
+                {[
+                  { icon: 'fa-handshake-slash', text: 'La empresa no se responsabiliza por negocios que hagan los vendedores con terceros. Por su seguridad, verifique los abonos a la rifa mayor conforme al reglamento elaborado para esta clase de pagos y cancelación a nuestros números telefónicos.' },
+                  { icon: 'fa-calendar-xmark', text: 'Caducidad de la boleta: 30 días calendario.' },
+                  { icon: 'fa-award', text: 'El premio mayor se le pagará al comprador original que figure en nuestros libros y que posea el bono de cancelación.' },
+                  { icon: 'fa-user-tie', text: 'El vendedor que no haga efectivo sus cuotas en nuestras oficinas se hace responsable del pago de los premios.' },
+                  { icon: 'fa-rotate-left', text: 'La empresa no devuelve dineros abonados ya que estos han causado gastos de administración.' },
+                  { icon: 'fa-file-signature', text: 'El comprador de esta boleta manifiesta haber leído y comprendido cada una de las cláusulas, aceptando en todas sus partes y condiciones, declarando que la compra es voluntaria.' },
+                  { icon: 'fa-money-bill-transfer', text: 'Los gastos de traspaso van por cuenta del ganador.' },
+                ].map((clause, i) => (
+                  <div
+                    key={i}
+                    className="flex gap-4 items-start bg-[#FAFAFA] hover:bg-truck-red/[0.03] border border-black/[0.04] hover:border-truck-red/10 rounded-xl px-5 py-4 transition-all duration-300 group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-truck-red/8 group-hover:bg-truck-red/15 flex items-center justify-center flex-shrink-0 transition-colors">
+                      <i className={`fas ${clause.icon} text-truck-red text-sm`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span
+                          className="text-[14px] font-black text-truck-red tracking-wider"
+                          style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                        >
+                          CLÁUSULA {i + 1}
+                        </span>
+                      </div>
+                      <p className="text-[13px] text-[#555] leading-relaxed">{clause.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 text-center">
+                <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-full px-5 py-2.5">
+                  <i className="fas fa-check-circle text-emerald-500 text-sm" />
+                  <p className="text-[12px] text-emerald-700 font-semibold">Al reservar tus boletas, aceptas todas las cláusulas anteriores</p>
+                </div>
               </div>
             </div>
           </section>
