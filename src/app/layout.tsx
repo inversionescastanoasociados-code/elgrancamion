@@ -12,14 +12,14 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Gran Rifa Camionera — Tu Sueño Sobre Ruedas',
   description:
-    'Gana un camión, un Kia Picanto 0km, $20 millones en premios y un crucero por las Bahamas. Compra tu boleta ahora.',
+    'Gana un camión volkswagen 17220, un Kia Picanto 0km,mas de $32 millones en premios y un crucero por el caribe. Compra tu boleta ahora.',
   keywords: [
     'rifa', 'camión', 'rifa camionera', 'Kia Picanto', 'sorteo',
-    'ganar camión', 'boletas', 'crucero Bahamas', 'rifa Colombia',
+    'ganar camión', 'boletas', 'crucero Caribe', 'rifa Colombia',
   ],
   openGraph: {
     title: 'Gran Rifa Camionera — Tu Sueño Sobre Ruedas',
-    description: 'Gana un camión, Kia Picanto 0km, $20 millones y un crucero por las Bahamas.',
+    description: 'Gana un camión volkswagen 17220, Kia Picanto 0km,mas de  $32 millones y un crucero por el caribe.',
     type: 'website',
     locale: 'es_CO',
   },
