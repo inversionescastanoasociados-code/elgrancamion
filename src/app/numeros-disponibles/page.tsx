@@ -69,6 +69,10 @@ export default function NumerosDisponiblesPage() {
   const [spinNumbers, setSpinNumbers] = useState<number[]>([]);
   const spinIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Selected numbers for WhatsApp
+  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
+  const [selectionBarOpen, setSelectionBarOpen] = useState(false);
+
   /* ═══ Load data ═══ */
   useEffect(() => {
     let cancelled = false;
@@ -489,24 +493,38 @@ export default function NumerosDisponiblesPage() {
             <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 xl:grid-cols-14 gap-1.5 sm:gap-2">
               {visibleNumbers.map((num) => {
                 const numStr = formatNumero(num, totalBoletas);
-                // Highlight if search matches
                 const isSearchMatch = search && numStr.includes(search);
+                const isSelected = selectedNumbers.includes(num);
 
                 return (
-                  <div
+                  <button
                     key={num}
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedNumbers(selectedNumbers.filter((n) => n !== num));
+                      } else {
+                        setSelectedNumbers([...selectedNumbers, num]);
+                      }
+                    }}
                     className={`
-                      relative flex items-center justify-center py-2.5 sm:py-3 rounded-lg text-[11px] sm:text-[12px] font-bold font-mono tracking-wider transition-all duration-200
-                      ${isSearchMatch
-                        ? 'bg-[#FFB703]/20 border-2 border-[#FFB703]/50 text-[#FFD700] shadow-lg shadow-[#FFB703]/10 scale-105'
-                        : 'bg-white/[0.04] border border-white/[0.06] text-white/60 hover:bg-[#E63946]/10 hover:border-[#E63946]/30 hover:text-white hover:scale-105'
+                      relative flex items-center justify-center py-2.5 sm:py-3 rounded-lg text-[11px] sm:text-[12px] font-bold font-mono tracking-wider transition-all duration-200 cursor-pointer
+                      ${isSelected
+                        ? 'bg-[#E63946]/25 border-2 border-[#E63946] text-white shadow-lg shadow-[#E63946]/20 scale-105 ring-1 ring-[#E63946]/40'
+                        : isSearchMatch
+                          ? 'bg-[#FFB703]/20 border-2 border-[#FFB703]/50 text-[#FFD700] shadow-lg shadow-[#FFB703]/10 scale-105 hover:shadow-xl hover:shadow-[#FFB703]/20'
+                          : 'bg-white/[0.04] border border-white/[0.06] text-white/60 hover:bg-[#E63946]/10 hover:border-[#E63946]/30 hover:text-white hover:scale-105 hover:shadow-lg hover:shadow-[#E63946]/10'
                       }
                     `}
                   >
                     {numStr}
-                    {/* Available dot */}
-                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-green-500/60" />
-                  </div>
+                    {isSelected ? (
+                      <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-[#E63946] flex items-center justify-center">
+                        <i className="fas fa-check text-[7px] text-white" />
+                      </span>
+                    ) : (
+                      <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-green-500/60" />
+                    )}
+                  </button>
                 );
               })}
             </div>
@@ -695,37 +713,70 @@ export default function NumerosDisponiblesPage() {
                 </div>
                 <p className="text-white/30 text-[12px] mb-4">¡Este número está disponible para ti!</p>
 
-                <p className="text-white/40 text-[11px] font-bold tracking-wider uppercase mb-2">Escríbenos para comprarlo</p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <a
-                    href={`https://wa.me/573207120787?text=${encodeURIComponent(`¡Hola! Quiero comprar la boleta #${formatNumero(randomResult, totalBoletas)} de la rifa El Gran Camión 🚛`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#25D366] text-white text-[13px] font-bold uppercase tracking-wider hover:bg-[#1da851] shadow-lg shadow-[#25D366]/25 transition-all hover:scale-[1.02]"
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    onClick={() => {
+                      if (!selectedNumbers.includes(randomResult as number)) {
+                        setSelectedNumbers([...selectedNumbers, randomResult as number]);
+                      }
+                      setRandomResult(null);
+                    }}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#E63946] to-[#FF6B6B] text-white text-[13px] font-bold uppercase tracking-wider hover:shadow-lg hover:shadow-[#E63946]/30 hover:scale-[1.02] transition-all"
                   >
-                    <i className="fab fa-whatsapp text-base" />
-                    320 712 0787
-                  </a>
-                  <a
-                    href={`https://wa.me/573207120779?text=${encodeURIComponent(`¡Hola! Quiero comprar la boleta #${formatNumero(randomResult, totalBoletas)} de la rifa El Gran Camión 🚛`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#25D366] text-white text-[13px] font-bold uppercase tracking-wider hover:bg-[#1da851] shadow-lg shadow-[#25D366]/25 transition-all hover:scale-[1.02]"
-                  >
-                    <i className="fab fa-whatsapp text-base" />
-                    320 712 0779
-                  </a>
-                </div>
-                <div className="flex items-center justify-center mt-3">
+                    <i className="fas fa-check text-sm" />
+                    SELECCIONAR NÚMERO
+                  </button>
                   <button
                     onClick={() => {
                       setRandomResult(null);
                       startRandom();
                     }}
-                    className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-white/10 text-white/60 text-[13px] font-bold hover:border-[#FFB703]/30 hover:text-[#FFB703] transition-all"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-white/10 text-white/60 text-[13px] font-bold hover:border-[#FFB703]/30 hover:text-[#FFB703] transition-all"
                   >
                     <i className="fas fa-redo text-[10px]" />
+                    VOLVER A GIRAR
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* After selecting — show selected count + girar de nuevo + comprar */}
+            {randomResult === null && !isSpinning && selectedNumbers.length > 0 && (
+              <div className="text-center" style={{ animation: 'fadeIn 0.3s ease' }}>
+                <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-3 mb-4">
+                  <p className="text-[11px] font-bold text-white/40 mb-2 flex items-center justify-center gap-1">
+                    <i className="fas fa-list-ol text-[10px]" />
+                    Números seleccionados ({selectedNumbers.length}):
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {selectedNumbers.map((num) => (
+                      <span
+                        key={num}
+                        className="px-2.5 py-1 rounded-lg bg-[#E63946]/15 border border-[#E63946]/25 text-white/70 text-[11px] font-bold font-mono"
+                      >
+                        {formatNumero(num, totalBoletas)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => startRandom()}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#FFB703] to-[#E8A000] text-black text-[13px] font-bold uppercase tracking-wider hover:shadow-lg hover:shadow-[#FFB703]/30 hover:scale-[1.02] transition-all"
+                  >
+                    <i className="fas fa-dice text-sm" />
                     GIRAR DE NUEVO
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowRandom(false);
+                      setRandomResult(null);
+                      setSelectionBarOpen(true);
+                    }}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#25D366] text-white text-[13px] font-bold uppercase tracking-wider hover:bg-[#1da851] shadow-lg shadow-[#25D366]/25 transition-all hover:scale-[1.02]"
+                  >
+                    <i className="fas fa-shopping-cart text-sm" />
+                    COMPRAR NÚMEROS SELECCIONADOS
                   </button>
                 </div>
               </div>
@@ -744,8 +795,89 @@ export default function NumerosDisponiblesPage() {
         </div>
       )}
 
+      {/* ═══ SELECTED NUMBERS FLOATING BAR (Collapsible) ═══ */}
+      {selectedNumbers.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-[10000] selection-bar-enter">
+          {/* Collapsed bar — always visible */}
+          <button
+            onClick={() => setSelectionBarOpen(!selectionBarOpen)}
+            className="w-full bg-[#E63946] border-t border-[#E63946] text-white py-2.5 px-4 flex items-center justify-between hover:bg-[#d32f3c] transition-all"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                <span className="text-[11px] font-black">{selectedNumbers.length}</span>
+              </div>
+              <span className="text-[13px] font-bold">
+                {selectedNumbers.length === 1 ? '1 número seleccionado' : `${selectedNumbers.length} números seleccionados`}
+              </span>
+              <span className="text-[11px] font-semibold text-white/60">— {formatCOP(precio * selectedNumbers.length)}</span>
+            </div>
+            <i className={`fas fa-chevron-up text-sm transition-transform duration-300 ${selectionBarOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Expanded panel */}
+          <div className={`bg-[#111115] border-t border-white/[0.06] overflow-hidden transition-all duration-300 ease-in-out ${selectionBarOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="max-w-[900px] mx-auto px-4 py-4">
+              {/* Chips + clear */}
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] font-bold text-white/40">Tus números:</p>
+                <button
+                  onClick={() => { setSelectedNumbers([]); setSelectionBarOpen(false); }}
+                  className="text-[11px] font-bold text-white/30 hover:text-[#E63946] transition-all flex items-center gap-1"
+                >
+                  <i className="fas fa-trash-alt text-[10px]" />
+                  Limpiar todo
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-1.5 mb-4 max-h-[70px] overflow-y-auto custom-scrollbar">
+                {selectedNumbers.map((num) => (
+                  <div
+                    key={num}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#E63946]/15 border border-[#E63946]/30 text-white text-[11px] font-bold font-mono tracking-wider"
+                  >
+                    {formatNumero(num, totalBoletas)}
+                    <button
+                      onClick={() => {
+                        const updated = selectedNumbers.filter((n) => n !== num);
+                        setSelectedNumbers(updated);
+                        if (updated.length === 0) setSelectionBarOpen(false);
+                      }}
+                      className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-white/40 hover:bg-[#E63946] hover:text-white transition-all"
+                    >
+                      <i className="fas fa-times text-[7px]" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* WhatsApp CTA buttons */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <a
+                  href={`https://wa.me/573207120787?text=${encodeURIComponent(`¡Hola! Quiero comprar estos números de la rifa El Gran Camión 🚛:\n\n${selectedNumbers.map(n => `• Boleta #${formatNumero(n, totalBoletas)}`).join('\n')}\n\nTotal: ${selectedNumbers.length} boleta(s) — ${formatCOP(precio * selectedNumbers.length)}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#25D366] text-white text-[12px] font-bold uppercase tracking-wider hover:bg-[#1da851] shadow-lg shadow-[#25D366]/25 transition-all"
+                >
+                  <i className="fab fa-whatsapp text-base" />
+                  COMPRAR — 320 712 0787
+                </a>
+                <a
+                  href={`https://wa.me/573207120779?text=${encodeURIComponent(`¡Hola! Quiero comprar estos números de la rifa El Gran Camión 🚛:\n\n${selectedNumbers.map(n => `• Boleta #${formatNumero(n, totalBoletas)}`).join('\n')}\n\nTotal: ${selectedNumbers.length} boleta(s) — ${formatCOP(precio * selectedNumbers.length)}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#25D366] text-white text-[12px] font-bold uppercase tracking-wider hover:bg-[#1da851] shadow-lg shadow-[#25D366]/25 transition-all"
+                >
+                  <i className="fab fa-whatsapp text-base" />
+                  COMPRAR — 320 712 0779
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ═══ FLOATING WHATSAPP BUTTON ═══ */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+      <div className={`fixed right-6 z-50 flex flex-col items-end gap-2 transition-all duration-300 ${selectedNumbers.length > 0 ? 'bottom-[56px]' : 'bottom-6'}`}>
         <div className="whatsapp-float-menu flex flex-col items-end gap-1.5 mb-1">
           <a
             href="https://wa.me/573207120787?text=%C2%A1Hola!%20Quiero%20informaci%C3%B3n%20sobre%20la%20rifa%20El%20Gran%20Cami%C3%B3n%20%F0%9F%9A%9B"
@@ -824,6 +956,24 @@ export default function NumerosDisponiblesPage() {
         .whatsapp-menu-open {
           max-height: 200px;
           opacity: 1;
+        }
+        @keyframes slideUpBar {
+          from { transform: translateY(100%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        .selection-bar-enter {
+          animation: slideUpBar 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          height: 4px;
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255,255,255,0.1);
+          border-radius: 10px;
         }
       `}</style>
     </div>
