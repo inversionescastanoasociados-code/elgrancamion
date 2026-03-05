@@ -10,6 +10,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const isBoletasPage = pathname.startsWith('/boletas');
+  const isNumerosPage = pathname.startsWith('/numeros-disponibles');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -86,6 +87,18 @@ export default function Navbar() {
             Tienda
             <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-truck-red rounded-full transition-all duration-300 ${isBoletasPage ? 'w-6' : 'w-0 group-hover:w-4'}`} />
           </Link>
+          <Link
+            href="/numeros-disponibles"
+            className={`ml-1 px-4 py-2 text-[13px] font-bold tracking-wide transition-all relative group ${
+              isNumerosPage
+                ? 'text-[#FFB703]'
+                : scrolled ? 'text-[#666] hover:text-[#1A1A1A]' : 'text-white/50 hover:text-white'
+            }`}
+          >
+            <i className="fas fa-dice text-[10px] mr-1" />
+            Números
+            <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-[#FFB703] rounded-full transition-all duration-300 ${isNumerosPage ? 'w-6' : 'w-0 group-hover:w-4'}`} />
+          </Link>
         </div>
 
         {/* CTA */}
@@ -136,6 +149,14 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
+          <Link
+            href="/numeros-disponibles"
+            onClick={() => setMobileOpen(false)}
+            className="text-[15px] font-bold text-[#FFB703] hover:text-yellow-500 tracking-wide transition-colors flex items-center gap-2"
+          >
+            <i className="fas fa-dice text-[12px]" />
+            Números Disponibles
+          </Link>
           <Link
             href="/boletas"
             onClick={() => setMobileOpen(false)}
