@@ -1,5 +1,6 @@
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
+import AnticipadoInfo from '@/components/AnticipadoInfo';
 import Prizes from '@/components/Prizes';
 import Gallery from '@/components/Gallery';
 import TruckSpecs from '@/components/TruckSpecs';
@@ -22,6 +23,9 @@ export default function Home() {
 
       {/* 1. Hero — Big statement */}
       <Hero />
+
+      {/* 1.5. Anticipado — Weekly prize info */}
+      <AnticipadoInfo />
 
       {/* 2. Prizes — What you can win */}
       <Prizes />
