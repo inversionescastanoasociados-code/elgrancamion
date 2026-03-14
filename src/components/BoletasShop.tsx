@@ -1008,8 +1008,15 @@ export default function BoletasShop() {
                   const precioBoleta = parseFloat(r.precio_boleta) || 0;
                   const vendidas = r.boletas_vendidas;
                   const total = r.total_boletas;
-                  const disponibles = parseInt(r.boletas_disponibles) || 0;
                   const porcentaje = total > 0 ? Math.round((vendidas / total) * 100) : 0;
+                  const disponibilidadTexto =
+                    porcentaje >= 90
+                      ? 'Ultimas disponibles'
+                      : porcentaje >= 70
+                        ? 'Se estan agotando'
+                        : porcentaje >= 40
+                          ? 'Alta demanda'
+                          : 'Disponibles';
                   const sorteoDate = new Date(r.fecha_sorteo);
                   const sorteoStr = sorteoDate.toLocaleDateString('es-CO', {
                     day: 'numeric',
@@ -1086,24 +1093,18 @@ export default function BoletasShop() {
                             <i className="fas fa-calendar-alt text-[#E63946] text-[10px]" />
                             <span className="font-semibold">{sorteoStr}</span>
                           </div>
-                          <div className="w-px h-3 bg-white/10" />
-                          <div className="flex items-center gap-1.5 text-white/50">
-                            <i className="fas fa-ticket-alt text-[#FFB703] text-[10px]" />
-                            <span className="font-semibold">{disponibles.toLocaleString()} disponibles</span>
-                          </div>
                         </div>
 
-                        {/* Progress bar */}
+                        {/* Availability status */}
                         <div className="mb-5">
-                          <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-1.5">
-                            <span className="text-white/30">Progreso</span>
-                            <span className="text-[#E63946]">{porcentaje}%</span>
-                          </div>
-                          <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-gradient-to-r from-[#E63946] to-[#FF6B6B] transition-all duration-1000"
-                              style={{ width: `${porcentaje}%` }}
-                            />
+                          <div className="inline-flex items-center gap-2 rounded-full border border-[#E63946]/25 bg-[#E63946]/10 px-3 py-1.5">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E63946] opacity-75" />
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E63946]" />
+                            </span>
+                            <span className="text-[10px] font-black uppercase tracking-wider text-[#FF8A93]">
+                              {disponibilidadTexto}
+                            </span>
                           </div>
                         </div>
 
