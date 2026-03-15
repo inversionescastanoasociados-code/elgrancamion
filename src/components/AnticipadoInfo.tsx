@@ -114,7 +114,7 @@ export default function AnticipadoInfo() {
                     El anticipado de <span className="text-white/70"> sábado 14 de marzo</span>, se jugó con la lotería:
                   </p>
 
-                  {/* Result number highlight */}
+                  {/* Res number highlight */}
                   <div className="flex items-center gap-4 mb-5">
                     <div className="relative">
                       <div className="absolute inset-0 bg-[#FFB703] rounded-2xl blur-lg opacity-20 animate-pulse" />
