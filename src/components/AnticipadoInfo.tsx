@@ -28,6 +28,22 @@ function getTimeLeft(target: Date) {
 export default function AnticipadoInfo() {
   const [mounted, setMounted] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const historialAnticipados = [
+    {
+      fecha: 'Sábado 14 de marzo',
+      numero: '1499',
+      estado: 'Sin ganador',
+      detalle: 'No quedó en poder del público. Se acumula para el próximo sábado.',
+      acumulado: '$6.000.000',
+    },
+    {
+      fecha: 'Sábado 7 de marzo',
+      numero: '4715',
+      estado: 'Sin ganador',
+      detalle: 'El número estaba disponible y dejó acumulado el anticipado.',
+      acumulado: '$4.000.000',
+    },
+  ];
 
   useEffect(() => {
     setMounted(true);
@@ -91,11 +107,11 @@ export default function AnticipadoInfo() {
                   {/* Badge */}
                   <div className="inline-flex items-center gap-2 bg-[#E63946]/15 border border-[#E63946]/25 rounded-full px-4 py-1.5 mb-5">
                     <span className="text-lg">📢</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#E63946]">Resultado Anterior</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#E63946]">Resultado </span>
                   </div>
 
                   <p className="text-white/40 text-[13px] font-semibold mb-3">
-                    El primer anticipado del <span className="text-white/70">sábado 7 de marzo</span> se jugó con la lotería:
+                    El anticipado de <span className="text-white/70"> sábado 14 de marzo</span>, se jugó con la lotería:
                   </p>
 
                   {/* Result number highlight */}
@@ -108,18 +124,18 @@ export default function AnticipadoInfo() {
                           className="text-4xl sm:text-5xl font-black text-[#FFD700] text-center tracking-[8px]"
                           style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                         >
-                          4715
+                          1499
                         </p>
                       </div>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="w-2 h-2 rounded-full bg-green-500" />
-                        <span className="text-green-400 text-[13px] font-bold">¡Estaba disponible!</span>
+                        <span className="text-green-400 text-[13px] font-bold">¡No tenía dueño!</span>
                       </div>
                       <p className="text-white/30 text-[12px] leading-relaxed">
-                        El número <span className="text-[#FFB703] font-bold">4715</span> no tenía dueño.
-                        El premio de <span className="text-white/60 font-bold">$2.000.000</span> queda{' '}
+                        El número <span className="text-[#FFB703] font-bold">1499</span> no quedó en poder del público.
+                        El acumulado de <span className="text-white/60 font-bold">$4.000.000</span> queda{' '}
                         <span className="text-[#FFB703] font-bold">¡ACUMULADO!</span>
                       </p>
                     </div>
@@ -132,7 +148,7 @@ export default function AnticipadoInfo() {
                       El anticipado se acumula para el próximo sábado
                     </p>
                     <p className="text-white/40 text-[12px] mt-1">
-                      Al no tener dueño, los $2M se suman al siguiente sorteo.
+                      Al no tener dueño, los $4M acumulados se mantienen y se suman $2M del nuevo anticipado.
                     </p>
                   </div>
                 </div>
@@ -169,14 +185,14 @@ export default function AnticipadoInfo() {
                       className="text-5xl sm:text-6xl font-black bg-gradient-to-r from-[#FFB703] to-[#FFD700] bg-clip-text text-transparent"
                       style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                     >
-                      $4.000.000
+                      $6.000.000
                     </span>
                     <span className="text-white/30 text-sm font-bold uppercase">COP</span>
                   </div>
 
                   <p className="text-white/40 text-[13px] leading-relaxed mb-5">
-                    Acumulado de $2M anteriores + $2M del nuevo anticipado.{' '}
-                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas los 4 millones!</span>
+                    Acumulado de $4M anteriores + $2M del nuevo anticipado.{' '}
+                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas los 6 millones!</span>
                   </p>
 
                   {/* Countdown to next Saturday */}
@@ -296,6 +312,51 @@ export default function AnticipadoInfo() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* ═══ HISTORIAL DE ANTICIPADOS ═══ */}
+        <div className="mt-10 sm:mt-12">
+          <div className="mb-4 sm:mb-5 flex items-center justify-between gap-3">
+            <h3
+              className="text-2xl sm:text-3xl uppercase tracking-wider text-white"
+              style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+            >
+              Historial de <span className="text-[#FFB703]">Anticipados</span>
+            </h3>
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[2px] text-white/35">
+              Ultimos resultados
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {historialAnticipados.map((item) => (
+              <div
+                key={`${item.fecha}-${item.numero}`}
+                className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-4"
+              >
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <p className="text-white/55 text-[11px] font-bold uppercase tracking-[1px]">{item.fecha}</p>
+                  <span className="text-[10px] font-bold uppercase tracking-[1px] text-[#FFB703] bg-[#FFB703]/10 border border-[#FFB703]/25 rounded-full px-2 py-1">
+                    {item.estado}
+                  </span>
+                </div>
+
+                <div className="flex items-end justify-between gap-3 mb-2">
+                  <p
+                    className="text-3xl sm:text-4xl text-white tracking-[4px]"
+                    style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                  >
+                    {item.numero}
+                  </p>
+                  <p className="text-[#25D366] text-[11px] font-bold uppercase tracking-[1px]">
+                    Acumulado: {item.acumulado}
+                  </p>
+                </div>
+
+                <p className="text-white/35 text-[12px] leading-relaxed">{item.detalle}</p>
+              </div>
+            ))}
           </div>
         </div>
 
