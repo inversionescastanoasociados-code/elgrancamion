@@ -281,6 +281,7 @@ export default function BoletasShop() {
   /* ─── Selection & Flow State ─── */
   const [selectedIds, setSelectedIds] = useState<Map<string, number>>(new Map()); // id -> numero
   const [step, setStep] = useState<ShopStep>('pick-rifa');
+  const [checkoutStep, setCheckoutStep] = useState<1 | 2 | 3>(1);
   const [reservaToken, setReservaToken] = useState<string | null>(null);
   const [bloqueoHasta, setBloqueoHasta] = useState<string | null>(null);
   const [reservaResult, setReservaResult] = useState<ReservaResult | null>(null);
@@ -560,6 +561,14 @@ export default function BoletasShop() {
     });
   }, []);
 
+  /* ─── Roulette state ─── */
+  const [showRoulette, setShowRoulette] = useState(false);
+  const [rouletteSpinning, setRouletteSpinning] = useState(false);
+  const [rouletteResult, setRouletteResult] = useState<BoletaDisponible | null>(null);
+  const [rouletteNumbers, setRouletteNumbers] = useState<number[]>([]);
+  const [rouletteCurrentIdx, setRouletteCurrentIdx] = useState(0);
+  const rouletteInterval = useRef<NodeJS.Timeout | null>(null);
+
   const pickRandom = useCallback(() => {
     const available = boletas.filter(
       (b) => b.estado === 'DISPONIBLE' && !selectedIds.has(b.id)
@@ -572,6 +581,63 @@ export default function BoletasShop() {
       return next;
     });
   }, [boletas, selectedIds]);
+
+  const startRoulette = useCallback(() => {
+    const available = boletas.filter(
+      (b) => b.estado === 'DISPONIBLE' && !selectedIds.has(b.id)
+    );
+    if (available.length === 0 || selectedIds.size >= 20) return;
+    setShowRoulette(true);
+    setRouletteResult(null);
+    setRouletteSpinning(true);
+
+    // Generate a sequence of random numbers to display during spin
+    const sequence: number[] = [];
+    for (let i = 0; i < 30; i++) {
+      sequence.push(available[Math.floor(Math.random() * available.length)].numero);
+    }
+    // The final result
+    const finalPick = available[Math.floor(Math.random() * available.length)];
+    sequence.push(finalPick.numero);
+    setRouletteNumbers(sequence);
+    setRouletteCurrentIdx(0);
+
+    let idx = 0;
+    let speed = 50;
+    const tick = () => {
+      idx++;
+      setRouletteCurrentIdx(idx);
+      if (idx >= sequence.length - 1) {
+        // Done
+        setRouletteSpinning(false);
+        setRouletteResult(finalPick);
+        return;
+      }
+      // Slow down progressively
+      if (idx > sequence.length * 0.6) speed = 180;
+      else if (idx > sequence.length * 0.3) speed = 120;
+      rouletteInterval.current = setTimeout(tick, speed);
+    };
+    rouletteInterval.current = setTimeout(tick, speed);
+  }, [boletas, selectedIds]);
+
+  const acceptRoulette = useCallback(() => {
+    if (!rouletteResult) return;
+    setSelectedIds((prev) => {
+      const next = new Map(prev);
+      next.set(rouletteResult.id, rouletteResult.numero);
+      return next;
+    });
+    setShowRoulette(false);
+    setRouletteResult(null);
+  }, [rouletteResult]);
+
+  const closeRoulette = useCallback(() => {
+    if (rouletteInterval.current) clearTimeout(rouletteInterval.current);
+    setShowRoulette(false);
+    setRouletteSpinning(false);
+    setRouletteResult(null);
+  }, []);
 
   const clearSelection = useCallback(() => {
     setSelectedIds(new Map());
@@ -606,6 +672,7 @@ export default function BoletasShop() {
       if (res.data) {
         setReservaToken(res.data.reserva_token);
         setBloqueoHasta(res.data.bloqueo_hasta);
+        setCheckoutStep(1);
         setStep('checkout');
 
         // Also load payment methods
@@ -615,11 +682,6 @@ export default function BoletasShop() {
         } catch {
           /* non-critical */
         }
-
-        // Scroll to checkout
-        setTimeout(() => {
-          checkoutRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 200);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error al reservar boletas';
@@ -784,6 +846,7 @@ export default function BoletasShop() {
     setRifa(null);
     setBoletas([]);
     setStep('pick-rifa');
+    setCheckoutStep(1);
     setReservaToken(null);
     setBloqueoHasta(null);
     setReservaResult(null);
@@ -1543,7 +1606,7 @@ export default function BoletasShop() {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E63946]" />
                 </span>
                 <span className="text-[11px] font-bold tracking-[3px] uppercase text-[#FF8A93]">
-                  {availableCount.toLocaleString()} boletas disponibles
+                  SORTEO ACTIVO · ¡PARTICIPA YA!
                 </span>
               </div>
 
@@ -1584,21 +1647,18 @@ export default function BoletasShop() {
                 ))}
               </div>
 
-              {/* Progress bar */}
-              <div className="max-w-md mx-auto">
-                <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-2">
-                  <span className="text-white/40">Boletas vendidas</span>
-                  <span className="text-[#E63946]">{soldPercent}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-[#E63946] to-[#FF6B6B] transition-all duration-1000"
-                    style={{ width: `${soldPercent}%` }}
-                  />
-                </div>
-                <p className="text-[10px] text-white/25 mt-2 text-center">
-                  ¡No te quedes sin la tuya! Se están agotando rápido
-                </p>
+              {/* Trust badges */}
+              <div className="max-w-lg mx-auto flex flex-wrap justify-center gap-4 sm:gap-6">
+                {[
+                  { icon: 'fas fa-trophy', label: 'Premios garantizados', color: '#FFB703' },
+                  { icon: 'fas fa-shield-alt', label: 'Compra 100% segura', color: '#25D366' },
+                  { icon: 'fas fa-truck', label: 'Camión 0km verificado', color: '#E63946' },
+                ].map((badge) => (
+                  <div key={badge.label} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08]">
+                    <i className={`${badge.icon} text-xs`} style={{ color: badge.color }} />
+                    <span className="text-[10px] font-bold text-white/50 tracking-wider uppercase">{badge.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -1748,7 +1808,7 @@ export default function BoletasShop() {
                     </div>
 
                     <button
-                      onClick={pickRandom}
+                      onClick={startRoulette}
                       disabled={step !== 'selecting'}
                       className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#FFB703] to-[#F57F17] text-white text-[11px] font-bold tracking-wider uppercase shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -1780,6 +1840,61 @@ export default function BoletasShop() {
                 </div>
               </div>
             </section>
+
+            {/* ═══ SELECTED BOLETAS BAR ═══ */}
+            {selectedCount > 0 && step === 'selecting' && (
+              <div className="sticky top-[104px] sm:top-[108px] z-30 bg-white/95 backdrop-blur-xl border-b border-[#E63946]/10 shadow-sm shop-fade-in">
+                <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-2.5">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <i className="fas fa-shopping-cart text-[#E63946] text-[10px]" />
+                      <span className="text-[11px] font-bold text-[#E63946] tracking-wider uppercase">
+                        {selectedCount} {selectedCount === 1 ? 'boleta' : 'boletas'}
+                      </span>
+                    </div>
+                    <div className="flex-1 overflow-x-auto flex items-center gap-1.5 py-1 scrollbar-hide">
+                      {selectedNums.map((num) => {
+                        const entry = Array.from(selectedIds.entries()).find(([, v]) => v === num);
+                        if (!entry) return null;
+                        const [id] = entry;
+                        return (
+                          <div
+                            key={id}
+                            className="flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#E63946]/10 border border-[#E63946]/20 group hover:bg-[#E63946]/20 transition-colors cart-bounce"
+                          >
+                            <span
+                              className="text-[12px] font-black text-[#E63946] tabular-nums"
+                              style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}
+                            >
+                              {formatNumero(num, totalBoletas)}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedIds((prev) => {
+                                  const next = new Map(prev);
+                                  next.delete(id);
+                                  return next;
+                                });
+                              }}
+                              className="w-4 h-4 rounded-full flex items-center justify-center text-[#E63946]/50 hover:text-white hover:bg-[#E63946] transition-all"
+                            >
+                              <i className="fas fa-times text-[7px]" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <button
+                      onClick={clearSelection}
+                      className="flex-shrink-0 text-[10px] font-bold text-[#999] hover:text-[#E63946] transition-colors"
+                    >
+                      Limpiar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* ═══ BOLETAS GRID ═══ */}
             <section className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8 sm:py-12" ref={gridRef}>
@@ -1969,589 +2084,593 @@ export default function BoletasShop() {
         )}
 
         {/* ═══════════════════════════════════════════════════
-           STEP: CHECKOUT (After boletas are blocked)
+           STEP: CHECKOUT — WIZARD MODAL (After boletas are blocked)
         ═══════════════════════════════════════════════════ */}
         {step === 'checkout' && (
-          <section ref={checkoutRef} className="max-w-[900px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
-            <div className="shop-fade-in">
-              {/* ── Checkout Header ── */}
-              <div className="text-center mb-8">
-                <h2
-                  className="text-3xl sm:text-4xl tracking-wider uppercase text-[#1A1A1A]"
-                  style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-                >
-                  COMPLETA TU <span className="text-truck-red">RESERVA</span>
-                </h2>
-                <p className="text-[#999] text-sm mt-2">
-                  Llena tus datos para asegurar {selectedCount > 1 ? 'tus' : 'tu'}{' '}
-                  {selectedCount} boleta{selectedCount > 1 ? 's' : ''}
-                </p>
-              </div>
+          <div className="fixed inset-0 z-[90] flex items-center justify-center modal-overlay" ref={checkoutRef}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <div className="relative z-10 w-full h-full sm:h-auto sm:max-h-[92vh] sm:w-[95vw] sm:max-w-[560px] flex flex-col bg-white sm:rounded-2xl overflow-hidden shadow-2xl modal-content">
 
-              {/* ── Returning Client Badge ── */}
-              {isReturningClient && buyerData.nombre && (
-                <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl px-5 py-4 flex items-center gap-4 shop-fade-in">
-                  <div className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                    <i className="fas fa-user-check text-green-600 text-sm" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-bold text-green-800 truncate">{buyerData.nombre}</p>
-                    <p className="text-[11px] text-green-600">
-                      CC {buyerData.identificacion}
-                      {buyerData.telefono && <span> · {buyerData.telefono}</span>}
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-100 text-[10px] font-bold text-green-700 border border-green-200">
-                    <i className="fas fa-check-circle text-[8px]" />
-                    VERIFICADO
-                  </span>
-                </div>
-              )}
-
-              {/* ── Timer Bar (if active) ── */}
-              {bloqueoHasta && !bloqueoTimer.expired && (
-                <div className="mb-6 bg-gradient-to-r from-[#111113] to-[#1a1a1f] rounded-2xl px-5 py-4 shadow-lg border border-white/[0.06]">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <i className="fas fa-clock text-[#FFB703] text-sm" />
-                      <span className="text-[11px] font-bold text-white/60 uppercase tracking-wider">
-                        Tiempo para completar
+              {/* ── Wizard Header: Timer + Progress ── */}
+              <div className="flex-shrink-0 bg-gradient-to-r from-[#111113] to-[#1a1a1f] px-5 py-4 relative overflow-hidden">
+                <div className="absolute inset-0 prize-shimmer pointer-events-none" />
+                <div className="relative">
+                  {/* Timer row */}
+                  {bloqueoHasta && !bloqueoTimer.expired && (
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <i className={`fas fa-clock text-sm ${bloqueoTimer.total < 120000 ? 'text-[#E63946] animate-pulse' : 'text-[#FFB703]'}`} />
+                        <span className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Tiempo restante</span>
+                      </div>
+                      <span
+                        className={`text-lg font-black tabular-nums ${bloqueoTimer.total < 120000 ? 'text-[#E63946]' : 'text-[#FFB703]'}`}
+                        style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '2px' }}
+                      >
+                        {pad(bloqueoTimer.minutes)}:{pad(bloqueoTimer.seconds)}
                       </span>
                     </div>
-                    <span
-                      className={`text-xl font-black tabular-nums ${
-                        bloqueoTimer.total < 120000
-                          ? 'text-[#E63946] animate-pulse'
-                          : 'text-[#FFB703]'
-                      }`}
-                      style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '2px' }}
-                    >
-                      {pad(bloqueoTimer.minutes)}:{pad(bloqueoTimer.seconds)}
-                    </span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-1000 ${
-                        bloqueoTimer.total < 120000 ? 'bg-[#E63946]' : 'bg-[#FFB703]'
-                      }`}
-                      style={{
-                        width: `${Math.min(100, (bloqueoTimer.total / (15 * 60 * 1000)) * 100)}%`,
-                      }}
-                    />
+                  )}
+                  {/* Progress steps */}
+                  <div className="flex items-center gap-2">
+                    {[
+                      { n: 1, label: 'Carrito', icon: 'fa-shopping-cart' },
+                      { n: 2, label: 'Datos', icon: 'fa-user' },
+                      { n: 3, label: 'Confirmar', icon: 'fa-check' },
+                    ].map((s, i) => (
+                      <div key={s.n} className="flex items-center flex-1">
+                        <button
+                          onClick={() => { if (s.n < checkoutStep) setCheckoutStep(s.n as 1 | 2 | 3); }}
+                          className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all text-left w-full ${
+                            checkoutStep === s.n
+                              ? 'bg-white/15 text-white'
+                              : checkoutStep > s.n
+                                ? 'text-white/60 hover:text-white/80 cursor-pointer'
+                                : 'text-white/20 cursor-default'
+                          }`}
+                          disabled={s.n > checkoutStep}
+                        >
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 ${
+                            checkoutStep === s.n
+                              ? 'bg-[#E63946] text-white'
+                              : checkoutStep > s.n
+                                ? 'bg-green-500/30 text-green-400'
+                                : 'bg-white/10 text-white/30'
+                          }`}>
+                            {checkoutStep > s.n ? <i className="fas fa-check text-[8px]" /> : s.n}
+                          </div>
+                          <span className="text-[10px] font-bold tracking-wider uppercase hidden sm:block">{s.label}</span>
+                        </button>
+                        {i < 2 && <div className={`w-4 h-px mx-0.5 flex-shrink-0 ${checkoutStep > s.n ? 'bg-green-500/30' : 'bg-white/10'}`} />}
+                      </div>
+                    ))}
                   </div>
                 </div>
-              )}
+              </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                {/* ══════════════════════════════════════
-                   LEFT COLUMN — Client Form (3/5)
-                ══════════════════════════════════════ */}
-                <div className="lg:col-span-3 space-y-5">
-                  {/* ── Section: Datos Personales ── */}
-                  <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
-                    <div className="flex items-center gap-3 px-5 py-4 border-b border-black/[0.04] bg-[#FAFAFA]">
-                      <div className="w-8 h-8 rounded-full bg-[#E63946]/10 flex items-center justify-center">
-                        <i className="fas fa-user text-[#E63946] text-xs" />
-                      </div>
-                      <div>
-                        <h4
-                          className="text-base tracking-wider uppercase text-[#1A1A1A]"
-                          style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-                        >
-                          DATOS DEL COMPRADOR
-                        </h4>
-                        <p className="text-[10px] text-[#999] font-medium">
-                          Si ya has comprado antes, te identificamos automáticamente
-                        </p>
-                      </div>
+              {/* ── Wizard Body ── */}
+              <div className="flex-1 overflow-y-auto">
+
+                {/* ════ PASO 1: CARRITO ════ */}
+                {checkoutStep === 1 && (
+                  <div className="p-5 space-y-4 shop-fade-in">
+                    <div className="text-center mb-2">
+                      <h3 className="text-xl tracking-wider uppercase text-[#1A1A1A]" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
+                        TU <span className="text-[#E63946]">CARRITO</span>
+                      </h3>
+                      <p className="text-[12px] text-[#999]">{rifa?.nombre}</p>
                     </div>
 
-                    <div className="p-5 space-y-4">
-                      {/* Nombre */}
-                      <div>
-                        <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
-                          Nombre Completo <span className="text-[#E63946]">*</span>
-                        </label>
-                        <div className="relative">
-                          <i className={`fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
-                          <input
-                            type="text"
-                            placeholder="Juan Carlos Pérez"
-                            value={buyerData.nombre}
-                            onChange={(e) => { if (!isReturningClient) setBuyerData({ ...buyerData, nombre: e.target.value }); }}
-                            onBlur={() => setFormTouched({ ...formTouched, nombre: true })}
-                            readOnly={isReturningClient}
-                            className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
-                              isReturningClient
-                                ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
-                                : formTouched.nombre && formErrors.nombre
-                                ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
-                                : formTouched.nombre && buyerData.nombre.trim().length >= 2
-                                ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
-                                : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
-                            }`}
-                          />
-                          {(isReturningClient || (formTouched.nombre && buyerData.nombre.trim().length >= 2 && !formErrors.nombre)) && (
-                            <i className={`fas ${isReturningClient ? 'fa-lock' : 'fa-check-circle'} absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm`} />
-                          )}
-                        </div>
-                        {formTouched.nombre && formErrors.nombre && !isReturningClient && (
-                          <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
-                            <i className="fas fa-exclamation-circle text-[9px]" />
-                            {formErrors.nombre}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Cédula */}
-                      <div>
-                        <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
-                          Cédula / Documento <span className="text-[#E63946]">*</span>
-                        </label>
-                        <div className="relative">
-                          <i className={`fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
-                          <input
-                            type="text"
-                            placeholder="1.234.567.890"
-                            value={buyerData.identificacion}
-                            onChange={(e) => { if (!isReturningClient) setBuyerData({ ...buyerData, identificacion: e.target.value }); }}
-                            onBlur={() => setFormTouched({ ...formTouched, identificacion: true })}
-                            readOnly={isReturningClient}
-                            className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
-                              isReturningClient
-                                ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
-                                : formTouched.identificacion && formErrors.identificacion
-                                ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
-                                : formTouched.identificacion && buyerData.identificacion.trim().length >= 4 && !formErrors.identificacion
-                                ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
-                                : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
-                            }`}
-                          />
-                          {(isReturningClient || (formTouched.identificacion && buyerData.identificacion.trim().length >= 4 && !formErrors.identificacion)) && (
-                            <i className={`fas ${isReturningClient ? 'fa-lock' : 'fa-check-circle'} absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm`} />
-                          )}
-                        </div>
-                        {formTouched.identificacion && formErrors.identificacion && !isReturningClient && (
-                          <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
-                            <i className="fas fa-exclamation-circle text-[9px]" />
-                            {formErrors.identificacion}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Teléfono */}
-                      <div>
-                        <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
-                          <i className="fab fa-whatsapp text-green-500 text-xs" /> WhatsApp / Teléfono <span className="text-[#E63946]">*</span>
-                        </label>
-                        <div className="relative">
-                          <i className={`fab fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
-                          <input
-                            type="tel"
-                            placeholder="300 123 4567"
-                            value={buyerData.telefono}
-                            onChange={(e) => { if (!isReturningClient) setBuyerData({ ...buyerData, telefono: e.target.value }); }}
-                            onBlur={() => setFormTouched({ ...formTouched, telefono: true })}
-                            readOnly={isReturningClient}
-                            className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
-                              isReturningClient
-                                ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
-                                : formTouched.telefono && formErrors.telefono
-                                ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
-                                : formTouched.telefono && buyerData.telefono.trim().length >= 7 && !formErrors.telefono
-                                ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
-                                : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
-                            }`}
-                          />
-                          {(isReturningClient || (formTouched.telefono && buyerData.telefono.trim().length >= 7 && !formErrors.telefono)) && (
-                            <i className={`fas ${isReturningClient ? 'fa-lock' : 'fa-check-circle'} absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm`} />
-                          )}
-                        </div>
-                        {formTouched.telefono && formErrors.telefono && !isReturningClient && (
-                          <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
-                            <i className="fas fa-exclamation-circle text-[9px]" />
-                            {formErrors.telefono}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Email */}
-                      <div>
-                        <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
-                          Correo Electrónico <span className="text-[#E63946]">*</span>
-                        </label>
-                        <div className="relative">
-                          <i className={`fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
-                          <input
-                            type="email"
-                            placeholder="correo@ejemplo.com"
-                            value={buyerData.email}
-                            onChange={(e) => { if (!isReturningClient) setBuyerData({ ...buyerData, email: e.target.value }); }}
-                            onBlur={() => setFormTouched({ ...formTouched, email: true })}
-                            readOnly={isReturningClient}
-                            className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
-                              isReturningClient
-                                ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
-                                : formTouched.email && formErrors.email
-                                ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
-                                : formTouched.email && buyerData.email.trim() && !formErrors.email
-                                ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
-                                : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
-                            }`}
-                          />
-                          {(isReturningClient || (formTouched.email && buyerData.email.trim() && !formErrors.email)) && (
-                            <i className={`fas ${isReturningClient ? 'fa-lock' : 'fa-check-circle'} absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm`} />
-                          )}
-                        </div>
-                        {formTouched.email && formErrors.email && !isReturningClient && (
-                          <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
-                            <i className="fas fa-exclamation-circle text-[9px]" />
-                            {formErrors.email}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Ciudad / Municipio */}
-                      <div>
-                        <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
-                          Ciudad / Municipio <span className="text-[#E63946]">*</span>
-                        </label>
-                        <div className="relative">
-                          <i className="fas fa-city absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
-                          <input
-                            type="text"
-                            placeholder="Ej: Bogotá, Medellín, Cali..."
-                            value={buyerData.direccion}
-                            onChange={(e) => setBuyerData({ ...buyerData, direccion: e.target.value })}
-                            onBlur={() => setFormTouched({ ...formTouched, direccion: true })}
-                            className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
-                              formTouched.direccion && formErrors.direccion
-                                ? 'border-[#E63946]/40 bg-[#FFF5F5] focus:border-[#E63946]/60 focus:ring-2 focus:ring-[#E63946]/10'
-                                : formTouched.direccion && buyerData.direccion.trim() && !formErrors.direccion
-                                ? 'border-green-300 bg-green-50/30 focus:border-green-400 focus:ring-2 focus:ring-green-100'
-                                : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
-                            }`}
-                          />
-                          {formTouched.direccion && buyerData.direccion.trim() && !formErrors.direccion && (
-                            <i className="fas fa-check-circle absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm" />
-                          )}
-                        </div>
-                        {formTouched.direccion && formErrors.direccion && (
-                          <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
-                            <i className="fas fa-exclamation-circle text-[9px]" />
-                            {formErrors.direccion}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Returning client hint / WhatsApp edit notice */}
-                    <div className="px-5 pb-4">
-                      {isReturningClient ? (
-                        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                          <i className="fas fa-lock text-amber-500 text-xs mt-0.5" />
-                          <p className="text-[11px] text-amber-700 leading-relaxed">
-                            <strong>Tus datos están protegidos.</strong> Si necesitas modificarlos, comunícate con nosotros:{' '}
-                            <a href="https://wa.me/573207120787?text=Hola!%20Necesito%20actualizar%20mis%20datos%20de%20registro%20para%20la%20rifa." target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-green-600 font-bold hover:text-green-700 transition-colors">
-                              <i className="fab fa-whatsapp text-xs" /> WhatsApp
-                            </a>
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-                          <i className="fas fa-info-circle text-blue-400 text-xs mt-0.5" />
-                          <p className="text-[11px] text-blue-600/80 leading-relaxed">
-                            <strong>¿Ya compraste antes?</strong> Ingresa el mismo teléfono o cédula y tu historial de compras se vinculará automáticamente.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* ── Section: Medios de Pago (Informativo) ── */}
-                  <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
-                    <div className="flex items-center gap-3 px-5 py-4 border-b border-black/[0.04] bg-[#FAFAFA]">
-                      <div className="w-8 h-8 rounded-full bg-[#FFB703]/10 flex items-center justify-center">
-                        <i className="fas fa-credit-card text-[#FFB703] text-xs" />
-                      </div>
-                      <div>
-                        <h4
-                          className="text-base tracking-wider uppercase text-[#1A1A1A]"
-                          style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-                        >
-                          MEDIOS DE PAGO
-                        </h4>
-                        <p className="text-[10px] text-[#999] font-medium">
-                          Realiza tu pago a cualquiera de estas cuentas
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="p-5 space-y-3">
-                      {/* Nequi */}
-                      <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl border border-black/[0.06] bg-[#FAFAFA]">
-                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#E20074] to-[#B0005C] flex items-center justify-center flex-shrink-0 shadow-sm">
-                          <i className="fas fa-mobile-alt text-white text-xs" />
-                        </div>
+                    {/* Returning Client Badge */}
+                    {isReturningClient && buyerData.nombre && (
+                      <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                        <i className="fas fa-user-check text-green-600 text-sm" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-[12px] font-bold text-[#333]">llave</p>
-                          <p className="text-[13px] font-mono font-bold text-[#E20074] tracking-wide">0091761012</p>
+                          <p className="text-[12px] font-bold text-green-800 truncate">{buyerData.nombre}</p>
+                          <p className="text-[10px] text-green-600">CC {buyerData.identificacion}</p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => navigator.clipboard?.writeText('0091761012')}
-                          className="w-8 h-8 rounded-lg bg-white border border-black/[0.08] flex items-center justify-center hover:bg-[#E20074]/5 hover:border-[#E20074]/20 transition-all flex-shrink-0"
-                          title="Copiar"
-                        >
-                          <i className="fas fa-copy text-[11px] text-[#AAA]" />
-                        </button>
+                        <span className="text-[9px] font-black text-green-700 bg-green-100 px-2 py-0.5 rounded-full uppercase">Verificado</span>
                       </div>
+                    )}
 
-                      {/* Bancolombia */}
-                      <div className="flex items-start gap-3 px-4 py-3.5 rounded-xl border border-black/[0.06] bg-[#FAFAFA]">
-                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#FDDA24] to-[#E6C420] flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5">
-                          <i className="fas fa-building-columns text-white text-xs" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[12px] font-bold text-[#333]">Bancolombia — Cuenta de Ahorros</p>
-                          <p className="text-[13px] font-mono font-bold text-[#1A1A1A] tracking-wide">70800002342</p>
-                          <p className="text-[10px] text-[#999] mt-0.5">Inversiones Castaño Asociados SAS</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => navigator.clipboard?.writeText('70800002342')}
-                          className="w-8 h-8 rounded-lg bg-white border border-black/[0.08] flex items-center justify-center hover:bg-[#FDDA24]/10 hover:border-[#FDDA24]/30 transition-all flex-shrink-0 mt-0.5"
-                          title="Copiar"
-                        >
-                          <i className="fas fa-copy text-[11px] text-[#AAA]" />
-                        </button>
+                    {/* Boletas list */}
+                    <div className="bg-[#FAFAFA] rounded-xl border border-black/[0.06] overflow-hidden">
+                      <div className="px-4 py-3 border-b border-black/[0.04] flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-[#888] uppercase tracking-wider">
+                          {selectedCount} boleta{selectedCount > 1 ? 's' : ''} seleccionada{selectedCount > 1 ? 's' : ''}
+                        </span>
+                        <span className="text-[11px] font-bold text-[#E63946]">{formatCOP(precio)} c/u</span>
                       </div>
-
-                      {/* WhatsApp contact */}
-                      <div className="bg-[#25D366]/[0.06] border border-[#25D366]/15 rounded-xl px-4 py-3">
-                        <p className="text-[11px] font-bold text-[#25D366] mb-1.5">
-                          <i className="fab fa-whatsapp mr-1" /> Envía tu comprobante por WhatsApp
-                        </p>
-                        <div className="flex flex-wrap gap-3">
-                          <a href="https://wa.me/573207120787" target="_blank" rel="noopener noreferrer" className="text-[12px] font-bold text-[#128C7E] hover:underline">
-                            <i className="fas fa-phone text-[9px] mr-1" /> 320 712 0787
-                          </a>
-                          <a href="https://wa.me/573207120779" target="_blank" rel="noopener noreferrer" className="text-[12px] font-bold text-[#128C7E] hover:underline">
-                            <i className="fas fa-phone text-[9px] mr-1" /> 320 712 0779
-                          </a>
-                        </div>
-                      </div>
-
-                      <p className="text-[10px] text-[#BBB] text-center">
-                        <i className="fas fa-info-circle text-[9px] mr-1" />
-                        Después de reservar, realiza el pago y envía el comprobante
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* ── Section: Notas ── */}
-                  <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
-                    <div className="flex items-center gap-3 px-5 py-4 border-b border-black/[0.04] bg-[#FAFAFA]">
-                      <div className="w-8 h-8 rounded-full bg-[#6366F1]/10 flex items-center justify-center">
-                        <i className="fas fa-sticky-note text-[#6366F1] text-xs" />
-                      </div>
-                      <div>
-                        <h4
-                          className="text-base tracking-wider uppercase text-[#1A1A1A]"
-                          style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-                        >
-                          NOTAS ADICIONALES
-                        </h4>
-                        <p className="text-[10px] text-[#999] font-medium">
-                          Información extra sobre tu pago (opcional)
-                        </p>
-                      </div>
-                    </div>
-                    <div className="p-5">
-                      <textarea
-                        value={notas}
-                        onChange={(e) => setNotas(e.target.value)}
-                        placeholder="Ej: Pagaré por llave mañana a primera hora, envío comprobante por WhatsApp..."
-                        maxLength={1000}
-                        rows={3}
-                        className="w-full px-4 py-3 rounded-xl border border-black/[0.08] bg-white text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10 transition-all resize-none"
-                      />
-                      <p className="text-[10px] text-[#ccc] text-right mt-1">{notas.length}/1000</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ══════════════════════════════════════
-                   RIGHT COLUMN — Order Summary (2/5)
-                ══════════════════════════════════════ */}
-                <div className="lg:col-span-2">
-                  <div className="lg:sticky lg:top-[72px] space-y-5">
-                    {/* Order summary card */}
-                    <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
-                      <div className="bg-gradient-to-br from-[#111113] to-[#1a1a1f] px-5 py-5 relative overflow-hidden">
-                        <div className="absolute inset-0 prize-shimmer pointer-events-none" />
-                        <div className="relative">
-                          <h4
-                            className="text-lg tracking-wider uppercase text-white mb-1"
-                            style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-                          >
-                            RESUMEN DE COMPRA
-                          </h4>
-                          <p className="text-white/40 text-[11px] font-semibold">
-                            {rifa?.nombre}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="p-5 space-y-4">
-                        {/* Boletas */}
-                        <div>
-                          <label className="text-[10px] font-bold text-[#999] uppercase tracking-wider block mb-2">
-                            Boletas Seleccionadas
-                          </label>
-                          <div className="flex flex-wrap gap-1.5">
-                            {selectedNums.map((num) => (
+                      <div className="p-3 flex flex-wrap gap-2 max-h-[200px] overflow-y-auto">
+                        {selectedNums.map((num) => {
+                          const entry = Array.from(selectedIds.entries()).find(([, v]) => v === num);
+                          if (!entry) return null;
+                          const [id] = entry;
+                          return (
+                            <div
+                              key={id}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#E63946]/15 shadow-sm group"
+                            >
                               <span
-                                key={num}
-                                className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#E63946]/[0.07] border border-[#E63946]/15 text-[#E63946] text-[12px] font-black tracking-wider"
-                                style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                                className="text-[14px] font-black text-[#E63946] tabular-nums"
+                                style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}
                               >
                                 #{formatNumero(num, totalBoletas)}
                               </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Prize reminder */}
-                        {rifa?.premio_principal && (
-                          <div className="flex items-center gap-2 bg-gradient-to-r from-[#FFB703]/10 to-[#FFD700]/5 border border-[#FFB703]/15 rounded-xl px-3 py-2.5">
-                            <span className="text-lg">🏆</span>
-                            <div>
-                              <p className="text-[10px] font-bold text-[#B87A00] uppercase tracking-wider">Premio Mayor</p>
-                              <p className="text-[12px] font-bold text-[#8B6914]">{rifa.premio_principal}</p>
+                              <button
+                                onClick={() => {
+                                  setSelectedIds((prev) => {
+                                    const next = new Map(prev);
+                                    next.delete(id);
+                                    return next;
+                                  });
+                                }}
+                                className="w-5 h-5 rounded-full flex items-center justify-center text-[#E63946]/40 hover:text-white hover:bg-[#E63946] transition-all"
+                              >
+                                <i className="fas fa-times text-[8px]" />
+                              </button>
                             </div>
-                          </div>
-                        )}
+                          );
+                        })}
+                      </div>
+                    </div>
 
-                        {/* Price breakdown */}
-                        <div className="space-y-2 pt-2 border-t border-black/[0.04]">
-                          <div className="flex justify-between text-[13px]">
-                            <span className="text-[#888]">{selectedCount} × Boleta</span>
-                            <span className="text-[#555] font-semibold">{formatCOP(precio)}</span>
+                    {/* Prize reminder */}
+                    {rifa?.premio_principal && (
+                      <div className="flex items-center gap-2 bg-gradient-to-r from-[#FFB703]/10 to-[#FFD700]/5 border border-[#FFB703]/15 rounded-xl px-3 py-2.5">
+                        <span className="text-lg">🏆</span>
+                        <div>
+                          <p className="text-[10px] font-bold text-[#B87A00] uppercase tracking-wider">Premio Mayor</p>
+                          <p className="text-[12px] font-bold text-[#8B6914]">{rifa.premio_principal}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Price breakdown */}
+                    <div className="bg-white rounded-xl border border-black/[0.06] p-4 space-y-2">
+                      <div className="flex justify-between text-[13px]">
+                        <span className="text-[#888]">{selectedCount} × Boleta</span>
+                        <span className="text-[#555] font-semibold">{formatCOP(precio)}</span>
+                      </div>
+                      <div className="h-px bg-black/[0.06]" />
+                      <div className="flex justify-between items-end">
+                        <span className="text-[13px] font-bold text-[#1A1A1A]">Total a Pagar</span>
+                        <span
+                          className="text-3xl font-black text-[#E63946]"
+                          style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}
+                        >
+                          {formatCOP(totalAmount)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Warning if 0 boletas */}
+                    {selectedCount === 0 && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center">
+                        <p className="text-[12px] text-amber-700 font-semibold">No tienes boletas seleccionadas</p>
+                        <button
+                          onClick={handleCancelBloqueo}
+                          className="text-[12px] font-bold text-[#E63946] mt-1 hover:underline"
+                        >
+                          Volver a seleccionar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ════ PASO 2: DATOS PERSONALES ════ */}
+                {checkoutStep === 2 && (
+                  <div className="p-5 space-y-4 shop-fade-in">
+                    <div className="text-center mb-2">
+                      <h3 className="text-xl tracking-wider uppercase text-[#1A1A1A]" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
+                        DATOS DEL <span className="text-[#E63946]">COMPRADOR</span>
+                      </h3>
+                      <p className="text-[12px] text-[#999]">Completa tu información para la reserva</p>
+                    </div>
+
+                    {/* Nombre */}
+                    <div>
+                      <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
+                        Nombre Completo <span className="text-[#E63946]">*</span>
+                      </label>
+                      <div className="relative">
+                        <i className={`fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
+                        <input
+                          type="text"
+                          placeholder="Juan Carlos Pérez"
+                          value={buyerData.nombre}
+                          onChange={(e) => { if (!isReturningClient) setBuyerData({ ...buyerData, nombre: e.target.value }); }}
+                          onBlur={() => setFormTouched({ ...formTouched, nombre: true })}
+                          readOnly={isReturningClient}
+                          className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
+                            isReturningClient
+                              ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
+                              : formTouched.nombre && formErrors.nombre
+                              ? 'border-[#E63946]/40 bg-[#FFF5F5]'
+                              : formTouched.nombre && buyerData.nombre.trim().length >= 2 && !formErrors.nombre
+                              ? 'border-green-300 bg-green-50/30'
+                              : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
+                          }`}
+                        />
+                        {(isReturningClient || (formTouched.nombre && buyerData.nombre.trim().length >= 2 && !formErrors.nombre)) && (
+                          <i className={`fas ${isReturningClient ? 'fa-lock' : 'fa-check-circle'} absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm`} />
+                        )}
+                      </div>
+                      {formTouched.nombre && formErrors.nombre && !isReturningClient && (
+                        <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
+                          <i className="fas fa-exclamation-circle text-[9px]" /> {formErrors.nombre}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Cédula */}
+                    <div>
+                      <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
+                        Cédula / Documento <span className="text-[#E63946]">*</span>
+                      </label>
+                      <div className="relative">
+                        <i className={`fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
+                        <input
+                          type="text"
+                          placeholder="1.234.567.890"
+                          value={buyerData.identificacion}
+                          onChange={(e) => { if (!isReturningClient) setBuyerData({ ...buyerData, identificacion: e.target.value }); }}
+                          onBlur={() => setFormTouched({ ...formTouched, identificacion: true })}
+                          readOnly={isReturningClient}
+                          className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
+                            isReturningClient
+                              ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
+                              : formTouched.identificacion && formErrors.identificacion
+                              ? 'border-[#E63946]/40 bg-[#FFF5F5]'
+                              : formTouched.identificacion && buyerData.identificacion.trim().length >= 4 && !formErrors.identificacion
+                              ? 'border-green-300 bg-green-50/30'
+                              : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
+                          }`}
+                        />
+                        {(isReturningClient || (formTouched.identificacion && buyerData.identificacion.trim().length >= 4 && !formErrors.identificacion)) && (
+                          <i className={`fas ${isReturningClient ? 'fa-lock' : 'fa-check-circle'} absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm`} />
+                        )}
+                      </div>
+                      {formTouched.identificacion && formErrors.identificacion && !isReturningClient && (
+                        <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
+                          <i className="fas fa-exclamation-circle text-[9px]" /> {formErrors.identificacion}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Teléfono */}
+                    <div>
+                      <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
+                        <i className="fab fa-whatsapp text-green-500 text-xs" /> WhatsApp / Teléfono <span className="text-[#E63946]">*</span>
+                      </label>
+                      <div className="relative">
+                        <i className={`fab fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
+                        <input
+                          type="tel"
+                          placeholder="300 123 4567"
+                          value={buyerData.telefono}
+                          onChange={(e) => { if (!isReturningClient) setBuyerData({ ...buyerData, telefono: e.target.value }); }}
+                          onBlur={() => setFormTouched({ ...formTouched, telefono: true })}
+                          readOnly={isReturningClient}
+                          className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
+                            isReturningClient
+                              ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
+                              : formTouched.telefono && formErrors.telefono
+                              ? 'border-[#E63946]/40 bg-[#FFF5F5]'
+                              : formTouched.telefono && buyerData.telefono.trim().length >= 7 && !formErrors.telefono
+                              ? 'border-green-300 bg-green-50/30'
+                              : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
+                          }`}
+                        />
+                        {(isReturningClient || (formTouched.telefono && buyerData.telefono.trim().length >= 7 && !formErrors.telefono)) && (
+                          <i className={`fas ${isReturningClient ? 'fa-lock' : 'fa-check-circle'} absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm`} />
+                        )}
+                      </div>
+                      {formTouched.telefono && formErrors.telefono && !isReturningClient && (
+                        <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
+                          <i className="fas fa-exclamation-circle text-[9px]" /> {formErrors.telefono}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                      <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
+                        Correo Electrónico <span className="text-[#E63946]">*</span>
+                      </label>
+                      <div className="relative">
+                        <i className={`fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-sm ${isReturningClient ? 'text-green-400' : 'text-[#ccc]'}`} />
+                        <input
+                          type="email"
+                          placeholder="correo@ejemplo.com"
+                          value={buyerData.email}
+                          onChange={(e) => { if (!isReturningClient) setBuyerData({ ...buyerData, email: e.target.value }); }}
+                          onBlur={() => setFormTouched({ ...formTouched, email: true })}
+                          readOnly={isReturningClient}
+                          className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
+                            isReturningClient
+                              ? 'border-green-200 bg-green-50/40 text-green-900 cursor-not-allowed'
+                              : formTouched.email && formErrors.email
+                              ? 'border-[#E63946]/40 bg-[#FFF5F5]'
+                              : formTouched.email && buyerData.email.trim() && !formErrors.email
+                              ? 'border-green-300 bg-green-50/30'
+                              : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
+                          }`}
+                        />
+                        {(isReturningClient || (formTouched.email && buyerData.email.trim() && !formErrors.email)) && (
+                          <i className={`fas ${isReturningClient ? 'fa-lock' : 'fa-check-circle'} absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm`} />
+                        )}
+                      </div>
+                      {formTouched.email && formErrors.email && !isReturningClient && (
+                        <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
+                          <i className="fas fa-exclamation-circle text-[9px]" /> {formErrors.email}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Ciudad */}
+                    <div>
+                      <label className="flex items-center gap-1 text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5">
+                        Ciudad / Municipio <span className="text-[#E63946]">*</span>
+                      </label>
+                      <div className="relative">
+                        <i className="fas fa-city absolute left-4 top-1/2 -translate-y-1/2 text-[#ccc] text-sm" />
+                        <input
+                          type="text"
+                          placeholder="Ej: Bogotá, Medellín, Cali..."
+                          value={buyerData.direccion}
+                          onChange={(e) => setBuyerData({ ...buyerData, direccion: e.target.value })}
+                          onBlur={() => setFormTouched({ ...formTouched, direccion: true })}
+                          className={`w-full pl-11 pr-4 py-3.5 rounded-xl border text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none transition-all ${
+                            formTouched.direccion && formErrors.direccion
+                              ? 'border-[#E63946]/40 bg-[#FFF5F5]'
+                              : formTouched.direccion && buyerData.direccion.trim() && !formErrors.direccion
+                              ? 'border-green-300 bg-green-50/30'
+                              : 'border-black/[0.08] bg-white focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10'
+                          }`}
+                        />
+                        {formTouched.direccion && buyerData.direccion.trim() && !formErrors.direccion && (
+                          <i className="fas fa-check-circle absolute right-4 top-1/2 -translate-y-1/2 text-green-500 text-sm" />
+                        )}
+                      </div>
+                      {formTouched.direccion && formErrors.direccion && (
+                        <p className="text-[11px] text-[#E63946] mt-1 font-medium flex items-center gap-1">
+                          <i className="fas fa-exclamation-circle text-[9px]" /> {formErrors.direccion}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Info hint */}
+                    {isReturningClient ? (
+                      <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                        <i className="fas fa-lock text-amber-500 text-xs mt-0.5" />
+                        <p className="text-[11px] text-amber-700 leading-relaxed">
+                          <strong>Datos protegidos.</strong> Para modificarlos:{' '}
+                          <a href="https://wa.me/573207120787" target="_blank" rel="noopener noreferrer" className="text-green-600 font-bold hover:text-green-700">
+                            <i className="fab fa-whatsapp text-xs" /> WhatsApp
+                          </a>
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                        <i className="fas fa-info-circle text-blue-400 text-xs mt-0.5" />
+                        <p className="text-[11px] text-blue-600/80 leading-relaxed">
+                          <strong>¿Ya compraste antes?</strong> Usa el mismo teléfono o cédula para vincular tu historial.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ════ PASO 3: PAGO + CONFIRMAR ════ */}
+                {checkoutStep === 3 && (
+                  <div className="p-5 space-y-4 shop-fade-in">
+                    <div className="text-center mb-2">
+                      <h3 className="text-xl tracking-wider uppercase text-[#1A1A1A]" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
+                        PAGO Y <span className="text-[#E63946]">CONFIRMACIÓN</span>
+                      </h3>
+                      <p className="text-[12px] text-[#999]">Información para realizar el pago</p>
+                    </div>
+
+                    {/* Order mini-summary */}
+                    <div className="bg-[#FAFAFA] rounded-xl border border-black/[0.06] p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[11px] font-bold text-[#888] uppercase tracking-wider">Resumen</span>
+                        <button onClick={() => setCheckoutStep(1)} className="text-[10px] font-bold text-[#E63946] hover:underline">Editar carrito</button>
+                      </div>
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {selectedNums.map((num) => (
+                          <span key={num} className="text-[11px] font-black text-[#E63946] bg-[#E63946]/[0.07] px-2 py-0.5 rounded" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
+                            #{formatNumero(num, totalBoletas)}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex justify-between items-end pt-2 border-t border-black/[0.04]">
+                        <span className="text-[12px] font-bold text-[#1A1A1A]">{buyerData.nombre || 'Sin nombre'}</span>
+                        <span className="text-2xl font-black text-[#E63946]" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
+                          {formatCOP(totalAmount)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Payment methods */}
+                    <div className="bg-white rounded-xl border border-black/[0.06] overflow-hidden">
+                      <div className="px-4 py-3 border-b border-black/[0.04] bg-[#FAFAFA] flex items-center gap-2">
+                        <i className="fas fa-credit-card text-[#FFB703] text-xs" />
+                        <span className="text-[11px] font-bold text-[#888] uppercase tracking-wider">Medios de Pago</span>
+                      </div>
+                      <div className="p-4 space-y-2.5">
+                        {/* Nequi */}
+                        <div className="flex items-center gap-3 px-3 py-3 rounded-xl border border-black/[0.06] bg-[#FAFAFA]">
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#E20074] to-[#B0005C] flex items-center justify-center flex-shrink-0">
+                            <i className="fas fa-mobile-alt text-white text-[10px]" />
                           </div>
-                          <div className="h-px bg-black/[0.06] my-1" />
-                          <div className="flex justify-between items-end">
-                            <span className="text-[13px] font-bold text-[#1A1A1A]">Total a Pagar</span>
-                            <span
-                              className="text-3xl font-black text-[#E63946]"
-                              style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px' }}
-                            >
-                              {formatCOP(totalAmount)}
-                            </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-bold text-[#333]">Nequi · llave</p>
+                            <p className="text-[13px] font-mono font-bold text-[#E20074] tracking-wide">0091761012</p>
+                          </div>
+                          <button type="button" onClick={() => navigator.clipboard?.writeText('0091761012')} className="w-7 h-7 rounded-lg bg-white border border-black/[0.08] flex items-center justify-center hover:bg-[#E20074]/5 transition-all flex-shrink-0" title="Copiar">
+                            <i className="fas fa-copy text-[10px] text-[#AAA]" />
+                          </button>
+                        </div>
+                        {/* Bancolombia */}
+                        <div className="flex items-start gap-3 px-3 py-3 rounded-xl border border-black/[0.06] bg-[#FAFAFA]">
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FDDA24] to-[#E6C420] flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i className="fas fa-building-columns text-white text-[10px]" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-bold text-[#333]">Bancolombia — Ahorros</p>
+                            <p className="text-[13px] font-mono font-bold text-[#1A1A1A] tracking-wide">70800002342</p>
+                            <p className="text-[9px] text-[#999] mt-0.5">Inversiones Castaño Asociados SAS</p>
+                          </div>
+                          <button type="button" onClick={() => navigator.clipboard?.writeText('70800002342')} className="w-7 h-7 rounded-lg bg-white border border-black/[0.08] flex items-center justify-center hover:bg-[#FDDA24]/10 transition-all flex-shrink-0 mt-0.5" title="Copiar">
+                            <i className="fas fa-copy text-[10px] text-[#AAA]" />
+                          </button>
+                        </div>
+                        {/* WhatsApp */}
+                        <div className="bg-[#25D366]/[0.06] border border-[#25D366]/15 rounded-xl px-3 py-2.5">
+                          <p className="text-[10px] font-bold text-[#25D366] mb-1">
+                            <i className="fab fa-whatsapp mr-1" /> Envía tu comprobante por WhatsApp
+                          </p>
+                          <div className="flex flex-wrap gap-3">
+                            <a href="https://wa.me/573207120787" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-[#128C7E] hover:underline">320 712 0787</a>
+                            <a href="https://wa.me/573207120779" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-[#128C7E] hover:underline">320 712 0779</a>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* ═══ Cláusulas ═══ */}
-                    <details className="group bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
-                      <summary className="flex items-center gap-3 px-5 py-4 cursor-pointer select-none hover:bg-[#FAFAFA] transition-colors">
-                        <div className="w-8 h-8 rounded-full bg-truck-red/8 flex items-center justify-center flex-shrink-0">
-                          <i className="fas fa-file-contract text-truck-red text-xs" />
-                        </div>
-                        <div className="flex-1">
-                          <h4
-                            className="text-sm tracking-wider uppercase text-[#1A1A1A]"
-                            style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-                          >
-                            CLÁUSULAS Y CONDICIONES
-                          </h4>
-                          <p className="text-[10px] text-[#999] font-medium">Al reservar aceptas estas condiciones</p>
-                        </div>
+                    {/* Notes */}
+                    <div>
+                      <label className="text-[11px] font-bold text-[#666] uppercase tracking-wider mb-1.5 block">
+                        Notas adicionales <span className="text-[#bbb] normal-case">(opcional)</span>
+                      </label>
+                      <textarea
+                        value={notas}
+                        onChange={(e) => setNotas(e.target.value)}
+                        placeholder="Ej: Pagaré mañana, envío comprobante por WhatsApp..."
+                        maxLength={1000}
+                        rows={2}
+                        className="w-full px-4 py-3 rounded-xl border border-black/[0.08] bg-white text-[#1A1A1A] text-sm font-medium placeholder:text-[#ccc] focus:outline-none focus:border-[#E63946]/40 focus:ring-2 focus:ring-[#E63946]/10 transition-all resize-none"
+                      />
+                    </div>
+
+                    {/* Cláusulas */}
+                    <details className="group bg-[#FAFAFA] rounded-xl border border-black/[0.06] overflow-hidden">
+                      <summary className="flex items-center gap-2 px-4 py-3 cursor-pointer select-none hover:bg-white transition-colors">
+                        <i className="fas fa-file-contract text-[#E63946] text-xs" />
+                        <span className="text-[11px] font-bold text-[#888] uppercase tracking-wider flex-1">Cláusulas y Condiciones</span>
                         <i className="fas fa-chevron-down text-[10px] text-[#CCC] transition-transform duration-300 group-open:rotate-180" />
                       </summary>
-                      <div className="px-5 pb-5 border-t border-black/[0.04]">
-                        <div className="mt-4 space-y-2.5">
+                      <div className="px-4 pb-4 border-t border-black/[0.04]">
+                        <div className="mt-3 space-y-2">
                           {[
-                            'La empresa no se responsabiliza por negocios que hagan los vendedores con terceros. Por su seguridad, verifique los abonos a la rifa mayor conforme al reglamento elaborado para esta clase de pagos y cancelación a nuestros números telefónicos.',
+                            'La empresa no se responsabiliza por negocios que hagan los vendedores con terceros.',
                             'Caducidad de la boleta: 30 días calendario.',
-                            'El premio mayor se le pagará al comprador original que figure en nuestros libros y que posea el bono de cancelación.',
-                            'El vendedor que no haga efectivo sus cuotas en nuestras oficinas se hace responsable del pago de los premios.',
-                            'La empresa no devuelve dineros abonados ya que estos han causado gastos de administración.',
-                            'El comprador de esta boleta manifiesta haber leído y comprendido cada una de las cláusulas, aceptando en todas sus partes y condiciones, declarando que la compra es voluntaria.',
+                            'El premio mayor se le pagará al comprador original que figure en nuestros libros.',
+                            'La empresa no devuelve dineros abonados.',
+                            'El comprador acepta todas las cláusulas y condiciones.',
                             'Los gastos de traspaso van por cuenta del ganador.',
                           ].map((clause, i) => (
-                            <div key={i} className="flex gap-2.5 items-start">
-                              <div className="w-5 h-5 rounded-md bg-truck-red/8 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <span className="text-[9px] font-black text-truck-red">{i + 1}</span>
-                              </div>
-                              <p className="text-[11px] text-[#666] leading-relaxed">{clause}</p>
+                            <div key={i} className="flex gap-2 items-start">
+                              <span className="text-[8px] font-black text-[#E63946] bg-[#E63946]/[0.08] w-4 h-4 rounded flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+                              <p className="text-[10px] text-[#666] leading-relaxed">{clause}</p>
                             </div>
                           ))}
                         </div>
-                        <div className="mt-4 pt-3 border-t border-black/[0.04] flex items-center gap-2">
-                          <i className="fas fa-check-circle text-emerald-500 text-xs" />
-                          <p className="text-[10px] text-emerald-600 font-semibold">Al confirmar tu reserva, aceptas todas las cláusulas anteriores</p>
+                        <div className="mt-3 pt-2 border-t border-black/[0.04] flex items-center gap-1.5">
+                          <i className="fas fa-check-circle text-emerald-500 text-[10px]" />
+                          <p className="text-[9px] text-emerald-600 font-semibold">Al confirmar, aceptas todas las cláusulas</p>
                         </div>
                       </div>
                     </details>
 
-                    {/* CTA Button */}
-                    <button
-                      onClick={handleReservar}
-                      disabled={actionLoading || !isFormValid}
-                      className="w-full btn-primary text-[14px] py-4 justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#E63946]/20"
-                    >
-                      {actionLoading ? (
-                        <>
-                          <i className="fas fa-spinner fa-spin text-xs" />
-                          PROCESANDO...
-                        </>
-                      ) : (
-                        <>
-                          <i className="fas fa-lock text-xs" />
-                          CONFIRMAR RESERVA — {formatCOP(totalAmount)}
-                        </>
-                      )}
-                    </button>
-
-                    {/* Validation summary */}
-                    {!isFormValid && Object.keys(formTouched).length > 0 && (
-                      <div className="bg-[#FFF5F5] border border-[#E63946]/10 rounded-xl px-4 py-3">
-                        <p className="text-[11px] text-[#E63946]/80 font-medium flex items-center gap-1.5">
-                          <i className="fas fa-info-circle text-[10px]" />
-                          Completa todos los campos obligatorios para continuar
-                        </p>
+                    {/* Error */}
+                    {actionError && (
+                      <div className="bg-[#FFF0F0] border border-[#E63946]/20 rounded-xl px-4 py-3 flex items-center gap-2">
+                        <i className="fas fa-exclamation-circle text-[#E63946] text-sm" />
+                        <p className="text-[#E63946] text-[12px] font-semibold flex-1">{actionError}</p>
                       </div>
                     )}
-
-                    {/* Cancel button */}
-                    <button
-                      onClick={handleCancelBloqueo}
-                      className="w-full text-center text-[12px] text-[#999] hover:text-[#E63946] font-semibold transition-colors py-2"
-                    >
-                      <i className="fas fa-arrow-left text-[10px] mr-1" />
-                      Cancelar y volver a seleccionar
-                    </button>
-
-                    {/* Trust badges */}
-                    <div className="flex flex-col items-center gap-2 pt-2">
-                      {[
-                        { icon: 'fa-shield-halved', text: '72 horas para enviar comprobante' },
-                        { icon: 'fa-clock', text: 'Tu reserva queda guardada' },
-                        { icon: 'fa-whatsapp fab', text: 'Soporte por WhatsApp' },
-                      ].map((badge) => (
-                        <div key={badge.text} className="flex items-center gap-2">
-                          <i className={`${badge.icon.includes('fab') ? badge.icon : `fas ${badge.icon}`} text-[#ccc] text-[10px]`} />
-                          <span className="text-[10px] text-[#bbb] font-medium">{badge.text}</span>
-                        </div>
-                      ))}
-                    </div>
                   </div>
+                )}
+              </div>
+
+              {/* ── Wizard Footer: Navigation ── */}
+              <div className="flex-shrink-0 border-t border-black/[0.06] bg-white px-5 py-4 space-y-2">
+                {/* Main action button */}
+                {checkoutStep === 1 && (
+                  <button
+                    onClick={() => { setCheckoutStep(2); }}
+                    disabled={selectedCount === 0}
+                    className="w-full btn-primary text-[13px] py-3.5 justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <i className="fas fa-arrow-right text-xs" />
+                    SIGUIENTE — DATOS PERSONALES
+                  </button>
+                )}
+                {checkoutStep === 2 && (
+                  <button
+                    onClick={() => {
+                      setFormTouched({ nombre: true, telefono: true, email: true, identificacion: true, direccion: true });
+                      if (isFormValid) setCheckoutStep(3);
+                      else setActionError('Completa todos los campos obligatorios.');
+                    }}
+                    className="w-full btn-primary text-[13px] py-3.5 justify-center"
+                  >
+                    <i className="fas fa-arrow-right text-xs" />
+                    SIGUIENTE — CONFIRMAR PAGO
+                  </button>
+                )}
+                {checkoutStep === 3 && (
+                  <button
+                    onClick={handleReservar}
+                    disabled={actionLoading || !isFormValid}
+                    className="w-full btn-primary text-[13px] py-3.5 justify-center disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#E63946]/20"
+                  >
+                    {actionLoading ? (
+                      <><i className="fas fa-spinner fa-spin text-xs" /> PROCESANDO...</>
+                    ) : (
+                      <><i className="fas fa-lock text-xs" /> CONFIRMAR RESERVA — {formatCOP(totalAmount)}</>
+                    )}
+                  </button>
+                )}
+
+                {/* Secondary actions */}
+                <div className="flex items-center justify-between">
+                  {checkoutStep > 1 ? (
+                    <button
+                      onClick={() => { setActionError(null); setCheckoutStep((checkoutStep - 1) as 1 | 2 | 3); }}
+                      className="text-[12px] font-bold text-[#888] hover:text-[#555] transition-colors flex items-center gap-1"
+                    >
+                      <i className="fas fa-arrow-left text-[9px]" /> Atrás
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+                  <button
+                    onClick={handleCancelBloqueo}
+                    className="text-[12px] font-bold text-[#999] hover:text-[#E63946] transition-colors"
+                  >
+                    Cancelar reserva
+                  </button>
+                </div>
+
+                {/* Trust line */}
+                <div className="flex items-center justify-center gap-4 pt-1">
+                  {[
+                    { icon: 'fa-shield-halved', text: 'Compra segura' },
+                    { icon: 'fa-whatsapp fab', text: 'Soporte WhatsApp' },
+                  ].map((b) => (
+                    <div key={b.text} className="flex items-center gap-1">
+                      <i className={`${b.icon.includes('fab') ? b.icon : `fas ${b.icon}`} text-[#ddd] text-[9px]`} />
+                      <span className="text-[9px] text-[#ccc] font-medium">{b.text}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
-          </section>
+          </div>
         )}
 
         {/* ═══════════════════════════════════════════════════
@@ -3761,6 +3880,151 @@ export default function BoletasShop() {
         )}
 
       </main>
+      )}
+
+      {/* ═══ ROULETTE MODAL ═══ */}
+      {showRoulette && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center modal-overlay" onClick={closeRoulette}>
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div
+            className="relative z-10 w-[90vw] max-w-md modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-gradient-to-br from-[#1A1A1E] to-[#111113] rounded-3xl border border-white/[0.08] overflow-hidden shadow-2xl">
+              {/* Header */}
+              <div className="relative bg-gradient-to-r from-[#FFB703]/20 to-[#F57F17]/10 px-6 py-5 border-b border-white/[0.06]">
+                <button
+                  onClick={closeRoulette}
+                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all"
+                >
+                  <i className="fas fa-times text-sm" />
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-[#FFB703]/20 flex items-center justify-center">
+                    <i className={`fas fa-dice text-[#FFB703] text-xl ${rouletteSpinning ? 'animate-spin' : ''}`} />
+                  </div>
+                  <div>
+                    <h3
+                      className="text-2xl tracking-wider uppercase text-white"
+                      style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                    >
+                      RULETA DE LA SUERTE
+                    </h3>
+                    <p className="text-[11px] text-white/40">El destino elige tu número</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Roulette display */}
+              <div className="px-6 py-10 flex flex-col items-center">
+                {/* Number display */}
+                <div className="relative mb-8">
+                  <div className={`w-40 h-40 rounded-full flex items-center justify-center border-4 ${
+                    rouletteSpinning
+                      ? 'border-[#FFB703] shadow-[0_0_40px_rgba(255,183,3,0.3)]'
+                      : rouletteResult
+                        ? 'border-[#25D366] shadow-[0_0_40px_rgba(37,211,102,0.3)]'
+                        : 'border-white/20'
+                  } transition-all duration-300`}
+                    style={{ background: rouletteSpinning ? 'radial-gradient(circle, #2A2A30, #1A1A1E)' : rouletteResult ? 'radial-gradient(circle, #1A2E1A, #1A1A1E)' : 'radial-gradient(circle, #222228, #1A1A1E)' }}
+                  >
+                    {rouletteSpinning && (
+                      <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#FFB703] animate-spin" />
+                    )}
+                    <span
+                      className={`text-5xl sm:text-6xl font-black tabular-nums transition-all duration-100 ${
+                        rouletteSpinning ? 'text-[#FFB703] roulette-number' : rouletteResult ? 'text-[#25D366] scale-110' : 'text-white/30'
+                      }`}
+                      style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '3px' }}
+                    >
+                      {rouletteNumbers.length > 0
+                        ? formatNumero(rouletteNumbers[Math.min(rouletteCurrentIdx, rouletteNumbers.length - 1)], totalBoletas)
+                        : '----'}
+                    </span>
+                  </div>
+                  {/* Glow effect when spinning */}
+                  {rouletteSpinning && (
+                    <div className="absolute inset-0 rounded-full bg-[#FFB703]/10 animate-ping" style={{ animationDuration: '1.5s' }} />
+                  )}
+                  {/* Success particles */}
+                  {rouletteResult && !rouletteSpinning && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="absolute w-48 h-48 rounded-full border-2 border-[#25D366]/20 animate-ping" style={{ animationDuration: '2s' }} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Status text */}
+                <div className="text-center mb-6">
+                  {rouletteSpinning && (
+                    <p className="text-[#FFB703] text-sm font-bold animate-pulse tracking-wider uppercase">
+                      Girando la ruleta...
+                    </p>
+                  )}
+                  {rouletteResult && !rouletteSpinning && (
+                    <div className="shop-pop-in">
+                      <p className="text-[#25D366] text-sm font-bold tracking-wider uppercase mb-1">
+                        ¡Tu número de la suerte!
+                      </p>
+                      <p className="text-white/40 text-xs">
+                        ¿Quieres quedarte con el <strong className="text-white/70">#{formatNumero(rouletteResult.numero, totalBoletas)}</strong>?
+                      </p>
+                    </div>
+                  )}
+                  {!rouletteSpinning && !rouletteResult && (
+                    <p className="text-white/30 text-sm">Presiona girar para comenzar</p>
+                  )}
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex flex-col gap-3 w-full max-w-xs">
+                  {rouletteResult && !rouletteSpinning ? (
+                    <>
+                      <button
+                        onClick={acceptRoulette}
+                        className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white text-[14px] font-bold tracking-wider uppercase shadow-lg shadow-green-600/20 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                      >
+                        <i className="fas fa-check-circle text-sm" />
+                        ELEGIR #{formatNumero(rouletteResult.numero, totalBoletas)}
+                      </button>
+                      <button
+                        onClick={startRoulette}
+                        className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-[#FFB703]/30 bg-[#FFB703]/10 text-[#FFB703] text-[13px] font-bold tracking-wider uppercase hover:bg-[#FFB703]/20 transition-all"
+                      >
+                        <i className="fas fa-redo text-xs" />
+                        GIRAR DE NUEVO
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={startRoulette}
+                      disabled={rouletteSpinning}
+                      className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-gradient-to-r from-[#FFB703] to-[#F57F17] text-white text-[14px] font-bold tracking-wider uppercase shadow-lg shadow-[#FFB703]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
+                    >
+                      {rouletteSpinning ? (
+                        <>
+                          <i className="fas fa-spinner fa-spin text-sm" />
+                          GIRANDO...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-dice text-sm" />
+                          GIRAR RULETA
+                        </>
+                      )}
+                    </button>
+                  )}
+                  <button
+                    onClick={closeRoulette}
+                    className="w-full text-center text-[12px] font-bold text-white/30 hover:text-white/60 transition-colors py-2"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
