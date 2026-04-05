@@ -30,6 +30,14 @@ export default function AnticipadoInfo() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const historialAnticipados = [
     {
+      fecha: 'Sábado 4 de abril',
+      numero: '9933',
+      estado: 'Sin ganador',
+      detalle: 'La boleta estaba disponible. El anticipado se acumula para el próximo sábado.',
+      acumulado: '$4.000.000',
+      ganador: false,
+    },
+    {
       fecha: 'Sábado 28 de marzo',
       numero: '6924',
       estado: '¡Ganador!',
@@ -115,50 +123,50 @@ export default function AnticipadoInfo() {
 
                 <div className="relative z-10">
                   {/* Badge */}
-                  <div className="inline-flex items-center gap-2 bg-[#25D366]/15 border border-[#25D366]/25 rounded-full px-4 py-1.5 mb-5">
-                    <span className="text-lg">🎉</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">¡Tenemos Ganador!</span>
+                  <div className="inline-flex items-center gap-2 bg-[#FFB703]/15 border border-[#FFB703]/25 rounded-full px-4 py-1.5 mb-5">
+                    <span className="text-lg">⚠️</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#FFB703]">Sin Ganador</span>
                   </div>
 
                   <p className="text-white/40 text-[13px] font-semibold mb-3">
-                    El anticipado del <span className="text-white/70">sábado 28 de marzo</span>, se jugó con la lotería:
+                    El anticipado del <span className="text-white/70">sábado 4 de abril</span>, se jugó con la lotería:
                   </p>
 
                   {/* Res number highlight */}
                   <div className="flex items-center gap-4 mb-5">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-[#25D366] rounded-2xl blur-lg opacity-20 animate-pulse" />
-                      <div className="relative bg-gradient-to-br from-[#25D366]/20 to-[#FFD700]/10 border-2 border-[#25D366]/50 rounded-2xl px-6 sm:px-8 py-4">
-                        <p className="text-[10px] font-bold tracking-[3px] uppercase text-[#25D366]/60 mb-1 text-center">Número ganador</p>
+                      <div className="absolute inset-0 bg-[#FFB703] rounded-2xl blur-lg opacity-20 animate-pulse" />
+                      <div className="relative bg-gradient-to-br from-[#FFB703]/20 to-[#FFD700]/10 border-2 border-[#FFB703]/50 rounded-2xl px-6 sm:px-8 py-4">
+                        <p className="text-[10px] font-bold tracking-[3px] uppercase text-[#FFB703]/70 mb-1 text-center">Número jugado</p>
                         <p
                           className="text-4xl sm:text-5xl font-black text-[#FFD700] text-center tracking-[8px]"
                           style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                         >
-                          6924
+                          9933
                         </p>
                       </div>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
-                        <span className="text-[#25D366] text-[13px] font-bold">¡Quedó en poder del público!</span>
+                        <span className="w-2 h-2 rounded-full bg-[#FFB703] animate-pulse" />
+                        <span className="text-[#FFB703] text-[13px] font-bold">La boleta estaba disponible</span>
                       </div>
                       <p className="text-white/30 text-[12px] leading-relaxed">
-                        La boleta <span className="text-[#FFB703] font-bold">6924</span> tenía dueño y se llevó{' '}
-                        <span className="text-[#25D366] font-bold">$8.000.000</span> de premio.
-                        <span className="text-white/60 font-bold"> ¡Felicidades al ganador!</span>
+                        El número <span className="text-[#FFB703] font-bold">9933</span> no tenía dueño.
+                        <span className="text-white/60 font-bold"> El anticipado se acumula para el próximo sábado por </span>
+                        <span className="text-[#25D366] font-bold">$4.000.000</span>.
                       </p>
                     </div>
                   </div>
 
                   {/* Ganador callout */}
-                  <div className="bg-gradient-to-r from-[#25D366]/10 to-transparent border-l-4 border-[#25D366] rounded-r-xl px-4 py-3">
-                    <p className="text-[#25D366] text-[13px] font-bold flex items-center gap-2">
-                      <i className="fas fa-trophy text-sm" />
-                      ¡Premio entregado! $8.000.000 COP
+                  <div className="bg-gradient-to-r from-[#FFB703]/10 to-transparent border-l-4 border-[#FFB703] rounded-r-xl px-4 py-3">
+                    <p className="text-[#FFB703] text-[13px] font-bold flex items-center gap-2">
+                      <i className="fas fa-layer-group text-sm" />
+                      Acumulado actualizado: $4.000.000 COP
                     </p>
                     <p className="text-white/40 text-[12px] mt-1">
-                      El anticipado acumulado fue ganado. El próximo sábado se inicia nuevo anticipado de $2.000.000.
+                      Como el número jugado estaba disponible, el premio se acumuló para el próximo sábado.
                     </p>
                   </div>
                 </div>
@@ -195,14 +203,14 @@ export default function AnticipadoInfo() {
                       className="text-5xl sm:text-6xl font-black bg-gradient-to-r from-[#FFB703] to-[#FFD700] bg-clip-text text-transparent"
                       style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                     >
-                      $2.000.000
+                      $4.000.000
                     </span>
                     <span className="text-white/30 text-sm font-bold uppercase">COP</span>
                   </div>
 
                   <p className="text-white/40 text-[13px] leading-relaxed mb-5">
-                    Nuevo anticipado de $2.000.000 tras la entrega del premio anterior.{' '}
-                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas los 2 millones!</span>
+                    El anticipado se acumuló luego del resultado de hoy y ahora va en $4.000.000.{' '}
+                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas los 4 millones!</span>
                   </p>
 
                   {/* Countdown to next Saturday */}
