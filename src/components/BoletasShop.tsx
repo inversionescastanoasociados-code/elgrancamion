@@ -1913,9 +1913,6 @@ export default function BoletasShop() {
                     Vendida / Reservada
                   </span>
                 </div>
-                <p className="text-[11px] text-[#bbb]">
-                  Mostrando {paginated.length} de {filtered.length.toLocaleString()} boletas
-                </p>
               </div>
 
               {paginated.length > 0 ? (
