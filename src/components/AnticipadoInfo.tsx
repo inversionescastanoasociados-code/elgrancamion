@@ -30,6 +30,14 @@ export default function AnticipadoInfo() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const historialAnticipados = [
     {
+      fecha: 'Sábado 25 de abril',
+      numero: '9894',
+      estado: 'Sin ganador',
+      detalle: 'La boleta estaba disponible. El anticipado se acumula para el próximo sábado 2 de mayo.',
+      acumulado: '$10.000.000',
+      ganador: false,
+    },
+    {
       fecha: 'Sábado 4 de abril',
       numero: '9933',
       estado: 'Sin ganador',
@@ -129,7 +137,7 @@ export default function AnticipadoInfo() {
                   </div>
 
                   <p className="text-white/40 text-[13px] font-semibold mb-3">
-                    El anticipado del <span className="text-white/70">sábado 4 de abril</span>, se jugó con la lotería:
+                    El anticipado de <span className="text-white/70">hoy sábado 25 de abril</span>, se jugó con la lotería:
                   </p>
 
                   {/* Res number highlight */}
@@ -142,7 +150,7 @@ export default function AnticipadoInfo() {
                           className="text-4xl sm:text-5xl font-black text-[#FFD700] text-center tracking-[8px]"
                           style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                         >
-                          9933
+                          9894
                         </p>
                       </div>
                     </div>
@@ -152,9 +160,9 @@ export default function AnticipadoInfo() {
                         <span className="text-[#FFB703] text-[13px] font-bold">La boleta estaba disponible</span>
                       </div>
                       <p className="text-white/30 text-[12px] leading-relaxed">
-                        El número <span className="text-[#FFB703] font-bold">9933</span> no tenía dueño.
-                        <span className="text-white/60 font-bold"> El anticipado se acumula para el próximo sábado por </span>
-                        <span className="text-[#25D366] font-bold">$4.000.000</span>.
+                        El número <span className="text-[#FFB703] font-bold">9894</span> no tenía dueño.
+                        <span className="text-white/60 font-bold"> El anticipado se acumula para el próximo sábado 2 de mayo por </span>
+                        <span className="text-[#25D366] font-bold">$10.000.000</span>.
                       </p>
                     </div>
                   </div>
@@ -163,10 +171,10 @@ export default function AnticipadoInfo() {
                   <div className="bg-gradient-to-r from-[#FFB703]/10 to-transparent border-l-4 border-[#FFB703] rounded-r-xl px-4 py-3">
                     <p className="text-[#FFB703] text-[13px] font-bold flex items-center gap-2">
                       <i className="fas fa-layer-group text-sm" />
-                      Acumulado actualizado: $4.000.000 COP
+                      Acumulado actualizado: $10.000.000 COP
                     </p>
                     <p className="text-white/40 text-[12px] mt-1">
-                      Como el número jugado estaba disponible, el premio se acumuló para el próximo sábado.
+                      Como el número jugado estaba disponible, el premio se acumuló para el próximo sábado 2 de mayo.
                     </p>
                   </div>
                 </div>
@@ -184,7 +192,7 @@ export default function AnticipadoInfo() {
                   {/* Badge */}
                   <div className="inline-flex items-center gap-2 bg-[#25D366]/15 border border-[#25D366]/25 rounded-full px-4 py-1.5 mb-5">
                     <span className="text-lg">🔥</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">Próximo Sábado</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">Sábado 2 de Mayo</span>
                   </div>
 
                   <h3
@@ -203,14 +211,14 @@ export default function AnticipadoInfo() {
                       className="text-5xl sm:text-6xl font-black bg-gradient-to-r from-[#FFB703] to-[#FFD700] bg-clip-text text-transparent"
                       style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                     >
-                      $4.000.000
+                      $10.000.000
                     </span>
                     <span className="text-white/30 text-sm font-bold uppercase">COP</span>
                   </div>
 
                   <p className="text-white/40 text-[13px] leading-relaxed mb-5">
-                    El anticipado se acumuló luego del resultado de hoy y ahora va en $4.000.000.{' '}
-                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas los 4 millones!</span>
+                    El anticipado se acumuló luego del resultado de hoy y para el próximo sábado 2 de mayo va en $10.000.000.{' '}
+                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas los 10 millones!</span>
                   </p>
 
                   {/* Countdown to next Saturday */}

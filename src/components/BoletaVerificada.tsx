@@ -575,10 +575,9 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
                   </div>
 
                   {/* Rifa Info — compact */}
-                  <div className="verificar-slide-up grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6" style={{ animationDelay: '0.5s' }}>
+                  <div className="verificar-slide-up grid grid-cols-2 sm:grid-cols-2 gap-3 mb-6" style={{ animationDelay: '0.5s' }}>
                     {[
                       { icon: 'fa-trophy', label: 'Premio Principal', value: data.rifa.premio_principal },
-                      { icon: 'fa-ticket', label: 'Total Boletas', value: data.rifa.total_boletas.toLocaleString('es-CO') },
                       { icon: 'fa-calendar-days', label: 'Fecha del Sorteo', value: formatDate(data.rifa.fecha_sorteo) },
                     ].map((item, i) => (
                       <div key={i} className="bg-white rounded-2xl border border-black/[0.04] p-4 shadow-sm text-center hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
@@ -936,7 +935,6 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
                             {[
                               { icon: 'fa-gift', label: 'Premio Principal', value: data.rifa.premio_principal },
                               { icon: 'fa-calendar-days', label: 'Fecha del Sorteo', value: formatDate(data.rifa.fecha_sorteo) },
-                              { icon: 'fa-ticket', label: 'Total Boletas', value: data.rifa.total_boletas.toLocaleString('es-CO') },
                               { icon: 'fa-tags', label: 'Precio por Boleta', value: formatCOP(data.rifa.precio_boleta) },
                               { icon: 'fa-signal', label: 'Estado de la Rifa', value: data.rifa.estado },
                               { icon: 'fa-hourglass-half', label: 'Días para el Sorteo', value: `${getDaysUntilSorteo(data.rifa.fecha_sorteo)} días` },
