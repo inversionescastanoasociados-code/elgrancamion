@@ -18,7 +18,7 @@ function getTimeLeft(target: Date) {
 export default function Hero() {
   const heroRef = useRef<HTMLElement>(null);
   const [mounted, setMounted] = useState(false);
-  const targetDate = new Date('2026-06-20T00:00:00');
+  const targetDate = new Date('2026-06-20T22:40:00');
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
