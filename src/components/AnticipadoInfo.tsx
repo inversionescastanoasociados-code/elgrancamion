@@ -30,6 +30,14 @@ export default function AnticipadoInfo() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const historialAnticipados = [
     {
+      fecha: 'Sábado 9 de mayo',
+      numero: '8943',
+      estado: '¡Ganador!',
+      detalle: '¡La boleta estaba en poder del público! El ganador se llevó un Crucero por el Caribe.',
+      acumulado: 'Crucero por el Caribe',
+      ganador: true,
+    },
+    {
       fecha: 'Sábado 25 de abril',
       numero: '9894',
       estado: 'Sin ganador',
@@ -132,12 +140,12 @@ export default function AnticipadoInfo() {
                 <div className="relative z-10">
                   {/* Badge */}
                   <div className="inline-flex items-center gap-2 bg-[#FFB703]/15 border border-[#FFB703]/25 rounded-full px-4 py-1.5 mb-5">
-                    <span className="text-lg">⚠️</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#FFB703]">Sin Ganador</span>
+                    <span className="text-lg">🏆</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">¡Ganador!</span>
                   </div>
 
                   <p className="text-white/40 text-[13px] font-semibold mb-3">
-                    El anticipado de <span className="text-white/70">hoy sábado 25 de abril</span>, se jugó con la lotería:
+                    El anticipado de <span className="text-white/70">Sábado 9 de mayo</span>, se jugó con la lotería:
                   </p>
 
                   {/* Res number highlight */}
@@ -150,19 +158,17 @@ export default function AnticipadoInfo() {
                           className="text-4xl sm:text-5xl font-black text-[#FFD700] text-center tracking-[8px]"
                           style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                         >
-                          9894
+                          8943
                         </p>
                       </div>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="w-2 h-2 rounded-full bg-[#FFB703] animate-pulse" />
-                        <span className="text-[#FFB703] text-[13px] font-bold">La boleta estaba disponible</span>
+                        <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
+                        <span className="text-[#25D366] text-[13px] font-bold">La boleta estaba en poder del público</span>
                       </div>
                       <p className="text-white/30 text-[12px] leading-relaxed">
-                        El número <span className="text-[#FFB703] font-bold">9894</span> no tenía dueño.
-                        <span className="text-white/60 font-bold"> El anticipado se acumula para el próximo sábado 2 de mayo por </span>
-                        <span className="text-[#25D366] font-bold">$10.000.000</span>.
+                        ¡La boleta estaba en poder del público! El ganador se llevó un <span className="text-[#25D366] font-bold">Crucero por el Caribe</span>.
                       </p>
                     </div>
                   </div>
@@ -171,10 +177,10 @@ export default function AnticipadoInfo() {
                   <div className="bg-gradient-to-r from-[#FFB703]/10 to-transparent border-l-4 border-[#FFB703] rounded-r-xl px-4 py-3">
                     <p className="text-[#FFB703] text-[13px] font-bold flex items-center gap-2">
                       <i className="fas fa-layer-group text-sm" />
-                      Acumulado actualizado: $10.000.000 COP
+                      Acumulado: Crucero por el Caribe
                     </p>
                     <p className="text-white/40 text-[12px] mt-1">
-                      Como el número jugado estaba disponible, el premio se acumuló para el próximo sábado 2 de mayo.
+                      ¡La boleta estaba en poder del público! El ganador se llevó un Crucero por el Caribe.
                     </p>
                   </div>
                 </div>
