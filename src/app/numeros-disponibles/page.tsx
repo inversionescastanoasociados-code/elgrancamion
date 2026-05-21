@@ -268,13 +268,13 @@ export default function NumerosDisponiblesPage() {
 
   /* ═══ RENDER ═══ */
   return (
-    <div className="min-h-screen bg-[#0D0D10] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-white text-[#1A1A1A] overflow-x-hidden">
       {/* ═══ HEADER / HERO ═══ */}
       <section className="relative overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0D0D10] via-[#12121A] to-[#0D0D10]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_#E63946_0%,transparent_50%)] opacity-[0.04]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_#FFB703_0%,transparent_50%)] opacity-[0.03]" />
+        {/* Background — dark top band */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#111113] via-[#111113] to-white" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_#E63946_0%,transparent_50%)] opacity-[0.08]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_#FFB703_0%,transparent_50%)] opacity-[0.04]" />
 
         {/* Flyer background */}
         <div className="absolute inset-0 z-0">
@@ -346,7 +346,7 @@ export default function NumerosDisponiblesPage() {
               DISPONIBLES
             </span>
           </h1>
-          <p className="text-white/40 text-sm sm:text-base max-w-xl mx-auto mb-2">
+          <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto mb-2">
             {rifa ? rifa.nombre : 'Cargando...'} — Consulta todos los números disponibles, busca tu favorito o prueba tu suerte al azar.
           </p>
           {rifa && (
@@ -358,12 +358,12 @@ export default function NumerosDisponiblesPage() {
       </section>
 
       {/* ═══ CONTROLS BAR ═══ */}
-      <section className="sticky top-0 z-40 bg-[#0D0D10]/95 backdrop-blur-xl border-b border-white/[0.06]">
+      <section className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-black/[0.08] shadow-sm">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
-              <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-sm" />
+              <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-[#999] text-sm" />
               <input
                 ref={searchRef}
                 type="text"
@@ -372,12 +372,12 @@ export default function NumerosDisponiblesPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value.replace(/\D/g, ''))}
                 placeholder={`Buscar número... (ej: ${totalBoletas > 0 ? formatNumero(777, totalBoletas) : '0777'})`}
-                className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.08] text-white text-sm font-mono placeholder:text-white/20 focus:outline-none focus:border-[#E63946]/40 focus:bg-white/[0.08] transition-all"
+                className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#F7F7F7] border border-black/[0.08] text-[#1A1A1A] text-sm font-mono placeholder:text-[#bbb] focus:outline-none focus:border-[#E63946]/50 focus:bg-white focus:ring-2 focus:ring-[#E63946]/10 transition-all"
               />
               {search && (
                 <button
                   onClick={() => { setSearch(''); searchRef.current?.focus(); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 text-xs"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#999] hover:text-[#555] text-xs"
                 >
                   <i className="fas fa-times" />
                 </button>
@@ -387,9 +387,9 @@ export default function NumerosDisponiblesPage() {
             {/* Right controls */}
             <div className="flex items-center gap-3">
               {/* Count badge */}
-              <div className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+              <div className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFF8E7] border border-[#FFB703]/30">
                 <i className="fas fa-ticket-alt text-[#FFB703] text-[10px]" />
-                <span className="text-[12px] font-bold text-white/50">
+                <span className="text-[12px] font-bold text-[#B87A00]">
                   {search ? `${filteredNumbers.length.toLocaleString()} encontrados` : 'Disponibles'}
                 </span>
               </div>
@@ -408,7 +408,7 @@ export default function NumerosDisponiblesPage() {
           </div>
 
           {/* Mobile count */}
-          <div className="sm:hidden mt-2 flex items-center justify-center gap-2 text-[11px] text-white/40">
+          <div className="sm:hidden mt-2 flex items-center justify-center gap-2 text-[11px] text-[#999]">
             <i className="fas fa-ticket-alt text-[#FFB703] text-[10px]" />
             {search ? `${filteredNumbers.length.toLocaleString()} encontrados` : 'Números disponibles'}
           </div>
@@ -419,13 +419,13 @@ export default function NumerosDisponiblesPage() {
       <section className="max-w-[1400px] mx-auto px-3 sm:px-6 py-6 sm:py-8">
         {loading ? (
           <div className="flex flex-col items-center justify-center gap-4 py-20">
-            <div className="w-12 h-12 border-3 border-white/10 border-t-[#E63946] rounded-full animate-spin" />
-            <p className="text-white/50 text-sm font-semibold animate-pulse">Cargando números disponibles…</p>
+            <div className="w-12 h-12 border-3 border-black/10 border-t-[#E63946] rounded-full animate-spin" />
+            <p className="text-[#999] text-sm font-semibold animate-pulse">Cargando números disponibles…</p>
           </div>
         ) : error ? (
           <div className="text-center py-20">
             <i className="fas fa-exclamation-triangle text-4xl text-[#E63946]/40 mb-4" />
-            <p className="text-white/50 text-sm">{error}</p>
+            <p className="text-[#888] text-sm">{error}</p>
             <Link
               href="/boletas"
               className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 rounded-full bg-[#E63946] text-white text-[12px] font-bold hover:bg-[#d32f3c] transition-all"
@@ -436,16 +436,16 @@ export default function NumerosDisponiblesPage() {
           </div>
         ) : filteredNumbers.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-5xl mb-4 opacity-30">🔍</div>
-            <p className="text-white/50 text-base font-semibold mb-2">
+            <div className="text-5xl mb-4 opacity-40">🔍</div>
+            <p className="text-[#555] text-base font-semibold mb-2">
               El número &quot;{search}&quot; no está disponible
             </p>
-            <p className="text-white/30 text-sm mb-5">
+            <p className="text-[#999] text-sm mb-5">
               Puede que ya esté reservado o no exista
             </p>
             <button
               onClick={() => setSearch('')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white/60 text-[12px] font-bold hover:bg-white/15 transition-all mb-8"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/[0.06] text-[#555] text-[12px] font-bold hover:bg-black/[0.10] transition-all mb-8"
             >
               <i className="fas fa-times text-[10px]" />
               Limpiar búsqueda
@@ -455,12 +455,12 @@ export default function NumerosDisponiblesPage() {
             {suggestedNumbers.length > 0 && (
               <div className="max-w-lg mx-auto">
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#FFB703]/20" />
-                  <span className="text-[11px] font-bold tracking-[3px] uppercase text-[#FFB703]/70 flex items-center gap-2">
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#FFB703]/30" />
+                  <span className="text-[11px] font-bold tracking-[3px] uppercase text-[#B87A00] flex items-center gap-2">
                     <i className="fas fa-lightbulb text-[#FFB703] text-sm" />
                     Números parecidos disponibles
                   </span>
-                  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#FFB703]/20" />
+                  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#FFB703]/30" />
                 </div>
 
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -470,17 +470,18 @@ export default function NumerosDisponiblesPage() {
                       <button
                         key={num}
                         onClick={() => setSearch(String(num))}
-                        className="group relative flex items-center justify-center py-3 sm:py-3.5 rounded-xl text-[13px] sm:text-[14px] font-bold font-mono tracking-wider bg-gradient-to-br from-[#FFB703]/10 to-[#FFD700]/5 border border-[#FFB703]/20 text-[#FFD700]/80 hover:bg-[#FFB703]/20 hover:border-[#FFB703]/40 hover:text-[#FFD700] hover:scale-105 hover:shadow-lg hover:shadow-[#FFB703]/10 transition-all duration-200"
+                        className="group relative flex items-center justify-center py-3 sm:py-3.5 rounded-xl bg-white border-2 border-[#FFB703]/40 text-[#B87A00] hover:border-[#FFB703] hover:bg-[#FFF8E7] hover:text-[#8A5C00] hover:scale-105 hover:shadow-lg hover:shadow-[#FFB703]/20 transition-all duration-200"
+                        style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1.5px', fontSize: '14px' }}
                       >
                         {numStr}
-                        <span className="absolute top-1 right-1.5 w-1.5 h-1.5 rounded-full bg-green-500/60" />
-                        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 text-[8px] font-bold text-[#FFB703]/0 group-hover:text-[#FFB703]/60 transition-all">DISPONIBLE</span>
+                        <span className="absolute top-1 right-1.5 w-1.5 h-1.5 rounded-full bg-green-500" />
+                        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 text-[8px] font-bold text-[#FFB703]/0 group-hover:text-[#B87A00]/70 transition-all">DISPONIBLE</span>
                       </button>
                     );
                   })}
                 </div>
 
-                <p className="text-white/20 text-[11px] mt-4">
+                <p className="text-[#bbb] text-[11px] mt-4">
                   <i className="fas fa-info-circle mr-1" />
                   Toca un número para buscarlo
                 </p>
@@ -490,7 +491,7 @@ export default function NumerosDisponiblesPage() {
         ) : (
           <>
             {/* Grid */}
-            <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 xl:grid-cols-14 gap-1.5 sm:gap-2">
+            <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 xl:grid-cols-14 gap-2 sm:gap-2.5">
               {visibleNumbers.map((num) => {
                 const numStr = formatNumero(num, totalBoletas);
                 const isSearchMatch = search && numStr.includes(search);
@@ -507,22 +508,23 @@ export default function NumerosDisponiblesPage() {
                       }
                     }}
                     className={`
-                      relative flex items-center justify-center py-2.5 sm:py-3 rounded-lg text-[11px] sm:text-[12px] font-bold font-mono tracking-wider transition-all duration-200 cursor-pointer
+                      relative flex items-center justify-center py-3 sm:py-3.5 rounded-xl transition-all duration-200 cursor-pointer select-none
                       ${isSelected
-                        ? 'bg-[#E63946]/25 border-2 border-[#E63946] text-white shadow-lg shadow-[#E63946]/20 scale-105 ring-1 ring-[#E63946]/40'
+                        ? 'bg-gradient-to-br from-[#E63946] to-[#B71C1C] border-2 border-[#E63946] text-white shadow-xl shadow-[#E63946]/35 scale-[1.08] ring-2 ring-[#E63946]/30 ring-offset-1 ring-offset-white z-10'
                         : isSearchMatch
-                          ? 'bg-[#FFB703]/20 border-2 border-[#FFB703]/50 text-[#FFD700] shadow-lg shadow-[#FFB703]/10 scale-105 hover:shadow-xl hover:shadow-[#FFB703]/20'
-                          : 'bg-white/[0.04] border border-white/[0.06] text-white/60 hover:bg-[#E63946]/10 hover:border-[#E63946]/30 hover:text-white hover:scale-105 hover:shadow-lg hover:shadow-[#E63946]/10'
+                          ? 'bg-gradient-to-br from-[#FFB703] to-[#E8A000] border-2 border-[#FFB703] text-black shadow-lg shadow-[#FFB703]/30 scale-105'
+                          : 'bg-white border-2 border-[#E63946]/15 text-[#E63946] shadow-sm hover:border-[#E63946]/60 hover:shadow-lg hover:shadow-[#E63946]/15 hover:-translate-y-0.5 hover:scale-105'
                       }
                     `}
+                    style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1.5px', fontSize: 'clamp(13px, 1.5vw, 16px)' }}
                   >
                     {numStr}
                     {isSelected ? (
-                      <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-[#E63946] flex items-center justify-center">
-                        <i className="fas fa-check text-[7px] text-white" />
+                      <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border-2 border-[#E63946] flex items-center justify-center shadow-md">
+                        <i className="fas fa-check text-[8px] text-[#E63946]" />
                       </span>
                     ) : (
-                      <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-green-500/60" />
+                      <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-green-500" />
                     )}
                   </button>
                 );
@@ -533,8 +535,8 @@ export default function NumerosDisponiblesPage() {
             {visibleCount < filteredNumbers.length && (
               <div ref={sentinelRef} className="flex items-center justify-center py-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-white/10 border-t-[#E63946] rounded-full animate-spin" />
-                  <span className="text-white/30 text-[12px] font-semibold">
+                  <div className="w-5 h-5 border-2 border-black/10 border-t-[#E63946] rounded-full animate-spin" />
+                  <span className="text-[#aaa] text-[12px] font-semibold">
                     Mostrando {visibleCount.toLocaleString()} de {filteredNumbers.length.toLocaleString()}...
                   </span>
                 </div>
@@ -544,7 +546,7 @@ export default function NumerosDisponiblesPage() {
             {/* End message */}
             {visibleCount >= filteredNumbers.length && filteredNumbers.length > BATCH_SIZE && (
               <div className="text-center py-6">
-                <p className="text-white/20 text-[12px]">
+                <p className="text-[#ccc] text-[12px]">
                   ✅ Todos los números cargados
                 </p>
               </div>
@@ -555,11 +557,11 @@ export default function NumerosDisponiblesPage() {
 
       {/* ═══ BOTTOM CTA ═══ */}
       {!loading && !error && (
-        <section className="border-t border-white/[0.06] bg-gradient-to-b from-[#0D0D10] to-[#111115]">
+        <section className="border-t border-black/[0.06] bg-[#111113]">
           <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-10 sm:py-14 text-center">
             <p className="text-[11px] font-bold tracking-[4px] uppercase text-[#E63946]/60 mb-3">¿Ya elegiste tu número?</p>
             <h2
-              className="text-3xl sm:text-4xl uppercase tracking-wider mb-4"
+              className="text-3xl sm:text-4xl uppercase tracking-wider mb-4 text-white"
               style={{ fontFamily: '"Bebas Neue", sans-serif' }}
             >
               ¡COMPRA TU BOLETA{' '}
@@ -578,16 +580,16 @@ export default function NumerosDisponiblesPage() {
 
             {/* Social strip */}
             <div className="flex items-center justify-center gap-3 mt-8">
-              <a href="https://www.facebook.com/share/176zWG3VLA/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-[#1877F2]/20 hover:border-[#1877F2]/40 transition-all">
+              <a href="https://www.facebook.com/share/176zWG3VLA/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-[#1877F2]/10 border border-[#1877F2]/20 flex items-center justify-center hover:bg-[#1877F2]/20 hover:border-[#1877F2]/40 transition-all">
                 <i className="fab fa-facebook-f text-[#1877F2] text-sm" />
               </a>
-              <a href="https://www.instagram.com/proyectoelgrancamion?igsh=bTZmdDZraXU1ODZq" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-[#E1306C]/20 hover:border-[#E1306C]/40 transition-all">
+              <a href="https://www.instagram.com/proyectoelgrancamion?igsh=bTZmdDZraXU1ODZq" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-[#E1306C]/10 border border-[#E1306C]/20 flex items-center justify-center hover:bg-[#E1306C]/20 hover:border-[#E1306C]/40 transition-all">
                 <i className="fab fa-instagram text-[#E1306C] text-sm" />
               </a>
-              <a href="https://www.tiktok.com/@elgrancamion.oficial?_r=1&_t=ZS-94LHsPFrtbR" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all">
-                <i className="fab fa-tiktok text-white text-sm" />
+              <a href="https://www.tiktok.com/@elgrancamion.oficial?_r=1&_t=ZS-94LHsPFrtbR" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-black/[0.06] border border-black/[0.12] flex items-center justify-center hover:bg-black/10 hover:border-black/20 transition-all">
+                <i className="fab fa-tiktok text-[#1A1A1A] text-sm" />
               </a>
-              <a href="https://wa.me/573207120787" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-[#25D366]/20 hover:border-[#25D366]/40 transition-all">
+              <a href="https://wa.me/573207120787" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-[#25D366]/10 border border-[#25D366]/20 flex items-center justify-center hover:bg-[#25D366]/20 hover:border-[#25D366]/40 transition-all">
                 <i className="fab fa-whatsapp text-[#25D366] text-sm" />
               </a>
             </div>

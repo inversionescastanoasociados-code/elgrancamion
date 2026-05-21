@@ -44,9 +44,9 @@ const prizes = [
     id: 'fathers',
     rank: 'ATICIPADOS semanalaes',
     title: '$2 Millones',
-    subtitle: 'Desde el 7 de marzo · Hasta el 20 de junio Día del Padre',
+    subtitle: 'Próximo sábado 23 de mayo · Hasta el 20 de junio Día del Padre',
     description:
-      'Premios en efectivo cada sabado . Celebra en grande. Premio acomulable',
+      'Premios en efectivo cada sábado. ¡El sábado 23 vuelve a jugarse por $2.000.000! Premio acumulable.',
     image: null,
     icon: 'fathers',
     badge: '👔',
@@ -60,11 +60,11 @@ const prizes = [
   },
   {
     id: 'cruise',
-    rank: 'DIA DE LA MADRE',
-    title: 'Crucero por el Caribe + $2 Millones de anticipado',
-    subtitle: 'Para 2 Personas · En habitacion suite ',
+    rank: 'DIA DE LA MADRE — ENTREGADO',
+    title: 'Crucero por el Caribe — ¡Ganado!',
+    subtitle: 'Premio entregado el 9 de mayo · El ganador prefirió el efectivo',
     description:
-      'El viaje de tus sueños por las islas del Caribe con todo incluido desde cartagena.',
+      'El crucero fue ganado el sábado 9 de mayo con la boleta 8943. ¡El ganador prefirió recibir $13.000.000 en efectivo! Cada semana hay nuevos premios esperando por ti.',
     image: null,
     icon: 'cruise',
     badge: '🚢',
@@ -74,7 +74,7 @@ const prizes = [
     subtitleColor: 'text-[#999]',
     descColor: 'text-[#666]',
     featured: false,
-    value: '$13M',
+    value: '¡Entregado!',
   },
 ];
 
@@ -121,7 +121,7 @@ function CashPrizeVisual({ type }: { type: string }) {
           CARIBE
         </div>
         <div className="mt-1 text-[10px] font-bold tracking-[3px] uppercase text-[#00838F]/60">
-          POSIBILIDAD DE CAMBIARLO POR 13 MILLONES EN EFECTIVO 
+          GANADO EL 9 DE MAYO · GANADOR ELIGIÓ $13M EN EFECTIVO
         </div>
         <div className="absolute -top-4 -left-6 text-xl animate-float" style={{ animationDelay: '0.5s' }}>🌴</div>
         <div className="absolute -top-2 right-0 text-lg animate-float" style={{ animationDelay: '1s' }}>🏝️</div>

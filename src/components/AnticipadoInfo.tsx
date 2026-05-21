@@ -30,11 +30,19 @@ export default function AnticipadoInfo() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const historialAnticipados = [
     {
+      fecha: 'Sábado 16 de mayo',
+      numero: '0018',
+      estado: '¡Ganador!',
+      detalle: '¡La boleta estaba en poder del público! El ganador prefirió recibir $2.000.000 en efectivo.',
+      acumulado: '$2.000.000',
+      ganador: true,
+    },
+    {
       fecha: 'Sábado 9 de mayo',
       numero: '8943',
       estado: '¡Ganador!',
-      detalle: '¡La boleta estaba en poder del público! El ganador se llevó un Crucero por el Caribe.',
-      acumulado: 'Crucero por el Caribe',
+      detalle: '¡La boleta estaba en poder del público! El ganador se llevó el Crucero por el Caribe, pero prefirió recibir $13.000.000 en efectivo.',
+      acumulado: 'Crucero / $13.000.000',
       ganador: true,
     },
     {
@@ -145,7 +153,7 @@ export default function AnticipadoInfo() {
                   </div>
 
                   <p className="text-white/40 text-[13px] font-semibold mb-3">
-                    El anticipado de <span className="text-white/70">Sábado 9 de mayo</span>, se jugó con la lotería:
+                    El anticipado del <span className="text-white/70">Sábado 16 de mayo</span>, se jugó con la lotería:
                   </p>
 
                   {/* Res number highlight */}
@@ -158,17 +166,17 @@ export default function AnticipadoInfo() {
                           className="text-4xl sm:text-5xl font-black text-[#FFD700] text-center tracking-[8px]"
                           style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                         >
-                          8943
+                          0018
                         </p>
                       </div>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
-                        <span className="text-[#25D366] text-[13px] font-bold">La boleta estaba en poder del público</span>
+                        <span className="text-[#25D366] text-[13px] font-bold">¡La boleta estaba en poder del público!</span>
                       </div>
                       <p className="text-white/30 text-[12px] leading-relaxed">
-                        ¡La boleta estaba en poder del público! El ganador se llevó un <span className="text-[#25D366] font-bold">Crucero por el Caribe</span>.
+                        El ganador prefirió recibir <span className="text-[#25D366] font-bold">$2.000.000 en efectivo</span>.
                       </p>
                     </div>
                   </div>
@@ -176,11 +184,11 @@ export default function AnticipadoInfo() {
                   {/* Ganador callout */}
                   <div className="bg-gradient-to-r from-[#FFB703]/10 to-transparent border-l-4 border-[#FFB703] rounded-r-xl px-4 py-3">
                     <p className="text-[#FFB703] text-[13px] font-bold flex items-center gap-2">
-                      <i className="fas fa-layer-group text-sm" />
-                      Acumulado: Crucero por el Caribe
+                      <i className="fas fa-money-bill-wave text-sm" />
+                      Premio: $2.000.000 en efectivo
                     </p>
                     <p className="text-white/40 text-[12px] mt-1">
-                      ¡La boleta estaba en poder del público! El ganador se llevó un Crucero por el Caribe.
+                      ¡El ganador optó por recibir el premio en dinero en efectivo!
                     </p>
                   </div>
                 </div>
@@ -198,7 +206,7 @@ export default function AnticipadoInfo() {
                   {/* Badge */}
                   <div className="inline-flex items-center gap-2 bg-[#25D366]/15 border border-[#25D366]/25 rounded-full px-4 py-1.5 mb-5">
                     <span className="text-lg">🔥</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">Sábado 2 de Mayo</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">Sábado 23 de mayo</span>
                   </div>
 
                   <h3
@@ -217,14 +225,14 @@ export default function AnticipadoInfo() {
                       className="text-5xl sm:text-6xl font-black bg-gradient-to-r from-[#FFB703] to-[#FFD700] bg-clip-text text-transparent"
                       style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                     >
-                      $10.000.000
+                      $2.000.000
                     </span>
                     <span className="text-white/30 text-sm font-bold uppercase">COP</span>
                   </div>
 
                   <p className="text-white/40 text-[13px] leading-relaxed mb-5">
-                    El anticipado se acumuló luego del resultado de hoy y para el próximo sábado 2 de mayo va en $10.000.000.{' '}
-                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas los 10 millones!</span>
+                    El sábado 16 de mayo hubo ganador con la boleta 0018. Para el próximo sábado 23 de mayo el anticipado vuelve a jugarse por <span className="text-white/60 font-bold">$2.000.000</span>.{' '}
+                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas los 2 millones!</span>
                   </p>
 
                   {/* Countdown to next Saturday */}
