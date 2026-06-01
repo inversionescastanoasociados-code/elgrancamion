@@ -247,7 +247,7 @@ export default function NumerosDisponiblesPage() {
                 />
               </div>
               <div className="mt-1 bg-black/80 border border-white/10 rounded-lg p-2 max-w-xs mx-auto">
-                <p className="text-white/60 text-[9px] font-bold tracking-[1px] uppercase mb-1">Ahorros Bancolombia Inversiones Catsaño</p>
+                <p className="text-white/60 text-[9px] font-bold tracking-[1px] uppercase mb-1">Ahorros Bancolombia Inversiones Castaño</p>
                 <p className="text-white text-[10px] font-mono">70800002342</p>
               </div>
             </>
