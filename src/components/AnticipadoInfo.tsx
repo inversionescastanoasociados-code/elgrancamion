@@ -30,6 +30,14 @@ export default function AnticipadoInfo() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const historialAnticipados = [
     {
+      fecha: 'Sábado 6 de junio',
+      numero: '5588',
+      estado: 'Sin ganador',
+      detalle: 'La boleta estaba disponible. El anticipado se acumula — para el sábado 13 de junio hay $4.000.000 en juego.',
+      acumulado: '$4.000.000',
+      ganador: false,
+    },
+    {
       fecha: 'Sábado 16 de mayo',
       numero: '0018',
       estado: '¡Ganador!',
@@ -148,12 +156,12 @@ export default function AnticipadoInfo() {
                 <div className="relative z-10">
                   {/* Badge */}
                   <div className="inline-flex items-center gap-2 bg-[#FFB703]/15 border border-[#FFB703]/25 rounded-full px-4 py-1.5 mb-5">
-                    <span className="text-lg">🏆</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">¡Ganador!</span>
+                    <span className="text-lg">📋</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#FFB703]">Sin ganador</span>
                   </div>
 
                   <p className="text-white/40 text-[13px] font-semibold mb-3">
-                    El anticipado del <span className="text-white/70">Sábado 16 de mayo</span>, se jugó con la lotería:
+                    El anticipado del <span className="text-white/70">Sábado 6 de junio</span>, se jugó con la lotería:
                   </p>
 
                   {/* Res number highlight */}
@@ -166,29 +174,29 @@ export default function AnticipadoInfo() {
                           className="text-4xl sm:text-5xl font-black text-[#FFD700] text-center tracking-[8px]"
                           style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                         >
-                          0018
+                          5588
                         </p>
                       </div>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
-                        <span className="text-[#25D366] text-[13px] font-bold">¡La boleta estaba en poder del público!</span>
+                        <span className="w-2 h-2 rounded-full bg-[#FFB703] animate-pulse" />
+                        <span className="text-[#FFB703] text-[13px] font-bold">La boleta estaba disponible</span>
                       </div>
                       <p className="text-white/30 text-[12px] leading-relaxed">
-                        El ganador prefirió recibir <span className="text-[#25D366] font-bold">$2.000.000 en efectivo</span>.
+                        Nadie era dueño del número. El premio se acumula para el próximo sábado.
                       </p>
                     </div>
                   </div>
 
-                  {/* Ganador callout */}
+                  {/* Sin ganador callout */}
                   <div className="bg-gradient-to-r from-[#FFB703]/10 to-transparent border-l-4 border-[#FFB703] rounded-r-xl px-4 py-3">
                     <p className="text-[#FFB703] text-[13px] font-bold flex items-center gap-2">
-                      <i className="fas fa-money-bill-wave text-sm" />
-                      Premio: $2.000.000 en efectivo
+                      <i className="fas fa-layer-group text-sm" />
+                      Acumulado para el 13 de junio: $4.000.000
                     </p>
                     <p className="text-white/40 text-[12px] mt-1">
-                      ¡El ganador optó por recibir el premio en dinero en efectivo!
+                      ¡El anticipado crece — este sábado hay más para ganar!
                     </p>
                   </div>
                 </div>
@@ -206,7 +214,7 @@ export default function AnticipadoInfo() {
                   {/* Badge */}
                   <div className="inline-flex items-center gap-2 bg-[#25D366]/15 border border-[#25D366]/25 rounded-full px-4 py-1.5 mb-5">
                     <span className="text-lg">🔥</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">Sábado 23 de mayo</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">Sábado 13 de junio</span>
                   </div>
 
                   <h3
@@ -225,14 +233,14 @@ export default function AnticipadoInfo() {
                       className="text-5xl sm:text-6xl font-black bg-gradient-to-r from-[#FFB703] to-[#FFD700] bg-clip-text text-transparent"
                       style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                     >
-                      $2.000.000
+                      $4.000.000
                     </span>
                     <span className="text-white/30 text-sm font-bold uppercase">COP</span>
                   </div>
 
                   <p className="text-white/40 text-[13px] leading-relaxed mb-5">
-                    El sábado 16 de mayo hubo ganador con la boleta 0018. Para el próximo sábado 23 de mayo el anticipado vuelve a jugarse por <span className="text-white/60 font-bold">$2.000.000</span>.{' '}
-                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas los 2 millones!</span>
+                    El sábado 6 de junio el número 5588 estaba disponible — nadie lo tenía. El anticipado se acumula y este sábado 13 de junio hay <span className="text-white/60 font-bold">$4.000.000</span> en juego.{' '}
+                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas los 4 millones!</span>
                   </p>
 
                   {/* Countdown to next Saturday */}

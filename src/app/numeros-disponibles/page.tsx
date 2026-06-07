@@ -125,11 +125,13 @@ export default function NumerosDisponiblesPage() {
 
     const ordered: number[] = [];
     const series = Array.from(grouped.keys()).sort();
+    const perSeries = Math.max(1, Math.floor(MAX_VISIBLE_NUMBERS / series.length));
     series.forEach((serie) => {
-      ordered.push(...shuffle(grouped.get(serie)!));
+      const picked = shuffle(grouped.get(serie)!).slice(0, perSeries);
+      ordered.push(...picked);
     });
 
-    return ordered.slice(0, MAX_VISIBLE_NUMBERS);
+    return ordered;
   }, [allAvailable, totalBoletas]);
 
   /* ═══ Filtered numbers ═══ */
@@ -230,7 +232,7 @@ export default function NumerosDisponiblesPage() {
             </span>
           </h1>
           <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto mb-1">
-            Anticipados cada 8 días, acumulables por $2.000.000
+            Anticipados cada sábado — <span className="text-[#FFD700] font-bold">$4.000.000 acumulados este 13 de junio</span>
           </p>
           {rifa && (
             <>
