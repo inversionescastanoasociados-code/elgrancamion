@@ -131,7 +131,7 @@ export default function NumerosDisponiblesPage() {
       ordered.push(...picked);
     });
 
-    return ordered;
+    return ordered.sort((a, b) => a - b);
   }, [allAvailable, totalBoletas]);
 
   /* ═══ Filtered numbers ═══ */
