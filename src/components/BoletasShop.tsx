@@ -1506,7 +1506,7 @@ export default function BoletasShop() {
                       </p>
                       <div className="flex flex-wrap gap-2 mt-2">
                         <a
-                          href={`https://wa.me/573207120787?text=${encodeURIComponent(
+                          href={`https://wa.me/573137919267?text=${encodeURIComponent(
                             `Hola! Soy ${buyerData.nombre}, CC ${buyerData.identificacion}. Necesito actualizar mis datos de registro para la rifa.`
                           )}`}
                           target="_blank"
@@ -1514,7 +1514,7 @@ export default function BoletasShop() {
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 text-[11px] font-bold hover:bg-green-500/30 transition-colors"
                         >
                           <i className="fab fa-whatsapp text-xs" />
-                          320 712 0787
+                          313 791 9267
                         </a>
                         <a
                           href={`https://wa.me/573207120779?text=${encodeURIComponent(
@@ -1701,7 +1701,7 @@ export default function BoletasShop() {
                   </a>
                   {/* WhatsApp */}
                   <a
-                    href="https://wa.me/573207120787"
+                    href="https://wa.me/573137919267"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/[0.06] border border-white/[0.08] hover:bg-[#25D366]/20 hover:border-[#25D366]/40 transition-all duration-300"
@@ -2443,7 +2443,7 @@ export default function BoletasShop() {
                         <i className="fas fa-lock text-amber-500 text-xs mt-0.5" />
                         <p className="text-[11px] text-amber-700 leading-relaxed">
                           <strong>Datos protegidos.</strong> Para modificarlos:{' '}
-                          <a href="https://wa.me/573207120787" target="_blank" rel="noopener noreferrer" className="text-green-600 font-bold hover:text-green-700">
+                          <a href="https://wa.me/573137919267" target="_blank" rel="noopener noreferrer" className="text-green-600 font-bold hover:text-green-700">
                             <i className="fab fa-whatsapp text-xs" /> WhatsApp
                           </a>
                         </p>
@@ -2530,7 +2530,7 @@ export default function BoletasShop() {
                             <i className="fab fa-whatsapp mr-1" /> Envía tu comprobante por WhatsApp
                           </p>
                           <div className="flex flex-wrap gap-3">
-                            <a href="https://wa.me/573207120787" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-[#128C7E] hover:underline">320 712 0787</a>
+                            <a href="https://wa.me/573137919267" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-[#128C7E] hover:underline">313 791 9267</a>
                             <a href="https://wa.me/573207120779" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-[#128C7E] hover:underline">320 712 0779</a>
                           </div>
                         </div>
@@ -2785,7 +2785,7 @@ export default function BoletasShop() {
                 <div className="flex flex-col gap-2">
                   {/* WhatsApp buttons — dual numbers */}
                   {[
-                    { num: '573207120787', display: '320 712 0787' },
+                    { num: '573137919267', display: '313 791 9267' },
                     { num: '573207120779', display: '320 712 0779' },
                   ].map((wa) => (
                     <a
@@ -3020,7 +3020,7 @@ export default function BoletasShop() {
                     estadoReserva.estado === 'ABONADA') && (
                     <div className="flex flex-col gap-2">
                       {[
-                        { num: '573207120787', display: '320 712 0787' },
+                        { num: '573137919267', display: '313 791 9267' },
                         { num: '573207120779', display: '320 712 0779' },
                       ].map((wa) => (
                         <a
@@ -3235,13 +3235,13 @@ export default function BoletasShop() {
                 </button>
                 <div className="flex flex-col sm:flex-row items-center gap-2">
                   <a
-                    href="https://wa.me/573207120787?text=Tengo%20una%20pregunta%20sobre%20las%20boletas"
+                    href="https://wa.me/573137919267?text=Tengo%20una%20pregunta%20sobre%20las%20boletas"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/15 text-white/60 text-[13px] font-bold hover:border-white/30 hover:text-white/80 transition-all"
                   >
                     <i className="fab fa-whatsapp text-lg text-green-400" />
-                    320 712 0787
+                    313 791 9267
                   </a>
                   <a
                     href="https://wa.me/573207120779?text=Tengo%20una%20pregunta%20sobre%20las%20boletas"
@@ -3841,7 +3841,7 @@ export default function BoletasShop() {
                       {saldoBoleta > 0 && !isCancelada && (
                         <div className="flex flex-col gap-2">
                           {[
-                            { num: '573207120787', display: '320 712 0787' },
+                            { num: '573137919267', display: '313 791 9267' },
                             { num: '573207120779', display: '320 712 0779' },
                           ].map((wa) => (
                             <a

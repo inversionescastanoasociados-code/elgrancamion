@@ -3,7 +3,7 @@
 export default function WhatsAppButton() {
   return (
     <a
-      href="https://wa.me/+573207120787?text=Hola%2C%20quiero%20comprar%20una%20boleta%20de%20la%20Gran%20Rifa%20Camionera"
+      href="https://wa.me/+573137919267?text=Hola%2C%20quiero%20comprar%20una%20boleta%20de%20la%20Gran%20Rifa%20Camionera"
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-[60] group"
