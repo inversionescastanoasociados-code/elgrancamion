@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import WhatsAppBanner from '@/components/WhatsAppBanner';
 import './globals.css';
 
 const inter = Inter({
@@ -46,6 +47,7 @@ export default function RootLayout({
         className="bg-[#FAFAFA] text-[#1A1A1A] antialiased overflow-x-hidden"
         style={{ fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}
       >
+        <WhatsAppBanner />
         {children}
       </body>
     </html>
