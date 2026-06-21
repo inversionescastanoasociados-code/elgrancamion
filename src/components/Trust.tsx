@@ -5,7 +5,7 @@ import { useState } from 'react';
 const faqs = [
   {
     q: '¿Cuándo juega la rifa?',
-    a: 'Juega el próximo 20 de junio con el premio mayor de la Lotería de Boyaca ,ademas tenemos premios anticipados que juegan cada semana con la misma loteria.',
+    a: 'Juega el próximo 27 de junio con el premio mayor de la Lotería de Boyacá. Además tenemos premios anticipados que juegan cada semana con la misma lotería.',
   },
   {
     q: '¿Qué pasa si no cae el número?',

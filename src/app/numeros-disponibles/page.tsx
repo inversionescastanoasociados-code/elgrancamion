@@ -232,7 +232,7 @@ export default function NumerosDisponiblesPage() {
             </span>
           </h1>
           <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto mb-1">
-            Anticipados cada sábado — <span className="text-[#FFD700] font-bold">$4.000.000 acumulados este 13 de junio</span>
+            Anticipados cada sábado — <span className="text-[#FFD700] font-bold">Premio Mayor vuelve a jugarse el 27 de junio</span>
           </p>
           {rifa && (
             <>

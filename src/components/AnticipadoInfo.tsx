@@ -30,6 +30,14 @@ export default function AnticipadoInfo() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const historialAnticipados = [
     {
+      fecha: 'Sábado 20 de junio',
+      numero: '4430',
+      estado: 'Sin ganador',
+      detalle: 'La boleta estaba disponible por el Premio Mayor. Vuelve a jugarse el sábado 27 de junio.',
+      acumulado: 'Premio Mayor',
+      ganador: false,
+    },
+    {
       fecha: 'Sábado 6 de junio',
       numero: '5588',
       estado: 'Sin ganador',
@@ -157,11 +165,11 @@ export default function AnticipadoInfo() {
                   {/* Badge */}
                   <div className="inline-flex items-center gap-2 bg-[#FFB703]/15 border border-[#FFB703]/25 rounded-full px-4 py-1.5 mb-5">
                     <span className="text-lg">📋</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#FFB703]">Sin ganador</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#FFB703]">Premio Mayor · Sin ganador</span>
                   </div>
 
                   <p className="text-white/40 text-[13px] font-semibold mb-3">
-                    El anticipado del <span className="text-white/70">Sábado 6 de junio</span>, se jugó con la lotería:
+                    El sorteo del <span className="text-white/70">Sábado 20 de junio</span>, se jugó con la lotería:
                   </p>
 
                   {/* Res number highlight */}
@@ -174,7 +182,7 @@ export default function AnticipadoInfo() {
                           className="text-4xl sm:text-5xl font-black text-[#FFD700] text-center tracking-[8px]"
                           style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                         >
-                          5588
+                          4430
                         </p>
                       </div>
                     </div>
@@ -184,7 +192,7 @@ export default function AnticipadoInfo() {
                         <span className="text-[#FFB703] text-[13px] font-bold">La boleta estaba disponible</span>
                       </div>
                       <p className="text-white/30 text-[12px] leading-relaxed">
-                        Nadie era dueño del número. El premio se acumula para el próximo sábado.
+                        La boleta estaba disponible por el Premio Mayor. Nadie era dueño del número.
                       </p>
                     </div>
                   </div>
@@ -192,11 +200,11 @@ export default function AnticipadoInfo() {
                   {/* Sin ganador callout */}
                   <div className="bg-gradient-to-r from-[#FFB703]/10 to-transparent border-l-4 border-[#FFB703] rounded-r-xl px-4 py-3">
                     <p className="text-[#FFB703] text-[13px] font-bold flex items-center gap-2">
-                      <i className="fas fa-layer-group text-sm" />
-                      Acumulado para el 13 de junio: $4.000.000
+                      <i className="fas fa-trophy text-sm" />
+                      El Premio Mayor vuelve a jugarse el 27 de junio
                     </p>
                     <p className="text-white/40 text-[12px] mt-1">
-                      ¡El anticipado crece — este sábado hay más para ganar!
+                      Camión, Kia Picanto y más premios siguen en juego — ¡compra tu boleta!
                     </p>
                   </div>
                 </div>
@@ -214,7 +222,7 @@ export default function AnticipadoInfo() {
                   {/* Badge */}
                   <div className="inline-flex items-center gap-2 bg-[#25D366]/15 border border-[#25D366]/25 rounded-full px-4 py-1.5 mb-5">
                     <span className="text-lg">🔥</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">Sábado 13 de junio</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">Sábado 27 de junio</span>
                   </div>
 
                   <h3
@@ -223,24 +231,24 @@ export default function AnticipadoInfo() {
                   >
                     PRÓXIMO{' '}
                     <span className="bg-gradient-to-r from-[#25D366] to-[#FFD700] bg-clip-text text-transparent">
-                      ANTICIPADO
+                      PREMIO MAYOR
                     </span>
                   </h3>
 
-                  {/* Prize amount */}
+                  {/* Prize highlight */}
                   <div className="flex items-baseline gap-2 mb-4">
                     <span
-                      className="text-5xl sm:text-6xl font-black bg-gradient-to-r from-[#FFB703] to-[#FFD700] bg-clip-text text-transparent"
+                      className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-[#FFB703] to-[#FFD700] bg-clip-text text-transparent"
                       style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                     >
-                      $4.000.000
+                      CAMIÓN + KIA + PREMIOS
                     </span>
-                    <span className="text-white/30 text-sm font-bold uppercase">COP</span>
                   </div>
 
                   <p className="text-white/40 text-[13px] leading-relaxed mb-5">
-                    El sábado 6 de junio el número 5588 estaba disponible — nadie lo tenía. El anticipado se acumula y este sábado 13 de junio hay <span className="text-white/60 font-bold">$4.000.000</span> en juego.{' '}
-                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas los 4 millones!</span>
+                    El sábado 20 de junio el número 4430 estaba disponible por el Premio Mayor — nadie lo tenía.{' '}
+                    <span className="text-white/60 font-bold">El sábado 27 de junio vuelve a jugarse el Premio Mayor.</span>{' '}
+                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas el gran premio!</span>
                   </p>
 
                   {/* Countdown to next Saturday */}
