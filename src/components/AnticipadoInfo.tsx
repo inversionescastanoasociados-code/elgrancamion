@@ -89,7 +89,7 @@ export default function AnticipadoInfo() {
                   >
                     PREMIO{' '}
                     <span className="bg-gradient-to-r from-[#25D366] to-[#FFD700] bg-clip-text text-transparent">
-                      ANTICIPADO
+                      PREMIO MAYOR
                     </span>
                   </h3>
 
