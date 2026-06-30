@@ -219,7 +219,7 @@ export default function VerificadorBoleta() {
       {/* ══════ HERO SECTION ══════ */}
       <section className="dark-section relative overflow-hidden">
         <Image
-          src="/uploads/IMG_7996.JPG"
+          src="/uploads/camion/principal.jpeg"
           alt="Verificar Boleta"
           fill
           className="object-cover opacity-30"

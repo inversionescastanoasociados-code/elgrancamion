@@ -6,7 +6,7 @@ export default function WhatsAppButton() {
       href="https://wa.me/+573137919267?text=Hola%2C%20quiero%20comprar%20una%20boleta%20de%20la%20Gran%20Rifa%20Camionera"
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-[60] group"
+      className="fixed bottom-6 right-6 z-[60] group safe-area-bottom"
       aria-label="Comprar por WhatsApp"
     >
       <div className="relative">
@@ -19,9 +19,9 @@ export default function WhatsAppButton() {
         </div>
 
         {/* Tooltip */}
-        <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
-          <div className="glass rounded-lg px-4 py-2 whitespace-nowrap">
-            <span className="text-[12px] font-bold text-white/90">
+        <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none hidden sm:block">
+          <div className="glass rounded-lg px-4 py-2 whitespace-nowrap shadow-lg">
+            <span className="text-[12px] font-bold text-[#1A1A1A]">
               ¡Comprar Ahora!
             </span>
           </div>

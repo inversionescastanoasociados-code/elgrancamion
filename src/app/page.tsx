@@ -1,6 +1,6 @@
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
-import AnticipadoInfo from '@/components/AnticipadoInfo';
+import AnticipadoHighlight from '@/components/AnticipadoHighlight';
 import Prizes from '@/components/Prizes';
 import Gallery from '@/components/Gallery';
 import TruckSpecs from '@/components/TruckSpecs';
@@ -11,44 +11,23 @@ import FinalCTA from '@/components/FinalCTA';
 import Footer from '@/components/Footer';
 import SocialProof from '@/components/SocialProof';
 import WhatsAppButton from '@/components/WhatsAppButton';
-import CursorGlow from '@/components/CursorGlow';
 
 export default function Home() {
   return (
     <main>
       <Navbar />
       <WhatsAppButton />
-      <CursorGlow />
       <SocialProof />
 
-      {/* 1. Hero — Big statement */}
       <Hero />
-
-      {/* 1.5. Anticipado — Weekly prize info */}
-      <AnticipadoInfo />
-
-      {/* 2. Prizes — What you can win */}
+      <AnticipadoHighlight />
       <Prizes />
-
-      {/* 3. Gallery — See the truck */}
       <Gallery />
-
-      {/* 4. Specs — Technical details */}
       <TruckSpecs />
-
-      {/* 5. How It Works — 3 steps + buy CTA */}
       <HowItWorks />
-
-      {/* 6. Testimonials — Social proof */}
       <Testimonials />
-
-      {/* 7. FAQ — Trust & objections */}
       <Trust />
-
-      {/* 8. Final CTA — Close */}
       <FinalCTA />
-
-      {/* 9. Footer */}
       <Footer />
     </main>
   );

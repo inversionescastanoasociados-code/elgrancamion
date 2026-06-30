@@ -272,7 +272,7 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
       {/* ══════ FLYER BACKGROUND ══════ */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
-          src="/uploads/boleta/diseño-flyr.png"
+          src="/uploads/boleta/boleta.png"
           alt=""
           fill
           className="object-cover opacity-[0.06]"
@@ -433,7 +433,7 @@ export default function BoletaVerificada({ hash }: { hash: string }) {
           {/* ── HERO BANNER ── */}
           <section className="dark-section relative overflow-hidden">
             <Image
-              src="/uploads/boleta/diseño-flyr.png"
+              src="/uploads/boleta/boleta.png"
               alt="Verificación"
               fill
               className="object-cover opacity-25"

@@ -1,12 +1,12 @@
-import BoletasShop from '@/components/BoletasShop';
+import SimpleBoletasShop from '@/components/SimpleBoletasShop';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Comprar Boletas — Gran Rifa Camionera',
+  title: 'Comprar Boletas — Gran Rifa Camionera 2da Rifa',
   description:
-    'Escoge tu número de la suerte y participa por un camión, un Kia Picanto 0km, $20 millones y un crucero por las Bahamas.',
+    'Elige tu número, confirma y compra por WhatsApp. Camión FVR + Kia Picanto (3 oct) · Hyundai i10 anticipado (12 ago).',
 };
 
 export default function BoletasPage() {
-  return <BoletasShop />;
+  return <SimpleBoletasShop />;
 }

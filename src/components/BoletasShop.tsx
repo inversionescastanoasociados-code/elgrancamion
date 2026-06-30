@@ -1098,7 +1098,7 @@ export default function BoletasShop() {
                       {/* Image header */}
                       <div className="relative h-52 sm:h-64 overflow-hidden">
                         <Image
-                          src={r.imagen_url || '/uploads/boleta/diseno-flyer.jpg'}
+                          src={r.imagen_url || '/uploads/boleta/boleta.png'}
                           alt={r.nombre}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -1588,7 +1588,7 @@ export default function BoletasShop() {
         {/* ═══ HERO BANNER ═══ */}
         <section className="relative bg-[#111113] overflow-hidden">
           <Image
-            src="/uploads/IMG_7996.JPG"
+            src="/uploads/camion/principal.jpeg"
             alt="Camión VW Worker"
             fill
             className="object-cover object-center opacity-30"

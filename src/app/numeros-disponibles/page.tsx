@@ -164,7 +164,7 @@ export default function NumerosDisponiblesPage() {
         {/* Flyer background */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/uploads/boleta/diseno-flyer.jpg"
+            src="/uploads/boleta/boleta.png"
             alt=""
             fill
             className="object-cover opacity-[0.06]"
@@ -232,7 +232,8 @@ export default function NumerosDisponiblesPage() {
             </span>
           </h1>
           <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto mb-1">
-            Anticipados cada sábado — <span className="text-[#FFD700] font-bold">$4.000.000 acumulados este 13 de junio</span>
+            2da Rifa — Anticipado <span className="text-[#FFD700] font-bold">Hyundai i10 Attraction 0km el 12 de agosto</span> · Gran premio{' '}
+            <span className="text-[#FFD700] font-bold">Camión FVR + Kia Picanto el 3 de octubre</span>
           </p>
           {rifa && (
             <>

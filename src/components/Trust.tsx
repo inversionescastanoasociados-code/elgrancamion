@@ -4,8 +4,8 @@ import { useState } from 'react';
 
 const faqs = [
   {
-    q: '¿Cuándo juega la rifa?',
-    a: 'Juega el próximo 20 de junio con el premio mayor de la Lotería de Boyaca ,ademas tenemos premios anticipados que juegan cada semana con la misma loteria.',
+    q: '¿Cuándo juega la 2da rifa?',
+    a: 'El premio anticipado (Hyundai i10 Attraction 0km) juega el 12 de agosto. El gran premio (Camión FVR + Kia Picanto 0km) juega el 3 de octubre, con la lotería oficial.',
   },
   {
     q: '¿Qué pasa si no cae el número?',
@@ -29,29 +29,14 @@ export default function Trust() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
-    <section id="confianza" className="py-28 md:py-36 bg-white">
-      <div className="max-w-[800px] mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 mb-6">
-            <span className="h-px w-8 bg-black/10" />
-            <span className="text-[11px] font-bold tracking-[5px] uppercase text-[#999]">
-              Resolvemos tus dudas
-            </span>
-            <span className="h-px w-8 bg-black/10" />
-          </div>
-          <h2
-            className="text-[clamp(36px,5vw,60px)] leading-[0.9] uppercase tracking-wider text-[#1A1A1A] mb-5"
-            style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-          >
-            PREGUNTAS <span className="gradient-text-red">FRECUENTES</span>
-          </h2>
-          <p className="text-[#666] text-lg max-w-lg mx-auto">
-            Todo lo que necesitas saber antes de comprar tu boleta.
-          </p>
-        </div>
-
-        {/* FAQ */}
+    <section id="confianza" className="py-20 sm:py-28 bg-white">
+      <div className="max-w-[640px] mx-auto px-6">
+        <h2
+          className="text-center text-[clamp(36px,6vw,56px)] uppercase text-[#1A1A1A] mb-10"
+          style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+        >
+          Preguntas frecuentes
+        </h2>
         <div className="space-y-2">
           {faqs.map((faq, i) => (
             <div

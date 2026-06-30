@@ -1,17 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
-/* ═══ Countdown to next Saturday ═══ */
-function getNextSaturday() {
-  const now = new Date();
-  const day = now.getDay(); // 0=Sun, 6=Sat
-  const daysUntilSat = (6 - day + 7) % 7 || 7; // If today is Saturday, next one
-  const next = new Date(now);
-  next.setDate(now.getDate() + daysUntilSat);
-  next.setHours(0, 0, 0, 0);
-  return next;
-}
+const ANTICIPADO_DATE = new Date('2026-08-12T22:00:00');
 
 function getTimeLeft(target: Date) {
   const now = new Date().getTime();
@@ -28,79 +20,12 @@ function getTimeLeft(target: Date) {
 export default function AnticipadoInfo() {
   const [mounted, setMounted] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const historialAnticipados = [
-    {
-      fecha: 'Sábado 6 de junio',
-      numero: '5588',
-      estado: 'Sin ganador',
-      detalle: 'La boleta estaba disponible. El anticipado se acumula — para el sábado 13 de junio hay $4.000.000 en juego.',
-      acumulado: '$4.000.000',
-      ganador: false,
-    },
-    {
-      fecha: 'Sábado 16 de mayo',
-      numero: '0018',
-      estado: '¡Ganador!',
-      detalle: '¡La boleta estaba en poder del público! El ganador prefirió recibir $2.000.000 en efectivo.',
-      acumulado: '$2.000.000',
-      ganador: true,
-    },
-    {
-      fecha: 'Sábado 9 de mayo',
-      numero: '8943',
-      estado: '¡Ganador!',
-      detalle: '¡La boleta estaba en poder del público! El ganador se llevó el Crucero por el Caribe, pero prefirió recibir $13.000.000 en efectivo.',
-      acumulado: 'Crucero / $13.000.000',
-      ganador: true,
-    },
-    {
-      fecha: 'Sábado 25 de abril',
-      numero: '9894',
-      estado: 'Sin ganador',
-      detalle: 'La boleta estaba disponible. El anticipado se acumula para el próximo sábado 2 de mayo.',
-      acumulado: '$10.000.000',
-      ganador: false,
-    },
-    {
-      fecha: 'Sábado 4 de abril',
-      numero: '9933',
-      estado: 'Sin ganador',
-      detalle: 'La boleta estaba disponible. El anticipado se acumula para el próximo sábado.',
-      acumulado: '$4.000.000',
-      ganador: false,
-    },
-    {
-      fecha: 'Sábado 28 de marzo',
-      numero: '6924',
-      estado: '¡Ganador!',
-      detalle: 'El número quedó en poder del público. ¡El dueño se llevó $8.000.000!',
-      acumulado: '$8.000.000',
-      ganador: true,
-    },
-    {
-      fecha: 'Sábado 14 de marzo',
-      numero: '1499',
-      estado: 'Sin ganador',
-      detalle: 'No quedó en poder del público. Se acumula para el próximo sábado.',
-      acumulado: '$6.000.000',
-      ganador: false,
-    },
-    {
-      fecha: 'Sábado 7 de marzo',
-      numero: '4715',
-      estado: 'Sin ganador',
-      detalle: 'El número estaba disponible y dejó acumulado el anticipado.',
-      acumulado: '$4.000.000',
-      ganador: false,
-    },
-  ];
 
   useEffect(() => {
     setMounted(true);
-    const target = getNextSaturday();
-    setTimeLeft(getTimeLeft(target));
+    setTimeLeft(getTimeLeft(ANTICIPADO_DATE));
     const interval = setInterval(() => {
-      setTimeLeft(getTimeLeft(target));
+      setTimeLeft(getTimeLeft(ANTICIPADO_DATE));
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -123,130 +48,87 @@ export default function AnticipadoInfo() {
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#FFB703]" />
             </span>
             <span className="text-[11px] sm:text-[12px] font-bold tracking-[3px] uppercase text-[#FFB703]">
-              Anticipados Semanales
+              Premio Anticipado — 2da Rifa
             </span>
           </div>
           <h2
             className="text-3xl sm:text-4xl lg:text-5xl uppercase tracking-wider mb-3"
             style={{ fontFamily: '"Bebas Neue", sans-serif' }}
           >
-            ¡CADA SÁBADO{' '}
+            ¡NO ESPERES AL{' '}
             <span className="bg-gradient-to-r from-[#FFB703] to-[#FFD700] bg-clip-text text-transparent">
-              HAY PREMIO!
+              3 DE OCTUBRE!
             </span>
           </h2>
           <p className="text-white/40 text-sm sm:text-base max-w-xl mx-auto">
-            No tienes que esperar al sorteo final. Cada sábado se juega un anticipado con premios en efectivo.
+            Con la 2da rifa puedes ganar antes. El premio anticipado se juega el 12 de agosto con la lotería oficial.
           </p>
         </div>
 
         {/* ═══ TWO COLUMN LAYOUT ═══ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
 
-          {/* ── LEFT: Last result + Next anticipado ── */}
+          {/* ── LEFT: Premio Anticipado ── */}
           <div className="space-y-6">
 
-            {/* LAST RESULT CARD */}
-            <div className="relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#E63946] to-[#FFB703] rounded-3xl opacity-20 blur-sm group-hover:opacity-30 transition-opacity" />
-              <div className="relative bg-gradient-to-br from-[#1A1A20] to-[#12121A] border border-white/[0.08] rounded-3xl p-6 sm:p-8 overflow-hidden">
-                {/* Decorative corner */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#E63946]/10 to-transparent rounded-bl-full" />
-
-                <div className="relative z-10">
-                  {/* Badge */}
-                  <div className="inline-flex items-center gap-2 bg-[#FFB703]/15 border border-[#FFB703]/25 rounded-full px-4 py-1.5 mb-5">
-                    <span className="text-lg">📋</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#FFB703]">Sin ganador</span>
-                  </div>
-
-                  <p className="text-white/40 text-[13px] font-semibold mb-3">
-                    El anticipado del <span className="text-white/70">Sábado 6 de junio</span>, se jugó con la lotería:
-                  </p>
-
-                  {/* Res number highlight */}
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-[#FFB703] rounded-2xl blur-lg opacity-20 animate-pulse" />
-                      <div className="relative bg-gradient-to-br from-[#FFB703]/20 to-[#FFD700]/10 border-2 border-[#FFB703]/50 rounded-2xl px-6 sm:px-8 py-4">
-                        <p className="text-[10px] font-bold tracking-[3px] uppercase text-[#FFB703]/70 mb-1 text-center">Número jugado</p>
-                        <p
-                          className="text-4xl sm:text-5xl font-black text-[#FFD700] text-center tracking-[8px]"
-                          style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-                        >
-                          5588
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="w-2 h-2 rounded-full bg-[#FFB703] animate-pulse" />
-                        <span className="text-[#FFB703] text-[13px] font-bold">La boleta estaba disponible</span>
-                      </div>
-                      <p className="text-white/30 text-[12px] leading-relaxed">
-                        Nadie era dueño del número. El premio se acumula para el próximo sábado.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Sin ganador callout */}
-                  <div className="bg-gradient-to-r from-[#FFB703]/10 to-transparent border-l-4 border-[#FFB703] rounded-r-xl px-4 py-3">
-                    <p className="text-[#FFB703] text-[13px] font-bold flex items-center gap-2">
-                      <i className="fas fa-layer-group text-sm" />
-                      Acumulado para el 13 de junio: $4.000.000
-                    </p>
-                    <p className="text-white/40 text-[12px] mt-1">
-                      ¡El anticipado crece — este sábado hay más para ganar!
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* NEXT ANTICIPADO CARD */}
+            {/* PREMIO CARD */}
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-[#25D366] to-[#FFB703] rounded-3xl opacity-20 blur-sm group-hover:opacity-30 transition-opacity" />
               <div className="relative bg-gradient-to-br from-[#1A1A20] to-[#12121A] border border-white/[0.08] rounded-3xl p-6 sm:p-8 overflow-hidden">
-                {/* Decorative corner */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#25D366]/10 to-transparent rounded-bl-full" />
 
                 <div className="relative z-10">
-                  {/* Badge */}
                   <div className="inline-flex items-center gap-2 bg-[#25D366]/15 border border-[#25D366]/25 rounded-full px-4 py-1.5 mb-5">
-                    <span className="text-lg">🔥</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">Sábado 13 de junio</span>
+                    <span className="text-lg">🚗</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">12 de agosto de 2026</span>
                   </div>
 
                   <h3
                     className="text-2xl sm:text-3xl uppercase tracking-wider mb-2"
                     style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                   >
-                    PRÓXIMO{' '}
+                    PREMIO{' '}
                     <span className="bg-gradient-to-r from-[#25D366] to-[#FFD700] bg-clip-text text-transparent">
                       ANTICIPADO
                     </span>
                   </h3>
 
-                  {/* Prize amount */}
                   <div className="flex items-baseline gap-2 mb-4">
                     <span
-                      className="text-5xl sm:text-6xl font-black bg-gradient-to-r from-[#FFB703] to-[#FFD700] bg-clip-text text-transparent"
+                      className="text-3xl sm:text-4xl font-black text-white uppercase tracking-wider"
                       style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                     >
-                      $4.000.000
+                      Hyundai i10 Attraction
                     </span>
-                    <span className="text-white/30 text-sm font-bold uppercase">COP</span>
+                    <span className="text-[#25D366] text-sm font-bold uppercase">0km</span>
                   </div>
 
                   <p className="text-white/40 text-[13px] leading-relaxed mb-5">
-                    El sábado 6 de junio el número 5588 estaba disponible — nadie lo tenía. El anticipado se acumula y este sábado 13 de junio hay <span className="text-white/60 font-bold">$4.000.000</span> en juego.{' '}
-                    <span className="text-white/60 font-bold">¡Si tu número sale y eres el dueño, te llevas los 4 millones!</span>
+                    Un <span className="text-white/60 font-bold">Hyundai i10 Attraction 0 kilómetros</span>, full equipo y papeles al día.
+                    Si tu número sale el 12 de agosto y eres el dueño de la boleta, ¡te lo llevas antes del gran sorteo!
                   </p>
 
-                  {/* Countdown to next Saturday */}
+                  {/* Car visual */}
+                  <div className="relative bg-black/30 border border-white/[0.06] rounded-2xl overflow-hidden mb-5 aspect-[16/9]">
+                    <Image
+                      src="/uploads/hyundai/hyundai_i10_color_2_d4fe2fcc76.webp"
+                      alt="Hyundai i10 Attraction 0km — Premio anticipado"
+                      fill
+                      className="object-cover object-center"
+                      sizes="(min-width: 1024px) 50vw, 100vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute bottom-4 left-4">
+                      <p className="text-[10px] font-bold tracking-[3px] uppercase text-white/70">
+                        Hyundai i10 Attraction · 0km
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Countdown */}
                   <div className="bg-black/30 border border-white/[0.06] rounded-2xl p-4">
                     <p className="text-[10px] font-bold tracking-[3px] uppercase text-white/30 text-center mb-3">
-                      Próximo sorteo en
+                      Sorteo anticipado en
                     </p>
                     <div className="grid grid-cols-4 gap-2 sm:gap-3">
                       {[
@@ -272,20 +154,38 @@ export default function AnticipadoInfo() {
                 </div>
               </div>
             </div>
+
+            {/* GRAN PREMIO REMINDER */}
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#E63946] to-[#FFB703] rounded-3xl opacity-20 blur-sm group-hover:opacity-30 transition-opacity" />
+              <div className="relative bg-gradient-to-br from-[#1A1A20] to-[#12121A] border border-white/[0.08] rounded-3xl p-6 sm:p-8 overflow-hidden">
+                <div className="relative z-10">
+                  <div className="inline-flex items-center gap-2 bg-[#E63946]/15 border border-[#E63946]/25 rounded-full px-4 py-1.5 mb-4">
+                    <span className="text-lg">🏆</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#E63946]">Gran Premio — 3 de octubre</span>
+                  </div>
+                  <p className="text-white/50 text-[14px] leading-relaxed">
+                    Además del anticipado, con la misma boleta participas por el{' '}
+                    <span className="text-white font-bold">Camión FVR</span> y el{' '}
+                    <span className="text-white font-bold">Kia Picanto 0km</span> el{' '}
+                    <span className="text-[#FFB703] font-bold">3 de octubre de 2026</span>.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* ── RIGHT: TikTok Video + CTA ── */}
+          {/* ── RIGHT: Info + CTA ── */}
           <div className="space-y-6">
 
-            {/* TIKTOK VIDEO EMBED */}
+            {/* HOW IT WORKS */}
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-[#FF0050] to-[#00F2EA] rounded-3xl opacity-15 blur-sm group-hover:opacity-25 transition-opacity" />
               <div className="relative bg-gradient-to-br from-[#1A1A20] to-[#12121A] border border-white/[0.08] rounded-3xl p-5 sm:p-6 overflow-hidden">
-                {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="inline-flex items-center gap-2 bg-black/40 border border-white/[0.08] rounded-full px-4 py-1.5">
                     <i className="fab fa-tiktok text-white text-sm" />
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-white/60">En Vivo</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-white/60">Síguenos</span>
                   </div>
                   <a
                     href="https://www.tiktok.com/@elgrancamion.oficial?_r=1&_t=ZS-94LHsPFrtbR"
@@ -298,34 +198,27 @@ export default function AnticipadoInfo() {
                   </a>
                 </div>
 
-                {/* TikTok Embed */}
-                <div className="relative rounded-2xl overflow-hidden bg-black/40 border border-white/[0.06]">
-                  <div className="aspect-[9/16] max-h-[500px] sm:max-h-[550px] w-full flex items-center justify-center">
-                    <iframe
-                      src="https://www.tiktok.com/embed/v/7614737656877960469"
-                      className="w-full h-full"
-                      allowFullScreen
-                      allow="encrypted-media"
-                      style={{ border: 'none' }}
-                    />
-                  </div>
-                </div>
+                <h3
+                  className="text-xl sm:text-2xl uppercase tracking-wider mb-4 text-white"
+                  style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                >
+                  ¿Cómo funciona el <span className="text-[#FFB703]">anticipado</span>?
+                </h3>
 
-                {/* TikTok footer */}
-                <div className="flex items-center justify-between mt-4">
-                  <p className="text-white/30 text-[11px]">
-                    <i className="fas fa-play text-[9px] mr-1" />
-                    Mira cómo fue el sorteo del anticipado
-                  </p>
-                  <a
-                    href="https://vt.tiktok.com/ZSu2vd4Ms/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-white/50 text-[11px] font-bold hover:bg-white/10 hover:text-white/70 transition-all"
-                  >
-                    <i className="fab fa-tiktok text-[10px]" />
-                    Ver en TikTok
-                  </a>
+                <div className="space-y-4">
+                  {[
+                    { step: '01', text: 'Compras tu boleta y quedas inscrito en TODOS los sorteos de la 2da rifa.' },
+                    { step: '02', text: 'El 12 de agosto se juega el Hyundai i10 Attraction con la lotería oficial.' },
+                    { step: '03', text: 'Si tu número sale y eres el dueño, ganas el Hyundai i10 0km.' },
+                    { step: '04', text: 'Tu boleta sigue activa para el gran premio del 3 de octubre: Camión FVR + Kia Picanto.' },
+                  ].map((item) => (
+                    <div key={item.step} className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#FFB703]/10 border border-[#FFB703]/25 flex items-center justify-center text-[11px] font-black text-[#FFB703]">
+                        {item.step}
+                      </span>
+                      <p className="text-white/50 text-[13px] leading-relaxed pt-1">{item.text}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -345,7 +238,7 @@ export default function AnticipadoInfo() {
                     <span className="text-[#FFB703]">TU BOLETA?</span>
                   </h3>
                   <p className="text-white/40 text-[13px] mb-5 max-w-sm mx-auto">
-                    Cada sábado puedes ganar. Si tu número sale en el anticipado, ¡te llevas el premio!
+                    Una sola boleta te da chance de ganar el Hyundai i10 el 12 de agosto y el Camión FVR + Kia Picanto el 3 de octubre.
                   </p>
                   <a
                     href="/boletas"
@@ -355,7 +248,7 @@ export default function AnticipadoInfo() {
                     COMPRAR MI BOLETA AHORA
                   </a>
                   <p className="text-white/20 text-[11px] mt-3">
-                    Por solo $25.000 participas en TODOS los sorteos
+                    Por solo $130.000 participas en el anticipado y el gran premio
                   </p>
                 </div>
               </div>
@@ -363,61 +256,12 @@ export default function AnticipadoInfo() {
           </div>
         </div>
 
-        {/* ═══ HISTORIAL DE ANTICIPADOS ═══ */}
-        <div className="mt-10 sm:mt-12">
-          <div className="mb-4 sm:mb-5 flex items-center justify-between gap-3">
-            <h3
-              className="text-2xl sm:text-3xl uppercase tracking-wider text-white"
-              style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-            >
-              Historial de <span className="text-[#FFB703]">Anticipados</span>
-            </h3>
-            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[2px] text-white/35">
-              Ultimos resultados
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {historialAnticipados.map((item) => (
-              <div
-                key={`${item.fecha}-${item.numero}`}
-                className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-4"
-              >
-                <div className="flex items-center justify-between gap-3 mb-2">
-                  <p className="text-white/55 text-[11px] font-bold uppercase tracking-[1px]">{item.fecha}</p>
-                  <span className={`text-[10px] font-bold uppercase tracking-[1px] rounded-full px-2 py-1 ${
-                    item.ganador
-                      ? 'text-[#25D366] bg-[#25D366]/10 border border-[#25D366]/25'
-                      : 'text-[#FFB703] bg-[#FFB703]/10 border border-[#FFB703]/25'
-                  }`}>
-                    {item.estado}
-                  </span>
-                </div>
-
-                <div className="flex items-end justify-between gap-3 mb-2">
-                  <p
-                    className="text-3xl sm:text-4xl text-white tracking-[4px]"
-                    style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-                  >
-                    {item.numero}
-                  </p>
-                  <p className="text-[#25D366] text-[11px] font-bold uppercase tracking-[1px]">
-                    Acumulado: {item.acumulado}
-                  </p>
-                </div>
-
-                <p className="text-white/35 text-[12px] leading-relaxed">{item.detalle}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* ═══ BOTTOM INFO STRIP ═══ */}
         <div className="mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { icon: 'fas fa-calendar-check', title: 'Cada Sábado', desc: 'Sorteo con lotería oficial cada semana', color: '#FFB703' },
-            { icon: 'fas fa-layer-group', title: 'Acumulable', desc: 'Si no sale dueño, el premio se acumula', color: '#25D366' },
-            { icon: 'fas fa-trophy', title: 'Hasta $20M', desc: 'El anticipado puede crecer cada semana', color: '#E63946' },
+            { icon: 'fas fa-calendar-check', title: '12 de agosto', desc: 'Sorteo del Hyundai i10 Attraction 0km', color: '#25D366' },
+            { icon: 'fas fa-trophy', title: '3 de octubre', desc: 'Gran premio: Camión FVR + Kia Picanto 0km', color: '#FFB703' },
+            { icon: 'fas fa-ticket', title: 'Una sola boleta', desc: 'Participas en el anticipado y el gran sorteo', color: '#E63946' },
           ].map((item) => (
             <div
               key={item.title}

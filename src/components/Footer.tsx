@@ -38,7 +38,7 @@ export default function Footer() {
             GRAN RIFA <span className="text-truck-red">CAMIONERA</span>
           </span>
           <p className="text-[13px] text-white/30 max-w-md text-center">
-            La rifa más grande de Colombia. Tu oportunidad de cambiar tu vida con una sola boleta.
+            2da Rifa — La rifa más grande de Colombia. Camión FVR, Kia Picanto y Hyundai i10 te esperan.
           </p>
         </div>
 

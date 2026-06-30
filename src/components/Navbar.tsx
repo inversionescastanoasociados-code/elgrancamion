@@ -19,6 +19,7 @@ export default function Navbar() {
   }, []);
 
   const links = [
+    { href: '#anticipado', label: 'Anticipado' },
     { href: '#premios', label: 'Premios' },
     { href: '#galeria', label: 'Galería' },
     { href: '#como-funciona', label: 'Cómo Funciona' },
