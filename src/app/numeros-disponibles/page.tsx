@@ -232,7 +232,7 @@ export default function NumerosDisponiblesPage() {
             </span>
           </h1>
           <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto mb-1">
-            2da Rifa — Anticipado <span className="text-[#FFD700] font-bold">Hyundai i10 Attraction 0km el 12 de agosto</span> · Gran premio{' '}
+            2da Rifa — Anticipado <span className="text-[#FFD700] font-bold">Hyundai i10 Attraction 0km el 15 de agosto</span> · Gran premio{' '}
             <span className="text-[#FFD700] font-bold">Camión FVR + Kia Picanto el 3 de octubre</span>
           </p>
           {rifa && (

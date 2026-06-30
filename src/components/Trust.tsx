@@ -5,7 +5,7 @@ import { useState } from 'react';
 const faqs = [
   {
     q: '¿Cuándo juega la 2da rifa?',
-    a: 'El premio anticipado (Hyundai i10 Attraction 0km) juega el 12 de agosto. El gran premio (Camión FVR + Kia Picanto 0km) juega el 3 de octubre, con la lotería oficial.',
+    a: 'El premio anticipado (Hyundai i10 Attraction 0km) juega el 15 de agosto. El gran premio (Camión FVR + Kia Picanto 0km) juega el 3 de octubre, con la lotería oficial.',
   },
   {
     q: '¿Qué pasa si no cae el número?',

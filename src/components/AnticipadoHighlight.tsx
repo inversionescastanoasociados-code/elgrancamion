@@ -43,7 +43,7 @@ export default function AnticipadoHighlight() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
             <span className="absolute top-4 left-4 bg-[#25D366] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              Anticipado · 12 ago
+              Anticipado · 15 de agosto
             </span>
           </div>
 
@@ -57,8 +57,11 @@ export default function AnticipadoHighlight() {
             >
               Hyundai i10 Attraction 0km
             </h2>
-            <p className="text-white/55 text-[15px] leading-relaxed mb-6 max-w-md">
-              Gánalo el 12 de agosto con la misma boleta. Full equipo, 0 kilómetros y papeles al día.
+            <p className="text-white/55 text-[15px] leading-relaxed mb-2 max-w-md">
+              Gánalo el <span className="text-[#25D366] font-semibold">15 de agosto de 2026</span> con la misma boleta. Full equipo, 0 kilómetros y papeles al día.
+            </p>
+            <p className="text-[11px] font-bold tracking-[0.15em] uppercase text-[#25D366]/80 mb-6">
+              Sorteo anticipado · 15 de agosto
             </p>
 
             <div className="flex gap-4 mb-8">

@@ -20,5 +20,5 @@ export const CAMION_GALLERY = [
 export const KIA_PICANTO = '/uploads/kia/KIA_2026.png';
 export const HYUNDAI_I10 = '/uploads/hyundai/hyundai_i10_color_2_d4fe2fcc76.webp';
 
-export const ANTICIPADO_DATE = new Date('2026-08-12T22:00:00');
+export const ANTICIPADO_DATE = new Date('2026-08-15T22:00:00');
 export const GRAN_PREMIO_DATE = new Date('2026-10-03T22:00:00');

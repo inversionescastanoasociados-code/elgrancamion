@@ -6,10 +6,10 @@ import { CAMION_PRINCIPAL, KIA_PICANTO, HYUNDAI_I10 } from '@/lib/prizeAssets';
 const prizes = [
   {
     id: 'hyundai',
-    tag: 'Anticipado · 12 ago',
+    tag: 'Anticipado · 15 de agosto',
     tagColor: 'text-[#25D366] bg-[#25D366]/10',
     title: 'Hyundai i10 Attraction',
-    desc: '0km · Full equipo · Sorteo 12 de agosto',
+    desc: '0km · Full equipo · Sorteo 15 de agosto de 2026',
     image: HYUNDAI_I10,
   },
   {

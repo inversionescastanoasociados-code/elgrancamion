@@ -1,9 +1,9 @@
 'use client';
 
 const steps = [
-  { n: '1', title: 'Elige tu número', desc: 'Selecciona en la tienda online.' },
-  { n: '2', title: 'Paga', desc: 'Llave, transferencia o efectivo.' },
-  { n: '3', title: 'Recibe tu boleta', desc: 'Te llega al WhatsApp al instante.' },
+  { n: '1', title: 'Selecciona tu número', desc: 'Elige uno o varios en la tienda online o con la ruleta al azar.' },
+  { n: '2', title: 'Confírmalos', desc: 'Revisa los números en tu carrito antes de continuar.' },
+  { n: '3', title: 'Completa tu reserva por WhatsApp', desc: 'Te abrimos WhatsApp con tu pedido listo para finalizar.' },
 ];
 
 export default function HowItWorks() {
