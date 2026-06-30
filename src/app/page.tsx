@@ -2,6 +2,7 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import AnticipadoHighlight from '@/components/AnticipadoHighlight';
 import Prizes from '@/components/Prizes';
+import GanadoresProyecto1 from '@/components/GanadoresProyecto1';
 import Gallery from '@/components/Gallery';
 import TruckSpecs from '@/components/TruckSpecs';
 import HowItWorks from '@/components/HowItWorks';
@@ -22,6 +23,7 @@ export default function Home() {
       <Hero />
       <AnticipadoHighlight />
       <Prizes />
+      <GanadoresProyecto1 />
       <Gallery />
       <TruckSpecs />
       <HowItWorks />

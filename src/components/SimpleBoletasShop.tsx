@@ -4,10 +4,9 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  WHATSAPP_LINES,
+  BOLETAS_WHATSAPP_LINE,
   buildWhatsAppUrl,
   formatBoletaWhatsAppMessage,
-  pickRandomWhatsAppLine,
 } from '@/lib/whatsappLines';
 
 const API_BASE = 'https://rifas-backend-production.up.railway.app';
@@ -42,7 +41,6 @@ export default function SimpleBoletasShop() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [assignedLine, setAssignedLine] = useState<(typeof WHATSAPP_LINES)[number] | null>(null);
 
   const [showRoulette, setShowRoulette] = useState(false);
   const [rouletteSpinning, setRouletteSpinning] = useState(false);
@@ -205,14 +203,12 @@ export default function SimpleBoletasShop() {
 
   const openConfirm = () => {
     if (!selectedList.length) return;
-    setAssignedLine(pickRandomWhatsAppLine());
     setShowConfirm(true);
   };
 
   const confirmAndWhatsApp = () => {
-    const line = assignedLine ?? pickRandomWhatsAppLine();
     const msg = formatBoletaWhatsAppMessage(selectedFormatted);
-    window.open(buildWhatsAppUrl(line.num, msg), '_blank', 'noopener,noreferrer');
+    window.open(buildWhatsAppUrl(BOLETAS_WHATSAPP_LINE.num, msg), '_blank', 'noopener,noreferrer');
     setShowConfirm(false);
     setSelected(new Set());
   };
@@ -506,12 +502,10 @@ export default function SimpleBoletasShop() {
                 </span>
               </div>
 
-              {assignedLine && (
-                <p className="text-[12px] text-[#888] mb-4 flex items-center gap-2">
-                  <i className="fab fa-whatsapp text-[#25D366]" />
-                  Te atenderá la línea <strong className="text-[#333]">{assignedLine.display}</strong>
-                </p>
-              )}
+              <p className="text-[12px] text-[#888] mb-4 flex items-center gap-2">
+                <i className="fab fa-whatsapp text-[#25D366]" />
+                Enviarás el pedido al <strong className="text-[#333]">{BOLETAS_WHATSAPP_LINE.display}</strong>
+              </p>
 
               <div className="flex flex-col gap-2">
                 <button
@@ -530,11 +524,6 @@ export default function SimpleBoletasShop() {
                   Cancelar
                 </button>
               </div>
-
-              <p className="text-[10px] text-[#bbb] text-center mt-4 leading-relaxed">
-                También puedes escribir a cualquier línea:{' '}
-                {WHATSAPP_LINES.map((l) => l.display).join(' · ')}
-              </p>
             </div>
           </div>
         </div>
