@@ -289,11 +289,8 @@ export default function NumerosDisponiblesPage() {
           </div>
         ) : (
           <>
-            {/* Grid */}
-            <div
-              className="grid grid-cols-[repeat(11,minmax(0,1fr))] auto-rows-fr gap-1 sm:gap-1.5"
-              style={{ minHeight: 'calc(100vh - 22rem)', maxHeight: 'calc(100vh - 22rem)' }}
-            >
+            {/* Grid — tamaño fijo por celda; no estirar en última página */}
+            <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-9 lg:grid-cols-11 gap-1 sm:gap-1.5">
               {visibleNumbers.map((num) => {
                 const numStr = formatNumero(num, totalBoletas);
                 const isSelected = selectedNumbers.includes(num);
@@ -309,13 +306,13 @@ export default function NumerosDisponiblesPage() {
                       }
                     }}
                     className={
-                      `relative flex h-full w-full items-center justify-center rounded-xl transition-all duration-200 cursor-pointer select-none
+                      `relative flex aspect-square w-full items-center justify-center rounded-xl transition-all duration-200 cursor-pointer select-none
                       ${isSelected
                         ? 'bg-gradient-to-br from-[#E63946] to-[#B71C1C] border-2 border-[#E63946] text-white shadow-xl shadow-[#E63946]/35 scale-[1.08] ring-2 ring-[#E63946]/30 ring-offset-1 ring-offset-white z-10'
                         : 'bg-white border-2 border-black text-black shadow-sm hover:border-black/60 hover:shadow-lg hover:shadow-black/15 hover:-translate-y-0.5 hover:scale-105'
                       }
                     `}
-                    style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px', fontSize: 'clamp(10px, 1vw, 14px)' }}
+                    style={{ fontFamily: '"Bebas Neue", sans-serif', letterSpacing: '1px', fontSize: 'clamp(10px, 2.8vw, 14px)' }}
                   >
                     {numStr}
                     {isSelected ? (
