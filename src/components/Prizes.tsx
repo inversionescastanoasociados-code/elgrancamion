@@ -1,15 +1,24 @@
 'use client';
 
 import Image from 'next/image';
-import { CAMION_PRINCIPAL, KIA_PICANTO, HYUNDAI_I10 } from '@/lib/prizeAssets';
+import {
+  ANTICIPADO_BOLETA_GANADORA,
+  ANTICIPADO_ENTREGADO,
+  ANTICIPADO_GANADOR_NOMBRE,
+  CAMION_PRINCIPAL,
+  KIA_PICANTO,
+  HYUNDAI_I10,
+} from '@/lib/prizeAssets';
 
 const prizes = [
   {
     id: 'hyundai',
-    tag: 'Anticipado · 15 de agosto',
+    tag: ANTICIPADO_ENTREGADO ? 'Entregado · Anticipado' : 'Anticipado · 15 de agosto',
     tagColor: 'text-[#25D366] bg-[#25D366]/10',
     title: 'Hyundai i10 Attraction',
-    desc: '0km · Full equipo · Sorteo 15 de agosto de 2026',
+    desc: ANTICIPADO_ENTREGADO
+      ? `0km · Entregado · Boleta ganadora ${ANTICIPADO_BOLETA_GANADORA} (${ANTICIPADO_GANADOR_NOMBRE})`
+      : '0km · Full equipo · Sorteo 15 de agosto de 2026',
     image: HYUNDAI_I10,
   },
   {

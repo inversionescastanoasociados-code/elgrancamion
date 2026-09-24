@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { CAMION_PRINCIPAL, GRAN_PREMIO_DATE } from '@/lib/prizeAssets';
+import { ANTICIPADO_BOLETA_GANADORA, CAMION_PRINCIPAL, GRAN_PREMIO_DATE } from '@/lib/prizeAssets';
 
 function getTimeLeft(target: Date) {
   const diff = target.getTime() - Date.now();
@@ -101,9 +101,12 @@ export default function Hero() {
           </div>
 
           <p className="mt-4 text-[13px] text-white/45">
-            Anticipado Hyundai i10 · <span className="text-[#25D366] font-medium">15 de agosto de 2026</span>
+            Anticipado Hyundai i10 ·{' '}
+            <span className="text-[#25D366] font-medium">
+              entregado — boleta ganadora {ANTICIPADO_BOLETA_GANADORA}
+            </span>
             <span className="mx-2 text-white/20">·</span>
-            Boleta <span className="text-white font-semibold">$130.000</span>
+            Gran premio <span className="text-white font-semibold">$130.000</span>
           </p>
 
           {/* Countdown — gran premio */}
