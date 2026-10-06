@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { ANTICIPADO_BOLETA_GANADORA, CAMION_PRINCIPAL, GRAN_PREMIO_DATE } from '@/lib/prizeAssets';
+import { CAMION_PRINCIPAL, GRAN_PREMIO_DATE } from '@/lib/prizeAssets';
 
 function getTimeLeft(target: Date) {
   const diff = target.getTime() - Date.now();
@@ -35,7 +35,7 @@ export default function Hero() {
       <div className="relative w-full lg:w-[64%] min-h-[52vh] sm:min-h-[60vh] lg:min-h-screen">
         <Image
           src={CAMION_PRINCIPAL}
-          alt="Camión FVR — Premio Mayor"
+          alt="Camión FVR 0km modelo 2027 — Premio mayor del Proyecto 3"
           fill
           className="object-cover object-center"
           sizes="(min-width: 1024px) 64vw, 100vw"
@@ -51,10 +51,10 @@ export default function Hero() {
               className="text-lg uppercase text-white leading-tight"
               style={{ fontFamily: '"Bebas Neue", sans-serif' }}
             >
-              Camión FVR <span className="text-[#FFB703]">+</span> Kia Picanto 0km
+              Camión FVR 0km <span className="text-[#FFB703]">+</span> Rumba navideña
             </p>
             <p className="text-[#FFB703] text-sm font-bold uppercase tracking-wider mt-1">
-              Sorteo 3 de octubre
+              Sorteo 26 de diciembre
             </p>
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function Hero() {
       <div className="relative flex-1 flex items-center px-6 sm:px-10 py-12 lg:py-16 lg:pl-8 lg:pr-12">
         <div className="w-full max-w-md mx-auto lg:mx-0">
           <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-truck-red mb-4">
-            2da Rifa 2026
+            Proyecto 3 · Rifa 2026
           </p>
 
           <h1
@@ -79,15 +79,18 @@ export default function Hero() {
           <div className="mt-6 relative rounded-2xl overflow-hidden border border-[#FFB703]/40 bg-gradient-to-br from-[#FFB703]/15 via-[#E63946]/10 to-transparent p-5 sm:p-6 shadow-lg shadow-[#FFB703]/10">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FFB703] via-[#FFD700] to-[#FFB703]" />
             <p className="text-[10px] font-black tracking-[0.25em] uppercase text-[#FFB703] mb-2">
-              <i className="fas fa-trophy text-[9px] mr-1" /> Gana el 3 de octubre
+              <i className="fas fa-trophy text-[9px] mr-1" /> Gana el 26 de diciembre
             </p>
             <p
               className="text-[clamp(28px,5vw,42px)] leading-[0.95] uppercase tracking-wide text-white"
               style={{ fontFamily: '"Bebas Neue", sans-serif' }}
             >
-              Camión <span className="text-truck-red">FVR</span>
+              Camión <span className="text-truck-red">FVR 2027</span>
               <span className="text-[#FFB703] mx-1.5">+</span>
-              Kia Picanto <span className="text-[#FFB703]">0km</span>
+              Rumba <span className="text-[#FFB703]">navideña</span>
+            </p>
+            <p className="mt-2 text-[12px] text-white/55">
+              Marrano, licor y torre de sonido XBOOM
             </p>
             <div className="mt-4 inline-flex items-center gap-2 bg-[#E63946] text-white px-4 py-2 rounded-full shadow-md shadow-[#E63946]/30">
               <i className="fas fa-calendar-day text-sm" />
@@ -95,23 +98,20 @@ export default function Hero() {
                 className="text-[clamp(18px,3vw,24px)] uppercase tracking-wider leading-none"
                 style={{ fontFamily: '"Bebas Neue", sans-serif' }}
               >
-                Sorteo 3 de octubre
+                Sorteo 26 de diciembre
               </span>
             </div>
           </div>
 
           <p className="mt-4 text-[13px] text-white/45">
-            Anticipado Hyundai i10 ·{' '}
-            <span className="text-[#25D366] font-medium">
-              entregado — boleta ganadora {ANTICIPADO_BOLETA_GANADORA}
-            </span>
+            Anticipado Hyundai i10 · <span className="text-[#25D366] font-medium">14 de noviembre de 2026</span>
             <span className="mx-2 text-white/20">·</span>
-            Gran premio <span className="text-white font-semibold">$130.000</span>
+            Boleta <span className="text-white font-semibold">$150.000</span>
           </p>
 
           {/* Countdown — gran premio */}
           <p className="mt-6 text-[10px] font-bold tracking-[0.2em] uppercase text-[#FFB703]/80">
-            Cuenta regresiva — 3 de octubre
+            Cuenta regresiva — 26 de diciembre
           </p>
           <div className="mt-2 grid grid-cols-4 gap-2 max-w-[300px]">
             {[

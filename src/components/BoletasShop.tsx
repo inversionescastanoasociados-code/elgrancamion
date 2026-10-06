@@ -3,85 +3,21 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { TICKET_PRICE } from '@/lib/prizeAssets';
+import { entregarBoletasReservadas } from '@/lib/entregarBoletaReservada';
+import {
+  ventasOnlineApi as api,
+  saveReservaToken,
+  clearReservaToken,
+  mensajeErrorVentasOnline,
+  type RifaPublica,
+  type BoletaDisponible,
+  type ReservaResult,
+  type EstadoReserva,
+  type MedioPago,
+} from '@/lib/ventasOnlineApi';
 
-/* ═══════════════════════════════════════════════════
-   API CONFIG
-═══════════════════════════════════════════════════ */
-const API_BASE = 'https://rifas-backend-production.up.railway.app';
-const API_KEY = 'pk_4f9a8c7e2d1b6a9f3c0d5e7f8a2b4c6d';
 const BOLETAS_PER_PAGE = 60;
-
-const apiHeaders: Record<string, string> = {
-  'Content-Type': 'application/json',
-  'x-api-key': API_KEY,
-};
-
-/* ═══════════════════════════════════════════════════
-   TYPES
-═══════════════════════════════════════════════════ */
-interface RifaPublica {
-  id: string;
-  nombre: string;
-  precio_boleta: string;
-  fecha_sorteo: string;
-  descripcion: string | null;
-  premio_principal: string | null;
-  imagen_url: string | null;
-  total_boletas: number;
-  boletas_vendidas: number;
-  boletas_disponibles: string;
-}
-
-interface BoletaDisponible {
-  id: string;
-  numero: number;
-  estado: string;
-  qr_url: string | null;
-  imagen_url: string | null;
-}
-
-interface BloqueoResult {
-  reserva_token: string;
-  bloqueo_hasta: string;
-  tiempo_bloqueo_minutos: number;
-  boletas: { id: string; numero: number }[];
-}
-
-interface MedioPago {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  activo: boolean;
-}
-
-interface ReservaResult {
-  reserva_token: string;
-  venta_id: string;
-  estado: string;
-  monto_total: number;
-  boletas: number[];
-  cantidad_boletas: number;
-  rifa: string;
-  precio_boleta: number;
-  cliente_nombre: string;
-  expires_at: string;
-  mensaje: string;
-  instrucciones: string[];
-}
-
-interface EstadoReserva {
-  estado: 'PENDIENTE' | 'ABONADA' | 'PAGADA' | 'CANCELADA';
-  monto_total: number;
-  abono_total: number;
-  saldo_pendiente: number;
-  expires_at: string;
-  rifa: string;
-  premio: string | null;
-  fecha_sorteo: string;
-  cliente: string;
-  boletas: { numero: number; estado: string }[];
-  created_at: string;
-}
 
 /* ── Cédula lookup types ── */
 interface CedulaAbonoInfo {
@@ -194,72 +130,6 @@ function useBloqueoTimer(bloqueoHasta: string | null) {
 }
 
 /* ═══════════════════════════════════════════════════
-   API FUNCTIONS
-═══════════════════════════════════════════════════ */
-async function apiCall<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<{ success: boolean; data?: T; message?: string; count?: number }> {
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers: { ...apiHeaders, ...((options.headers as Record<string, string>) || {}) },
-  });
-  const json = await res.json();
-  if (!res.ok || !json.success) {
-    throw new Error(json.message || `Error ${res.status}`);
-  }
-  return json;
-}
-
-const api = {
-  getRifas: () => apiCall<RifaPublica[]>('/api/ventas-online/rifas'),
-  getBoletas: (rifaId: string) =>
-    apiCall<{
-      rifa: {
-        id: string;
-        nombre: string;
-        precio_boleta: string;
-        total_boletas: number;
-        boletas_vendidas: number;
-        estado: string;
-      };
-      boletas: BoletaDisponible[];
-      total_disponibles: number;
-    }>(`/api/ventas-online/rifas/${rifaId}/boletas`),
-  bloquear: (rifaId: string, boletaIds: string[]) =>
-    apiCall<BloqueoResult>('/api/ventas-online/boletas/bloquear', {
-      method: 'POST',
-      body: JSON.stringify({ rifa_id: rifaId, boleta_ids: boletaIds, tiempo_bloqueo_minutos: 15 }),
-    }),
-  liberar: (token: string) =>
-    apiCall<{ boletas_liberadas: number; numeros: number[] }>('/api/ventas-online/boletas/liberar', {
-      method: 'POST',
-      body: JSON.stringify({ reserva_token: token }),
-    }),
-  getMediosPago: () => apiCall<MedioPago[]>('/api/ventas-online/medios-pago'),
-  reservar: (body: {
-    reserva_token: string;
-    cliente: {
-      nombre: string;
-      telefono: string;
-      email?: string;
-      identificacion?: string;
-      direccion?: string;
-    };
-    medio_pago_id?: string;
-    notas?: string;
-  }) =>
-    apiCall<ReservaResult>('/api/ventas-online/reservas', {
-      method: 'POST',
-      body: JSON.stringify(body),
-    }),
-  getEstado: (token: string) =>
-    apiCall<EstadoReserva>(`/api/ventas-online/reservas/${token}/estado`),
-  consultaCedula: (cedula: string) =>
-    apiCall<CedulaLookupResult>(`/api/ventas-online/consulta/cedula/${encodeURIComponent(cedula)}`),
-};
-
-/* ═══════════════════════════════════════════════════
    MAIN COMPONENT
 ═══════════════════════════════════════════════════ */
 export default function BoletasShop() {
@@ -286,6 +156,7 @@ export default function BoletasShop() {
   const [bloqueoHasta, setBloqueoHasta] = useState<string | null>(null);
   const [reservaResult, setReservaResult] = useState<ReservaResult | null>(null);
   const [estadoReserva, setEstadoReserva] = useState<EstadoReserva | null>(null);
+  const [entregaBoletasMsg, setEntregaBoletasMsg] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -322,7 +193,7 @@ export default function BoletasShop() {
   const checkoutRef = useRef<HTMLDivElement>(null);
 
   /* ─── Derived values ─── */
-  const precio = rifa ? parseFloat(rifa.precio_boleta) : 0;
+  const precio = rifa ? parseFloat(rifa.precio_boleta) || TICKET_PRICE : TICKET_PRICE;
   const totalBoletas = rifa?.total_boletas ?? 10000;
   const selectedCount = selectedIds.size;
   const totalAmount = selectedCount * precio;
@@ -381,7 +252,12 @@ export default function BoletasShop() {
         }
 
         setRifas(data);
-        setStep('pick-rifa');
+        if (data.length === 1) {
+          setRifa(data[0]);
+          setStep('auth');
+        } else {
+          setStep('pick-rifa');
+        }
         setLoading(false);
       } catch (err) {
         if (cancelled) return;
@@ -453,7 +329,7 @@ export default function BoletasShop() {
     setAuthConfirmed(false);
 
     try {
-      const res = await api.consultaCedula(cedula);
+      const res = await api.consultaCedula<CedulaLookupResult>(cedula);
       if (res.data) {
         const raw = res.data as unknown as Record<string, unknown>;
         const cliente = raw.cliente as CedulaLookupResult['cliente'] | null;
@@ -671,6 +547,7 @@ export default function BoletasShop() {
       const res = await api.bloquear(rifa.id, boletaIds);
       if (res.data) {
         setReservaToken(res.data.reserva_token);
+        saveReservaToken(res.data.reserva_token);
         setBloqueoHasta(res.data.bloqueo_hasta);
         setCheckoutStep(1);
         setStep('checkout');
@@ -684,13 +561,14 @@ export default function BoletasShop() {
         }
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error al reservar boletas';
+      const msg = mensajeErrorVentasOnline(err);
       setActionError(msg);
       // If conflict, refresh boletas
       if (
         msg.includes('No se pudieron bloquear') ||
         msg.includes('reservada') ||
-        msg.includes('vendida')
+        msg.includes('vendida') ||
+        msg.includes('409')
       ) {
         if (rifa) {
           try {
@@ -729,6 +607,7 @@ export default function BoletasShop() {
     }
     setStep('selecting');
     setReservaToken(null);
+    clearReservaToken();
     setBloqueoHasta(null);
     setActionError(null);
     // Refresh boletas
@@ -768,10 +647,33 @@ export default function BoletasShop() {
       });
       if (res.data) {
         setReservaResult(res.data);
+        saveReservaToken(res.data.reserva_token);
+        setEntregaBoletasMsg(null);
         setStep('confirmed');
+
+        const cedula = buyerData.identificacion.trim();
+        if (cedula) {
+          entregarBoletasReservadas(cedula, res.data.boletas)
+            .then(({ descargadas, pendiente }) => {
+              if (descargadas > 0) {
+                setEntregaBoletasMsg(
+                  descargadas === 1
+                    ? 'Tu boleta reservada se descargó en PDF.'
+                    : `Se descargaron ${descargadas} boletas reservadas en PDF.`,
+                );
+              } else if (pendiente) {
+                setEntregaBoletasMsg(
+                  'Reserva creada. Si no se descargó el PDF, usa el botón «Descargar boleta reservada» en unos segundos.',
+                );
+              }
+            })
+            .catch(() => {
+              setEntregaBoletasMsg('Reserva creada. Descarga tu boleta con el botón de abajo.');
+            });
+        }
       }
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Error al crear la reserva');
+      setActionError(mensajeErrorVentasOnline(err));
     } finally {
       setActionLoading(false);
     }
@@ -814,7 +716,7 @@ export default function BoletasShop() {
     setSelectedBoletaView(null);
 
     try {
-      const res = await api.consultaCedula(cedula);
+      const res = await api.consultaCedula<CedulaLookupResult>(cedula);
       if (res.data) {
         // Normalize response: ensure cliente and ventas exist
         const raw = res.data as unknown as Record<string, unknown>;
@@ -2690,10 +2592,33 @@ export default function BoletasShop() {
                     ¡RESERVA CREADA!
                   </h3>
                   <p className="text-white/50 text-sm">{reservaResult.mensaje}</p>
+                  {buyerData.identificacion.trim() && (
+                    <p className="text-[#25D366] text-[12px] font-semibold mt-3">
+                      <i className="fas fa-ticket mr-1" />
+                      Tu boleta reservada ya está disponible para descargar
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className="px-6 py-6 space-y-5">
+                {entregaBoletasMsg && (
+                  <p className="text-[13px] text-[#25D366] font-semibold bg-[#25D366]/10 border border-[#25D366]/25 rounded-xl px-4 py-3">
+                    <i className="fas fa-circle-check mr-1.5" />
+                    {entregaBoletasMsg}
+                  </p>
+                )}
+
+                {buyerData.identificacion.trim() && (
+                  <a
+                    href={`/mis-boletas/${encodeURIComponent(buyerData.identificacion.trim())}`}
+                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-[#E63946] text-white text-[14px] font-bold shadow-lg hover:bg-[#d32f3c] transition-all"
+                  >
+                    <i className="fas fa-file-pdf text-lg" />
+                    Descargar boleta reservada
+                  </a>
+                )}
+
                 {/* Token card */}
                 <div className="bg-gradient-to-r from-[#FFF8E7] to-[#FFF3D4] border border-[#FFB703]/25 rounded-xl p-4">
                   <p className="text-[10px] font-bold text-[#B87A00] uppercase tracking-wider mb-1">
@@ -2815,17 +2740,14 @@ export default function BoletasShop() {
                     Consultar Estado
                   </button>
 
-                  {/* Download boletas link */}
-                  {buyerData.identificacion && (
-                    <a
-                      href={`/mis-boletas/${buyerData.identificacion}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  {buyerData.identificacion.trim() && (
+                    <Link
+                      href={`/mis-boletas/${encodeURIComponent(buyerData.identificacion.trim())}`}
                       className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full border border-[#E63946]/20 text-[#E63946] text-[13px] font-bold hover:bg-[#E63946]/5 hover:border-[#E63946]/30 transition-all"
                     >
                       <i className="fas fa-download text-sm" />
-                      Descargar Mis Boletas
-                    </a>
+                      Ver todas mis boletas
+                    </Link>
                   )}
 
                   <button

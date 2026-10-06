@@ -8,9 +8,12 @@ import {
   buildWhatsAppUrl,
   formatBoletaWhatsAppMessage,
 } from '@/lib/whatsappLines';
+import { TICKET_PRICE } from '@/lib/prizeAssets';
 
-const API_BASE = 'https://rifas-backend-production.up.railway.app';
-const API_KEY = 'pk_4f9a8c7e2d1b6a9f3c0d5e7f8a2b4c6d';
+import {
+  VENTAS_ONLINE_API_BASE as API_BASE,
+  VENTAS_ONLINE_API_KEY as API_KEY,
+} from '@/lib/ventasOnlineApi';
 const PAGE_SIZE = 120;
 
 interface RifaPublica {
@@ -93,7 +96,7 @@ export default function SimpleBoletasShop() {
   }, []);
 
   const totalBoletas = rifa?.total_boletas ?? 10000;
-  const precio = rifa ? parseFloat(rifa.precio_boleta) : 130000;
+  const precio = TICKET_PRICE;
 
   const filtered = useMemo(() => {
     const q = search.trim();

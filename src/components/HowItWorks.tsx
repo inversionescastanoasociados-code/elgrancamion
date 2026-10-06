@@ -3,7 +3,7 @@
 const steps = [
   { n: '1', title: 'Selecciona tu número', desc: 'Elige uno o varios en la tienda online o con la ruleta al azar.' },
   { n: '2', title: 'Confírmalos', desc: 'Revisa los números en tu carrito antes de continuar.' },
-  { n: '3', title: 'Completa tu reserva por WhatsApp', desc: 'Te abrimos WhatsApp con tu pedido listo para finalizar.' },
+  { n: '3', title: 'Reserva y recibe tu boleta', desc: 'Confirma en la web, descarga tu boleta digital y envía el pago por WhatsApp.' },
 ];
 
 export default function HowItWorks() {
@@ -34,12 +34,15 @@ export default function HowItWorks() {
         <div className="text-center border-t border-black/[0.06] pt-12">
           <p className="text-[13px] text-[#999] uppercase tracking-wider mb-2">Precio por boleta</p>
           <p className="text-5xl text-truck-red mb-6" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
-            $130.000
+            $150.000
           </p>
           <a href="/boletas" className="btn-primary text-[14px] px-10 py-4">
             <i className="fas fa-ticket" />
             Comprar ahora
           </a>
+          <p className="mt-4 text-[12px] font-semibold text-[#25D366]">
+            Las ganancias ocasionales del premio las paga la organización.
+          </p>
         </div>
       </div>
     </section>

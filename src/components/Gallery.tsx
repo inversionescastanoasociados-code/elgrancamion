@@ -15,7 +15,7 @@ export default function Gallery() {
             className="text-[clamp(36px,6vw,56px)] uppercase tracking-wide text-[#1A1A1A]"
             style={{ fontFamily: '"Bebas Neue", sans-serif' }}
           >
-            Galería del camión
+            Camión FVR 2027
           </h2>
           <p className="mt-2 text-[#777] text-base">{CAMION_GALLERY.length} fotos reales</p>
         </div>
@@ -26,7 +26,7 @@ export default function Gallery() {
         >
           <Image
             src={CAMION_PRINCIPAL}
-            alt="Camión FVR"
+            alt="Camión FVR 0km modelo 2027"
             fill
             className="object-cover object-center group-hover:scale-[1.02] transition-transform duration-500"
             sizes="100vw"

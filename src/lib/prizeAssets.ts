@@ -1,29 +1,24 @@
 const camion = (file: string) => `/uploads/camion/${encodeURIComponent(file)}`;
 
-export const CAMION_PRINCIPAL = '/uploads/camion/principal.jpeg';
-export const CAMION_FVR = '/uploads/camion/fvr.png';
-export const CAMION_FVR2 = '/uploads/camion/fvr2.jpg';
+export const PROJECT_NAME = 'Proyecto 3';
+export const TICKET_PRICE = 150000;
+export const ANTICIPADO_DATE = new Date('2026-11-14T22:00:00-05:00');
+export const GRAN_PREMIO_DATE = new Date('2026-12-26T22:00:00-05:00');
+
+export const CAMION_PRINCIPAL = camion('IMG_9197.JPEG');
+export const CAMION_FVR = camion('IMG_9194.JPEG');
+export const CAMION_FVR2 = camion('IMG_9198.JPEG');
 
 export const CAMION_GALLERY = [
-  { src: CAMION_PRINCIPAL, label: 'Camión FVR', alt: 'Camión FVR — Foto principal' },
-  { src: CAMION_FVR, label: 'Camión FVR', alt: 'Camión FVR — Vista frontal' },
-  { src: CAMION_FVR2, label: 'Camión FVR', alt: 'Camión FVR — Detalle' },
-  { src: camion('WhatsApp Image 2026-06-24 at 16.13.30.jpeg'), label: 'Camión FVR', alt: 'Camión FVR' },
-  { src: camion('WhatsApp Image 2026-06-24 at 16.13.30 (1).jpeg'), label: 'Camión FVR', alt: 'Camión FVR' },
-  { src: camion('WhatsApp Image 2026-06-24 at 16.13.30 (2).jpeg'), label: 'Camión FVR', alt: 'Camión FVR' },
-  { src: camion('WhatsApp Image 2026-06-24 at 16.13.30 (3).jpeg'), label: 'Camión FVR', alt: 'Camión FVR' },
-  { src: camion('WhatsApp Image 2026-06-24 at 16.13.31.jpeg'), label: 'Camión FVR', alt: 'Camión FVR' },
-  { src: camion('WhatsApp Image 2026-06-24 at 16.13.31 (1).jpeg'), label: 'Camión FVR', alt: 'Camión FVR' },
-  { src: camion('WhatsApp Image 2026-06-24 at 16.13.31 (2).jpeg'), label: 'Camión FVR', alt: 'Camión FVR' },
+  { src: CAMION_PRINCIPAL, label: 'Camión FVR 2027', alt: 'Camión FVR 0km modelo 2027 — Foto principal' },
+  { src: camion('IMG_9191.JPEG'), label: 'Camión FVR 2027', alt: 'Camión FVR 0km modelo 2027 — Vista exterior' },
+  { src: camion('IMG_9198.JPEG'), label: 'Camión FVR 2027', alt: 'Camión FVR 0km modelo 2027 — Vista completa' },
+  { src: camion('IMG_9192.JPEG'), label: 'Camión FVR 2027', alt: 'Camión FVR 0km modelo 2027 — Vista frontal izquierda' },
+  { src: camion('IMG_9193.JPEG'), label: 'Camión FVR 2027', alt: 'Camión FVR 0km modelo 2027 — Vista frontal' },
+  { src: camion('IMG_9194.JPEG'), label: 'Camión FVR 2027', alt: 'Camión FVR 0km modelo 2027 — Frente' },
+  { src: camion('IMG_9195.JPEG'), label: 'Camión FVR 2027', alt: 'Camión FVR 0km modelo 2027 — Vista lateral' },
+  { src: camion('IMG_9196.JPEG'), label: 'Camión FVR 2027', alt: 'Camión FVR 0km modelo 2027 — Luces encendidas' },
+  { src: camion('IMG_9199.JPEG'), label: 'Camión FVR 2027', alt: 'Camión FVR 0km modelo 2027 — Vista panorámica' },
 ];
 
-export const KIA_PICANTO = '/uploads/kia/KIA_2026.png';
 export const HYUNDAI_I10 = '/uploads/hyundai/hyundai_i10_color_2_d4fe2fcc76.webp';
-
-export const ANTICIPADO_DATE = new Date('2026-08-15T22:00:00');
-export const GRAN_PREMIO_DATE = new Date('2026-10-03T22:00:00');
-
-/** Premio anticipado Hyundai i10 — ya sorteado y entregado (2da rifa) */
-export const ANTICIPADO_ENTREGADO = true;
-export const ANTICIPADO_BOLETA_GANADORA = '2984';
-export const ANTICIPADO_GANADOR_NOMBRE = 'Hernán';

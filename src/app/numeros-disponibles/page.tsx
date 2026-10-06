@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { GRAN_PREMIO_DATE, TICKET_PRICE } from '@/lib/prizeAssets';
 
 /* ═══ API ═══ */
 const API_BASE = 'https://rifas-backend-production.up.railway.app';
@@ -153,7 +154,7 @@ export default function NumerosDisponiblesPage() {
 
   /* ═══ Stats ═══ */
   const availableCount = allAvailable.length;
-  const precio = rifa ? parseFloat(rifa.precio_boleta) : 0;
+  const precio = TICKET_PRICE;
 
   /* ═══ RENDER ═══ */
   return (
@@ -236,13 +237,13 @@ export default function NumerosDisponiblesPage() {
             </span>
           </h1>
           <p className="text-white/50 text-sm sm:text-base max-w-xl mx-auto mb-1">
-            2da Rifa — Anticipado <span className="text-[#FFD700] font-bold">Hyundai i10 Attraction 0km el 15 de agosto</span> · Gran premio{' '}
-            <span className="text-[#FFD700] font-bold">Camión FVR + Kia Picanto el 3 de octubre</span>
+            Proyecto 3 — Anticipado <span className="text-[#FFD700] font-bold">Hyundai i10 0km el 14 de noviembre</span> · Gran premio{' '}
+            <span className="text-[#FFD700] font-bold">Camión FVR 2027 + rumba navideña el 26 de diciembre</span>
           </p>
           {rifa && (
             <>
               <p className="text-[clamp(20px,5vw,48px)] font-black tracking-wider mt-1 text-transparent bg-gradient-to-r from-[#FFD700] via-[#FFA500] to-[#FFD700] bg-clip-text animate-pulse" style={{ fontFamily: '"Bebas Neue", sans-serif' }}>
-                SORTEO: {new Date(rifa.fecha_sorteo).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase()}
+                SORTEO: {GRAN_PREMIO_DATE.toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase()}
               </p>
               <div className="relative w-24 h-24 mx-auto mt-1">
                 <Image

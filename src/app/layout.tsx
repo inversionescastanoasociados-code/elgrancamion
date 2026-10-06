@@ -11,16 +11,16 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Gran Rifa Camionera — 2da Rifa 2026',
+  title: 'Gran Rifa Camionera — Proyecto 3 · 2026',
   description:
-    '2da Rifa: Gana un Camión FVR + Kia Picanto 0km el 3 de octubre. Premio anticipado: Hyundai i10 Attraction 0km el 15 de agosto. Compra tu boleta ahora.',
+    'Proyecto 3: gana un Camión FVR 0km modelo 2027 + rumba navideña el 26 de diciembre. Anticipado Hyundai i10 el 14 de noviembre. Boleta $150.000.',
   keywords: [
-    'rifa', 'camión', 'rifa camionera', 'Kia Picanto', 'Hyundai i10',
-    'Camión FVR', 'ganar camión', 'boletas', 'rifa Colombia', '2da rifa',
+    'rifa', 'camión', 'rifa camionera', 'Hyundai i10', 'XBOOM',
+    'Camión FVR 2027', 'rumba navideña', 'ganar camión', 'boletas', 'rifa Colombia', 'Proyecto 3',
   ],
   openGraph: {
-    title: 'Gran Rifa Camionera — 2da Rifa 2026',
-    description: 'Camión FVR + Kia Picanto 0km (3 de octubre) y Hyundai i10 Attraction 0km como anticipado (15 de agosto).',
+    title: 'Gran Rifa Camionera — Proyecto 3 · 2026',
+    description: 'Camión FVR 0km modelo 2027 + rumba navideña (26 de diciembre) y Hyundai i10 anticipado (14 de noviembre).',
     type: 'website',
     locale: 'es_CO',
   },

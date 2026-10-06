@@ -4,8 +4,20 @@ import { useState } from 'react';
 
 const faqs = [
   {
-    q: '¿Cuándo juega la 2da rifa?',
-    a: 'El premio anticipado (Hyundai i10 Attraction 0km) ya se sorteó el 15 de agosto; la boleta ganadora fue la 2984 y el premio fue entregado. El gran premio (Camión FVR + Kia Picanto 0km) juega el 3 de octubre, con la lotería oficial.',
+    q: '¿Cuándo juega el Proyecto 3?',
+    a: 'El Hyundai i10 Attraction 0km anticipado juega el 14 de noviembre de 2026. El gran premio —Camión FVR 0km modelo 2027 + rumba navideña— juega el 26 de diciembre de 2026 con la lotería oficial.',
+  },
+  {
+    q: '¿Qué incluye la rumba navideña?',
+    a: 'Incluye marrano, licor y una torre de sonido XBOOM para celebrar en grande.',
+  },
+  {
+    q: '¿Quién paga las ganancias ocasionales?',
+    a: 'Las ganancias ocasionales del premio son pagadas por la organización. El ganador recibe su premio con este concepto cubierto.',
+  },
+  {
+    q: '¿Dónde puedo ver los ganadores anteriores?',
+    a: 'En esta misma página encuentras el historial de los proyectos 1 y 2, incluidos sus números ganadores y premios entregados.',
   },
   {
     q: '¿Qué pasa si no cae el número?',

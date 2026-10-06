@@ -1,41 +1,33 @@
 'use client';
 
 import Image from 'next/image';
-import {
-  ANTICIPADO_BOLETA_GANADORA,
-  ANTICIPADO_ENTREGADO,
-  ANTICIPADO_GANADOR_NOMBRE,
-  CAMION_PRINCIPAL,
-  KIA_PICANTO,
-  HYUNDAI_I10,
-} from '@/lib/prizeAssets';
+import { CAMION_PRINCIPAL, HYUNDAI_I10 } from '@/lib/prizeAssets';
 
 const prizes = [
   {
     id: 'hyundai',
-    tag: ANTICIPADO_ENTREGADO ? 'Entregado · Anticipado' : 'Anticipado · 15 de agosto',
+    tag: 'Anticipado · 14 nov',
     tagColor: 'text-[#25D366] bg-[#25D366]/10',
     title: 'Hyundai i10 Attraction',
-    desc: ANTICIPADO_ENTREGADO
-      ? `0km · Entregado · Boleta ganadora ${ANTICIPADO_BOLETA_GANADORA} (${ANTICIPADO_GANADOR_NOMBRE})`
-      : '0km · Full equipo · Sorteo 15 de agosto de 2026',
+    desc: '0km · Full equipo · Sorteo 14 de noviembre de 2026',
     image: HYUNDAI_I10,
   },
   {
     id: 'camion',
-    tag: 'Premio mayor · 3 oct',
+    tag: 'Premio mayor · 26 dic',
     tagColor: 'text-truck-red bg-truck-red/10',
-    title: 'Camión FVR',
-    desc: 'Papeles al día · Listo para trabajar',
+    title: 'Camión FVR 2027',
+    desc: '0km · Nuevo · Listo para trabajar',
     image: CAMION_PRINCIPAL,
   },
   {
-    id: 'kia',
-    tag: 'Premio mayor · 3 oct',
+    id: 'rumba',
+    tag: 'Premio mayor · 26 dic',
     tagColor: 'text-[#B87A00] bg-[#FFB703]/10',
-    title: 'Kia Picanto 0km',
-    desc: 'Full equipo · Matrícula incluida',
-    image: KIA_PICANTO,
+    title: 'Rumba navideña',
+    desc: 'Marrano · Licor · Torre de sonido XBOOM',
+    image: CAMION_PRINCIPAL,
+    festive: true,
   },
 ];
 
@@ -51,7 +43,7 @@ export default function Prizes() {
             Los premios
           </h2>
           <p className="mt-3 text-[#777] text-base max-w-md mx-auto">
-            Una boleta de $130.000 · Dos sorteos
+            Una boleta de $150.000 · Dos sorteos · Ganancias ocasionales pagadas
           </p>
         </div>
 
@@ -69,6 +61,23 @@ export default function Prizes() {
                   className="object-cover object-center group-hover:scale-[1.03] transition-transform duration-500"
                   sizes="(min-width: 640px) 33vw, 100vw"
                 />
+                {prize.festive && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#7f1d1d]/85 via-[#14532d]/80 to-black/80 flex items-center justify-center">
+                    <div className="text-center text-white">
+                      <div className="flex items-center justify-center gap-5 text-4xl mb-3">
+                        <i className="fas fa-piggy-bank" />
+                        <i className="fas fa-wine-bottle text-[#FFB703]" />
+                        <i className="fas fa-volume-high text-[#25D366]" />
+                      </div>
+                      <p
+                        className="text-3xl uppercase tracking-wide"
+                        style={{ fontFamily: '"Bebas Neue", sans-serif' }}
+                      >
+                        Rumba navideña
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="p-5">
                 <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full mb-3 ${prize.tagColor}`}>

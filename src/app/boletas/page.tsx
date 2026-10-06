@@ -1,12 +1,12 @@
-import SimpleBoletasShop from '@/components/SimpleBoletasShop';
+import BoletasShop from '@/components/BoletasShop';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Comprar Boletas — Gran Rifa Camionera 2da Rifa',
+  title: 'Comprar Boletas — Gran Rifa Camionera Proyecto 3',
   description:
-    'Elige tu número, confirma y compra por WhatsApp. Camión FVR + Kia Picanto (3 oct) · Hyundai i10 anticipado (15 de agosto).',
+    'Reserva en línea, recibe tu boleta digital y paga por WhatsApp. Boleta $150.000 · Proyecto 3.',
 };
 
 export default function BoletasPage() {
-  return <SimpleBoletasShop />;
+  return <BoletasShop />;
 }

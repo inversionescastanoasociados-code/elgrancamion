@@ -48,7 +48,7 @@ export default function AnticipadoInfo() {
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#FFB703]" />
             </span>
             <span className="text-[11px] sm:text-[12px] font-bold tracking-[3px] uppercase text-[#FFB703]">
-              Premio Anticipado — 2da Rifa
+              Premio Anticipado — Proyecto 3
             </span>
           </div>
           <h2
@@ -61,7 +61,7 @@ export default function AnticipadoInfo() {
             </span>
           </h2>
           <p className="text-white/40 text-sm sm:text-base max-w-xl mx-auto">
-            Con la 2da rifa puedes ganar antes. El premio anticipado se juega el 15 de agosto con la lotería oficial.
+            Con el Proyecto 3 puedes ganar antes. El premio anticipado se juega el 14 de noviembre con la lotería oficial.
           </p>
         </div>
 
@@ -80,7 +80,7 @@ export default function AnticipadoInfo() {
                 <div className="relative z-10">
                   <div className="inline-flex items-center gap-2 bg-[#25D366]/15 border border-[#25D366]/25 rounded-full px-4 py-1.5 mb-5">
                     <span className="text-lg">🚗</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">15 de agosto de 2026</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#25D366]">14 de noviembre de 2026</span>
                   </div>
 
                   <h3
@@ -105,7 +105,7 @@ export default function AnticipadoInfo() {
 
                   <p className="text-white/40 text-[13px] leading-relaxed mb-5">
                     Un <span className="text-white/60 font-bold">Hyundai i10 Attraction 0 kilómetros</span>, full equipo y papeles al día.
-                    Si tu número sale el 15 de agosto y eres el dueño de la boleta, ¡te lo llevas antes del gran sorteo!
+                    Si tu número sale el 14 de noviembre y eres el dueño de la boleta, ¡te lo llevas antes del gran sorteo!
                   </p>
 
                   {/* Car visual */}
@@ -162,13 +162,13 @@ export default function AnticipadoInfo() {
                 <div className="relative z-10">
                   <div className="inline-flex items-center gap-2 bg-[#E63946]/15 border border-[#E63946]/25 rounded-full px-4 py-1.5 mb-4">
                     <span className="text-lg">🏆</span>
-                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#E63946]">Gran Premio — 3 de octubre</span>
+                    <span className="text-[11px] font-bold tracking-[2px] uppercase text-[#E63946]">Gran Premio — 26 de diciembre</span>
                   </div>
                   <p className="text-white/50 text-[14px] leading-relaxed">
                     Además del anticipado, con la misma boleta participas por el{' '}
                     <span className="text-white font-bold">Camión FVR</span> y el{' '}
-                    <span className="text-white font-bold">Kia Picanto 0km</span> el{' '}
-                    <span className="text-[#FFB703] font-bold">3 de octubre de 2026</span>.
+                    <span className="text-white font-bold">rumba navideña completa</span> el{' '}
+                    <span className="text-[#FFB703] font-bold">26 de diciembre de 2026</span>.
                   </p>
                 </div>
               </div>
@@ -207,10 +207,10 @@ export default function AnticipadoInfo() {
 
                 <div className="space-y-4">
                   {[
-                    { step: '01', text: 'Compras tu boleta y quedas inscrito en TODOS los sorteos de la 2da rifa.' },
-                    { step: '02', text: 'El 15 de agosto se juega el Hyundai i10 Attraction con la lotería oficial.' },
+                    { step: '01', text: 'Compras tu boleta y quedas inscrito en TODOS los sorteos del Proyecto 3.' },
+                    { step: '02', text: 'El 14 de noviembre se juega el Hyundai i10 Attraction con la lotería oficial.' },
                     { step: '03', text: 'Si tu número sale y eres el dueño, ganas el Hyundai i10 0km.' },
-                    { step: '04', text: 'Tu boleta sigue activa para el gran premio del 3 de octubre: Camión FVR + Kia Picanto.' },
+                    { step: '04', text: 'Tu boleta sigue activa para el gran premio del 26 de diciembre: Camión FVR 2027 + rumba navideña.' },
                   ].map((item) => (
                     <div key={item.step} className="flex items-start gap-3">
                       <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#FFB703]/10 border border-[#FFB703]/25 flex items-center justify-center text-[11px] font-black text-[#FFB703]">
@@ -238,7 +238,7 @@ export default function AnticipadoInfo() {
                     <span className="text-[#FFB703]">TU BOLETA?</span>
                   </h3>
                   <p className="text-white/40 text-[13px] mb-5 max-w-sm mx-auto">
-                    Una sola boleta te da chance de ganar el Hyundai i10 el 15 de agosto y el Camión FVR + Kia Picanto el 3 de octubre.
+                    Una sola boleta te da chance de ganar el Hyundai i10 el 14 de noviembre y el Camión FVR 2027 + rumba navideña el 26 de diciembre.
                   </p>
                   <a
                     href="/boletas"
@@ -248,7 +248,7 @@ export default function AnticipadoInfo() {
                     COMPRAR MI BOLETA AHORA
                   </a>
                   <p className="text-white/20 text-[11px] mt-3">
-                    Por solo $130.000 participas en el anticipado y el gran premio
+                    Por solo $150.000 participas en el anticipado y el gran premio
                   </p>
                 </div>
               </div>
@@ -259,8 +259,8 @@ export default function AnticipadoInfo() {
         {/* ═══ BOTTOM INFO STRIP ═══ */}
         <div className="mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { icon: 'fas fa-calendar-check', title: '15 de agosto', desc: 'Sorteo del Hyundai i10 Attraction 0km', color: '#25D366' },
-            { icon: 'fas fa-trophy', title: '3 de octubre', desc: 'Gran premio: Camión FVR + Kia Picanto 0km', color: '#FFB703' },
+            { icon: 'fas fa-calendar-check', title: '14 de noviembre', desc: 'Sorteo del Hyundai i10 Attraction 0km', color: '#25D366' },
+            { icon: 'fas fa-trophy', title: '26 de diciembre', desc: 'Gran premio: Camión FVR 2027 + rumba navideña', color: '#FFB703' },
             { icon: 'fas fa-ticket', title: 'Una sola boleta', desc: 'Participas en el anticipado y el gran sorteo', color: '#E63946' },
           ].map((item) => (
             <div

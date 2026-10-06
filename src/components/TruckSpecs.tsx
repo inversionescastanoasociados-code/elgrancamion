@@ -1,9 +1,11 @@
 'use client';
 
 const specs = [
-  { label: 'Premio', value: 'Camión FVR' },
-  { label: 'Estado', value: 'Papeles al día' },
-  { label: 'Sorteo', value: '3 de octubre de 2026' },
+  { label: 'Premio', value: 'Camión FVR modelo 2027' },
+  { label: 'Estado', value: '0km · Nuevo' },
+  { label: 'Incluye', value: 'Rumba navideña completa' },
+  { label: 'Impuestos', value: 'Ganancias ocasionales pagadas' },
+  { label: 'Sorteo', value: '26 de diciembre de 2026' },
 ];
 
 export default function TruckSpecs() {
@@ -14,7 +16,7 @@ export default function TruckSpecs() {
           className="text-center text-[clamp(28px,5vw,40px)] uppercase text-white mb-8"
           style={{ fontFamily: '"Bebas Neue", sans-serif' }}
         >
-          Camión FVR
+          Camión FVR 0km · Modelo 2027
         </h2>
         <dl className="space-y-4">
           {specs.map((s) => (

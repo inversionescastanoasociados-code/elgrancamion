@@ -11,13 +11,13 @@ export default function FinalCTA() {
           Participa hoy
         </h2>
         <p className="text-white/50 text-base mb-8">
-          Camión FVR, Kia Picanto y Hyundai i10. Una sola boleta.
+          Camión FVR 2027, rumba navideña y Hyundai i10. Una sola boleta.
         </p>
         <p
           className="text-[clamp(40px,8vw,64px)] text-[#FFB703] leading-none mb-8"
           style={{ fontFamily: '"Bebas Neue", sans-serif' }}
         >
-          $130.000
+          $150.000
         </p>
         <a href="/boletas" className="btn-primary text-[15px] px-12 py-4">
           <i className="fas fa-ticket" />
@@ -25,6 +25,9 @@ export default function FinalCTA() {
         </a>
         <p className="mt-6 text-[12px] text-white/30">
           Llave · Transferencia · Efectivo
+        </p>
+        <p className="mt-2 text-[12px] font-semibold text-[#25D366]">
+          Ganancias ocasionales pagadas por la organización
         </p>
       </div>
     </section>

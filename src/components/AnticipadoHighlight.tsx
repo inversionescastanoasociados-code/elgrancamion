@@ -4,9 +4,6 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
   ANTICIPADO_DATE,
-  ANTICIPADO_BOLETA_GANADORA,
-  ANTICIPADO_ENTREGADO,
-  ANTICIPADO_GANADOR_NOMBRE,
   HYUNDAI_I10,
 } from '@/lib/prizeAssets';
 
@@ -26,7 +23,6 @@ export default function AnticipadoHighlight() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    if (ANTICIPADO_ENTREGADO) return;
     setMounted(true);
     const tick = () => setTimeLeft(getTimeLeft(ANTICIPADO_DATE));
     tick();
@@ -49,18 +45,14 @@ export default function AnticipadoHighlight() {
               sizes="(min-width: 1024px) 50vw, 100vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-            <span
-              className={`absolute top-4 left-4 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${
-                ANTICIPADO_ENTREGADO ? 'bg-[#25D366]' : 'bg-[#25D366]'
-              }`}
-            >
-              {ANTICIPADO_ENTREGADO ? 'Premio entregado' : 'Anticipado · 15 de agosto'}
+            <span className="absolute top-4 left-4 bg-[#25D366] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              Anticipado · 14 de noviembre
             </span>
           </div>
 
           <div>
             <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[#25D366] mb-3">
-              {ANTICIPADO_ENTREGADO ? 'Anticipado · sorteado 15 de agosto' : 'Premio anticipado'}
+              Premio anticipado · Proyecto 3
             </p>
             <h2
               className="text-[clamp(32px,5vw,48px)] leading-none uppercase text-white mb-4"
@@ -69,73 +61,40 @@ export default function AnticipadoHighlight() {
               Hyundai i10 Attraction 0km
             </h2>
 
-            {ANTICIPADO_ENTREGADO ? (
-              <>
-                <p className="text-white/55 text-[15px] leading-relaxed mb-4 max-w-md">
-                  El premio anticipado del <span className="text-[#25D366] font-semibold">15 de agosto de 2026</span>{' '}
-                  ya tiene ganador. Full equipo, 0 kilómetros y papeles al día —{' '}
-                  <span className="text-white/80 font-semibold">entregado</span>.
-                </p>
-                <div className="rounded-2xl border border-[#25D366]/30 bg-[#25D366]/10 p-5 mb-8 max-w-md">
-                  <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#25D366] mb-2">
-                    Boleta ganadora
-                  </p>
-                  <p
-                    className="text-4xl text-white tabular-nums tracking-wider mb-1"
+            <p className="text-white/55 text-[15px] leading-relaxed mb-2 max-w-md">
+              Gánalo el <span className="text-[#25D366] font-semibold">14 de noviembre de 2026</span> con la misma
+              boleta. Full equipo, 0 kilómetros y papeles al día.
+            </p>
+            <p className="text-[11px] font-bold tracking-[0.15em] uppercase text-[#25D366]/80 mb-6">
+              Sorteo anticipado · 14 de noviembre
+            </p>
+
+            <div className="flex gap-4 mb-8">
+              {[
+                { v: timeLeft.days, l: 'Días' },
+                { v: timeLeft.hours, l: 'Hrs' },
+                { v: timeLeft.minutes, l: 'Min' },
+                { v: timeLeft.seconds, l: 'Seg' },
+              ].map(({ v, l }) => (
+                <div key={l}>
+                  <div
+                    className="text-3xl text-white tabular-nums"
                     style={{ fontFamily: '"Bebas Neue", sans-serif' }}
                   >
-                    {ANTICIPADO_BOLETA_GANADORA}
-                  </p>
-                  <p className="text-white/60 text-sm">
-                    Ganador: <span className="text-white font-semibold">{ANTICIPADO_GANADOR_NOMBRE}</span>
-                  </p>
+                    {mounted ? pad(v) : '--'}
+                  </div>
+                  <div className="text-[10px] text-white/35 uppercase">{l}</div>
                 </div>
-                <a
-                  href="#ganadores-proyecto-2"
-                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white text-[13px] font-bold px-8 py-3.5 rounded-full border border-white/15 transition-colors"
-                >
-                  <i className="fas fa-play-circle text-xs text-[#25D366]" />
-                  Ver video del ganador
-                </a>
-              </>
-            ) : (
-              <>
-                <p className="text-white/55 text-[15px] leading-relaxed mb-2 max-w-md">
-                  Gánalo el <span className="text-[#25D366] font-semibold">15 de agosto de 2026</span> con la misma
-                  boleta. Full equipo, 0 kilómetros y papeles al día.
-                </p>
-                <p className="text-[11px] font-bold tracking-[0.15em] uppercase text-[#25D366]/80 mb-6">
-                  Sorteo anticipado · 15 de agosto
-                </p>
+              ))}
+            </div>
 
-                <div className="flex gap-4 mb-8">
-                  {[
-                    { v: timeLeft.days, l: 'Días' },
-                    { v: timeLeft.hours, l: 'Hrs' },
-                    { v: timeLeft.minutes, l: 'Min' },
-                    { v: timeLeft.seconds, l: 'Seg' },
-                  ].map(({ v, l }) => (
-                    <div key={l}>
-                      <div
-                        className="text-3xl text-white tabular-nums"
-                        style={{ fontFamily: '"Bebas Neue", sans-serif' }}
-                      >
-                        {mounted ? pad(v) : '--'}
-                      </div>
-                      <div className="text-[10px] text-white/35 uppercase">{l}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <a
-                  href="/boletas"
-                  className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#22c55e] text-white text-[13px] font-bold px-8 py-3.5 rounded-full transition-colors"
-                >
-                  <i className="fas fa-ticket text-xs" />
-                  Comprar boleta — $130.000
-                </a>
-              </>
-            )}
+            <a
+              href="/boletas"
+              className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#22c55e] text-white text-[13px] font-bold px-8 py-3.5 rounded-full transition-colors"
+            >
+              <i className="fas fa-ticket text-xs" />
+              Comprar boleta — $150.000
+            </a>
           </div>
         </div>
       </div>

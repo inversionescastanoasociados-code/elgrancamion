@@ -1,13 +1,16 @@
 'use client';
 
+import Image from 'next/image';
+
 export type GanadorEntry = {
   id: string;
   tag: string;
   prize: string;
   name: string;
   ticket: string;
-  video: string;
-  shareUrl: string;
+  video?: string;
+  image?: string;
+  shareUrl?: string;
   accent: string;
   note?: string;
   delivered?: boolean;
@@ -50,14 +53,28 @@ export default function GanadoresSection({ sectionId, title, subtitle, winners }
               className="rounded-2xl overflow-hidden border border-white/[0.08] bg-[#1a1a1e] shadow-xl"
             >
               <div className="relative w-full aspect-video bg-black">
-                <video
-                  src={winner.video}
-                  controls
-                  playsInline
-                  preload="metadata"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  title={`Ganador ${winner.name}`}
-                />
+                {winner.video ? (
+                  <video
+                    src={winner.video}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    title={`Ganador ${winner.name}`}
+                  />
+                ) : winner.image ? (
+                  <Image
+                    src={winner.image}
+                    alt={`Premio entregado a ${winner.name}`}
+                    fill
+                    className="object-cover"
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-white/30">
+                    <i className="fas fa-trophy text-5xl" />
+                  </div>
+                )}
               </div>
 
               <div className="p-6 sm:p-7">
@@ -108,15 +125,17 @@ export default function GanadoresSection({ sectionId, title, subtitle, winners }
                   )}
                 </div>
 
-                <a
-                  href={winner.shareUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center gap-2 text-[12px] font-semibold text-[#1877F2] hover:text-[#4da3ff] transition-colors"
-                >
-                  <i className="fab fa-facebook" />
-                  Ver también en Facebook
-                </a>
+                {winner.shareUrl && (
+                  <a
+                    href={winner.shareUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex items-center gap-2 text-[12px] font-semibold text-[#1877F2] hover:text-[#4da3ff] transition-colors"
+                  >
+                    <i className="fab fa-facebook" />
+                    Ver también en Facebook
+                  </a>
+                )}
               </div>
             </article>
           ))}
